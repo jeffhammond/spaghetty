@@ -2,6 +2,7 @@ import fileinput
 import string
 import sys
 import os
+import commands
 
 class Subroutine:
     
@@ -41,31 +42,66 @@ class Language:
             self.ordering   = "C"
             self.offset     = 0            
         else:
-            return "Unsupported language"
+            raise "Unsupported language"
         
         
     def __str__(self):
         """Prints code"""
-        print "Printing not yet enabled."
+        raise "Printing not yet enabled."
         
 class Processor:
     def __init__(self):
-        """Creates a processor class"""   
-        processor_type  = os.system('uname -p')
-        number_of_cores = os.system('grep cores /proc/cpuinfo') 
-        self.vendor = vendor
-        if (self.vendor == "Intel"):
-            self.Fname    = "ifort"
-            self.Cname    = "icc"
-            self.Fversion = ""
-            self.Cversion = ""  
+        """Creates a processor class""" 
+        self.processor_type  = []
+        self.number_of_cores = []
+        self.has_sse   = []
+        self.has_sse2  = []
+        self.has_sse3  = []
+        self.has_ssse3 = []        
+        
+
+    def determineProcessorType(self):
+        """Tries to identify processor""" 
+        if commands.getstatusoutput('uname -p')[0] == 0:  
+            self.processor_type  = commands.getoutput('uname -p')
+            
+
+    def determineNumberProcessorCores(self):    
+        """Tries to determine the number of processor cores"""       
+        # Cannot implement multi-core support in a universal way  
+        self.number_of_cores = 1 
+        
+
+    def determineSpecialInstructions(self): 
+        if 'sse ' in commands.getoutput('grep sse /proc/cpuinfo'):
+            self.has_sse = True
         else:
-            return "Processor could not be initialized"              
+            self.has_sse = False
+            
+        if 'sse2 ' in commands.getoutput('grep sse /proc/cpuinfo'):
+            self.has_sse2 = True
+        else:
+            self.has_sse2 = False
+            
+        if 'sse3 ' in commands.getoutput('grep sse /proc/cpuinfo'):
+            self.has_sse3 = True
+        else:
+            self.has_sse3 = False
+            
+        if 'ssse3 ' in commands.getoutput('grep sse /proc/cpuinfo'):
+            self.has_ssse3 = True
+        else:
+            self.has_ssse3 = False      
+            
+        
+    def setCacheSizes(self,cache_sizes):
+        """Manually set cache sizes: cache_sizes[n] is Ln cache"""          
+        raise "The setCacheSizes feature is not available"                                   
         
         
     def __str__(self):
         """Prints code"""
-        print "Printing not yet enabled."
+        raise "Printing not yet enabled."
                 
         
 class Compiler:
@@ -102,12 +138,12 @@ class Compiler:
             self.Cname    = ""
             self.Cversion = ""        
         else:
-            return "Unsupported compiler"
+            raise "Unsupported compiler"
         
         
     def __str__(self):
         """Prints code"""
-        print "Printing not yet enabled."
+        raise "Printing not yet enabled."
 
         
 class Loop:        
@@ -122,29 +158,29 @@ class Loop:
         self.index_stride = 1
 
     def setLoopIndex(self,loop_index):
-        if isinstance(loop_index,str):
+        if type(loop_index) == type('i1'):
             self.loop_index   = loop_index
         else:
-            return "A loop index must be a string"
+            raise "A loop index must be a string"
         
     def setIndexBegin(self,index_begin):
-        if isinstance(index_begin,int) or isinstance(index_begin,long):
+        if type(index_begin) == type(1):
             self.index_begin   = index_begin
         else:
-            return "An index bound must be a integer"          
+            raise "An index bound must be a integer"          
 
     def setIndexEnd(self,index_end):
-        if isinstance(index_end,int) or isinstance(index_end,long):
+        if type(index_end) == type(1):
             self.index_end   = index_end
         else:
-            return "An index bound must be a integer"               
+            raise "An index bound must be a integer"               
               
     def setLoopStride(self,loop_stride):
-        if isinstance(loop_stride,int) or isinstance(loop_stride,long):
+        if type(loop_stride) == type(1):
             self.loop_stride   = loop_stride
         else:
-            return "A loop stride must be a integer"
+            raise "A loop stride must be a integer"
         
     def __str__(self):
         """Prints code"""
-        print "Printing not yet enabled."
+        raise "Printing not yet enabled."
