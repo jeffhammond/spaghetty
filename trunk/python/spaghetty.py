@@ -61,27 +61,27 @@ class Language:
     def __init__(self,language):
         """Creates a language class"""        
         self.language = language
-        if (self.language == "Fortran77"):
+        if self.language == "Fortran77" or self.language == "Fortran":
             self.comment    = "C     "
             self.indent     = "      "
             self.ordering   = "F" # Fortran indexing, ie left-to-right
             self.offset     = 1
-        elif (self.language == "Fortran90"):
+        elif self.language == "Fortran90":
             self.comment    = "! "
             self.indent     = ""
             self.ordering   = "F"
             self.offset     = 1
-        elif (self.language == "C"):
+        elif self.language == "C":
             self.comment    = "// "
             self.indent     = ""
             self.ordering   = "C" # C indexing, ie right-to-left
             self.offset     = 0            
-        elif (self.language == "C++"):
+        elif self.language == "C++":
             self.comment    = "// "
             self.indent     = ""
             self.ordering   = "C"
             self.offset     = 0            
-        elif (self.language == "Cuda"):
+        elif self.language == "Cuda":
             self.comment    = "// "
             self.indent     = ""
             self.ordering   = "C"
