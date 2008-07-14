@@ -13,7 +13,7 @@ class Subroutine:
 
     def details(self):
         """Prints subroutine details"""
-        raise "Printing not yet enabled."
+        print "Printing not yet enabled."
      
      
 class TransposeAlgorithm:
@@ -51,7 +51,9 @@ class TransposeImplementation:
         
     def details(self):
         """Prints transpose implementation details"""
-        raise "Printing not yet enabled."
+        print "dimension    = "+str(self.dimension)
+        print "transpose    = "+str(self.tuple) 
+        print "permutations = "+str(self.permutations)         
 
 
 class Language:
@@ -89,7 +91,10 @@ class Language:
         
     def details(self):
         """Prints language details"""
-        raise "Printing not yet enabled."
+        print "comment  = "+str(self.comment)
+        print "indent   = "+str(self.indent)
+        print "ordering = "+str(self.ordering)
+        print "offset   = "+str(  self.offset)
         
         
 class Processor:
@@ -145,7 +150,18 @@ class Processor:
         
     def details(self):
         """Prints processor details"""
-        raise "Printing not yet enabled."
+        print "processor_type  = "+str(self.processor_type)
+        print "processor_name  = "+str(self.processor_name)
+        print "number_of_cores  = "+str(self.number_of_cores)
+        print "has_sse  = "+str(self.has_sse)
+        print "has_sse2  = "+str(self.has_sse2)
+        print "has_sse3  = "+str(self.has_sse3)
+        print "has_ssse3  = "+str(self.has_ssse3)
+        print "number_of_registers  = "+str(self.number_of_registers)
+        print "size_L1cache  = "+str(self.size_L1cache)
+        print "size_L2cache  = "+str(self.size_L2cache)
+        print "size_L3cache  = "+str(self.size_L3cache)
+        print "size_L4cache  = "+str(self.size_L4cache)
                 
         
 class Compiler:
@@ -208,7 +224,7 @@ class Compiler:
         
     def details(self):
         """Prints compiler details"""
-        raise "Printing not yet enabled."
+        print "Printing not yet enabled."
 
         
 class Loop:        
@@ -254,7 +270,12 @@ class Loop:
         
     def details(self):
         """Prints loop details"""
-        raise "Printing not yet enabled."
+        print "loop_offset   = "+str(self.loop_offset)
+        print "loop_index    = "+str(self.loop_index)
+        print "size_L4cache  = "+str(self.loop_active)
+        print "index_begin   = "+str(self.index_begin)
+        print "index_end     = "+str(self.index_end)
+        print "index_stride  = "+str(self.index_stride)
     
 # I found this somewhere on the Internet; it appears to be "free" code.    
 def perm(l):
