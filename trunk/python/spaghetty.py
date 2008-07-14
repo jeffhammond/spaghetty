@@ -6,11 +6,12 @@ import commands
 
 class Subroutine:
     
-    def __init__(self):
+    def __init__(self,name):
         """Creates a subroutine class"""
         self.name = []
+        self.code = []
 
-    def __str__(self):
+    def details(self):
         """Prints subroutine details"""
         raise "Printing not yet enabled."
      
@@ -19,21 +20,22 @@ class TransposeAlgorithm:
     
     def __init__(self):
         """Creates a transpose algorithm class"""
-        self.dimension = []
+        self.dimension = 0
         self.tuple = []
         
     def defineAlgorithm(self,tuple):
         """Defines a transpose algorithm"""
         # This part is not robust at all and needs to be upgraded
+        self.dimension = len(tuple)
         if type(tuple) == type([1,2,3,4]):
             self.tuple = tuple
         else:
             raise "The transpose algorithm must be defined by a list"  
         
-    def __str__(self):
+    def details(self):
         """Prints transpose algorithm details"""
-        raise "Printing not yet enabled."
-
+        print "dimension = "+str(self.dimension)
+        print "transpose = "+str(self.tuple) 
 
 class TransposeImplementation:
        
@@ -47,7 +49,7 @@ class TransposeImplementation:
         """Generates all possible loop permutations of the transpose algorithm"""
         self.permutations = perm(self.tuple)
         
-    def __str__(self):
+    def details(self):
         """Prints transpose implementation details"""
         raise "Printing not yet enabled."
 
@@ -85,7 +87,7 @@ class Language:
         else:
             raise "Unsupported language"        
         
-    def __str__(self):
+    def details(self):
         """Prints language details"""
         raise "Printing not yet enabled."
         
@@ -93,17 +95,18 @@ class Language:
 class Processor:
     def __init__(self):
         """Creates a processor class""" 
-        self.processor_type  = []
-        self.number_of_cores = []
-        self.has_sse   = []
-        self.has_sse2  = []
-        self.has_sse3  = []
-        self.has_ssse3 = []
-        self.number_of_registers = []
-        self.size_L1cache = []
-        self.size_L2cache = []
-        self.size_L3cache = []
-        self.size_L4cache = []
+        self.processor_type  = ""
+        self.processor_name  = ""
+        self.number_of_cores = 1
+        self.has_sse   = False
+        self.has_sse2  = False
+        self.has_sse3  = False
+        self.has_ssse3 = False
+        self.number_of_registers = -1
+        self.size_L1cache = -1
+        self.size_L2cache = -1
+        self.size_L3cache = -1
+        self.size_L4cache = -1
 
     def determineProcessorType(self):
         """Tries to identify processor""" 
@@ -118,29 +121,29 @@ class Processor:
     def determineSpecialInstructions(self): 
         if ' sse ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_sse = True
-        else:
-            self.has_sse = False
+#        else:
+#            self.has_sse = False
             
         if ' sse2 ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_sse2 = True
-        else:
-            self.has_sse2 = False
+#        else:
+#            self.has_sse2 = False
             
         if ' sse3 ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_sse3 = True
-        else:
-            self.has_sse3 = False
+#        else:
+#            self.has_sse3 = False
             
         if ' ssse3 ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_ssse3 = True
-        else:
-            self.has_ssse3 = False      
+#        else:
+#            self.has_ssse3 = False      
         
     def setCacheSizes(self,cache_sizes):
         """Manually set cache sizes: cache_sizes[n] is Ln cache"""          
         raise "The setCacheSizes feature is not available"                                   
         
-    def __str__(self):
+    def details(self):
         """Prints processor details"""
         raise "Printing not yet enabled."
                 
@@ -153,22 +156,23 @@ class Compiler:
         if (self.vendor == "Intel"):
             self.Fname    = "ifort"
             self.Cname    = "icc"
+            # This is probably not the best way to do this
             if commands.getstatusoutput(self.Fname+" --version")[0] == 0:
                 try:
                     self.Fversion = float(commands.getoutput(Fname+" --version").split()[2])
                 except:
-                    self.Fversion = []
+                    self.Fversion = 0
                     raise "Failed to parse version for "+self.Fname
                 
             else:
-                self.Fversion = []
+                self.Fversion = 0
                 raise "Failed to determine version for "+self.Fname   
                 
             if commands.getstatusoutput(self.Cname+" --version")[0] == 0:
                 try:
                     self.Cversion = float(commands.getoutput(Cname+" --version").split()[2])
                 except:
-                    self.Cversion = []
+                    self.Cversion = 0
                     raise "Failed to parse version for "+self.Cname
                 
             else:
@@ -202,7 +206,7 @@ class Compiler:
             raise "Unsupported compiler"
         
         
-    def __str__(self):
+    def details(self):
         """Prints compiler details"""
         raise "Printing not yet enabled."
 
@@ -248,7 +252,7 @@ class Loop:
         else:
             raise "A loop stride must be a integer"
         
-    def __str__(self):
+    def details(self):
         """Prints loop details"""
         raise "Printing not yet enabled."
     
