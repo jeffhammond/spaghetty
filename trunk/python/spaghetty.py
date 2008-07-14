@@ -172,59 +172,48 @@ class Compiler:
         if (self.vendor == "Intel"):
             self.Fname    = "ifort"
             self.Cname    = "icc"
-            # This is probably not the best way to do this
-            if commands.getstatusoutput(self.Fname+" --version")[0] == 0:
-                try:
-                    self.Fversion = float(commands.getoutput(Fname+" --version").split()[2])
-                except:
-                    self.Fversion = 0
-                    raise "Failed to parse version for "+self.Fname
-                
-            else:
-                self.Fversion = 0
-                raise "Failed to determine version for "+self.Fname   
-                
-            if commands.getstatusoutput(self.Cname+" --version")[0] == 0:
-                try:
-                    self.Cversion = float(commands.getoutput(Cname+" --version").split()[2])
-                except:
-                    self.Cversion = 0
-                    raise "Failed to parse version for "+self.Cname
-                
-            else:
-                self.Cversion = []
-                raise "Failed to determine version for "+self.Cname      
-                
+            self.Fversion = 0.0
+            self.Cversion = 0.0  
         elif (self.vendor == "IBM"):
             self.Fname    = "xlf"
             self.Cname    = "xlc"
-            self.Fversion = []
-            self.Cversion = []
+            self.Fversion = 0.0
+            self.Cversion = 0.0
         elif (self.vendor == "GNU"):
             self.Fname    = "gfortran" # no support for g77
             self.Cname    = "gcc"
-            self.Fversion = []
-            self.Cversion = []    
+            self.Fversion = 0.0
+            self.Cversion = 0.0    
 #        elif (self.vendor == "Pathscale"):
-#            self.Fname    = ""
-#            self.Cname    = ""
-#            self.Fversion = []
-#           self.Cversion = []  
-#        elif (self.vendor == "PGI"):
-#            self.Fname    = ""
-#            self.Cname    = ""
-#            self.Fversion = []
-#            self.Cversion = []       
-#        elif (self.vendor == "NVIDIA"):
-#            self.Cname    = ""
-#            self.Cversion = []         
+#        elif (self.vendor == "PGI"):   
+#        elif (self.vendor == "NVIDIA"):      
         else:
             raise "Unsupported compiler"
+        
+    def determineCompilerVersion(self):
+        """Determines what version of the compiler we have"""
+        # This is probably not the best way to do this
+        if commands.getstatusoutput(self.Fname+" --version")[0] == 0:
+            self.Fversion = float(commands.getoutput(self.Fname+" --version").split()[2])
+                
+        else:
+            self.Fversion = 0
+            raise "Failed to determine version for "+self.Fname              
+                
+        if commands.getstatusoutput(self.Cname+" --version")[0] == 0:
+            self.Cversion = float(commands.getoutput(self.Cname+" --version").split()[2])
+                
+        else:
+            self.Cversion = []
+            raise "Failed to determine version for "+self.Cname              
         
         
     def details(self):
         """Prints compiler details"""
-        print "Printing not yet enabled."
+        print "Fortran compiler name    = "+str(self.Fname)
+        print "Fortran compiler version = "+str(self.Fversion)
+        print "C       compiler name    = "+str(self.Cname)        
+        print "C       compiler version = "+str(self.Cversion)
 
         
 class Loop:        

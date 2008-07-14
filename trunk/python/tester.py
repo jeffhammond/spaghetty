@@ -26,6 +26,8 @@ p.details()
 
 c = spaghetty.Compiler("Intel")
 c.details()
+c.determineCompilerVersion()
+c.details()
 
 o = spaghetty.Loop()
 o.details()
