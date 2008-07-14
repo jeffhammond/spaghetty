@@ -57,8 +57,12 @@ class Processor:
         self.has_sse   = []
         self.has_sse2  = []
         self.has_sse3  = []
-        self.has_ssse3 = []        
-        
+        self.has_ssse3 = []
+        self.number_of_registers = []
+        self.size_L1cache = []
+        self.size_L2cache = []
+        self.size_L3cache = []
+        self.size_L4cache = []
 
     def determineProcessorType(self):
         """Tries to identify processor""" 
@@ -73,22 +77,22 @@ class Processor:
         
 
     def determineSpecialInstructions(self): 
-        if 'sse ' in commands.getoutput('grep sse /proc/cpuinfo'):
+        if ' sse ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_sse = True
         else:
             self.has_sse = False
             
-        if 'sse2 ' in commands.getoutput('grep sse /proc/cpuinfo'):
+        if ' sse2 ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_sse2 = True
         else:
             self.has_sse2 = False
             
-        if 'sse3 ' in commands.getoutput('grep sse /proc/cpuinfo'):
+        if ' sse3 ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_sse3 = True
         else:
             self.has_sse3 = False
             
-        if 'ssse3 ' in commands.getoutput('grep sse /proc/cpuinfo'):
+        if ' ssse3 ' in commands.getoutput('cat /proc/cpuinfo'):
             self.has_ssse3 = True
         else:
             self.has_ssse3 = False      
@@ -112,16 +116,33 @@ class Compiler:
         if (self.vendor == "Intel"):
             self.Fname    = "ifort"
             self.Cname    = "icc"
-            self.Fversion = ""
-            self.Cversion = ""
+            if commands.getstatusoutput(self.Fname+" --version")[0] == 0:
+                try:
+                    self.Fversion = float(commands.getoutput(Fname+" --version").split()[2])
+                except:
+                    raise "Failed to parse version for "+self.Fname
+                
+            else:
+                raise "Failed to determine version for "+self.Fname   
+                
+            if commands.getstatusoutput(self.Cname+" --version")[0] == 0:
+                try:
+                    self.Cversion = float(commands.getoutput(Cname+" --version").split()[2])
+                except:
+                    raise "Failed to parse version for "+self.Cname
+                
+            else:
+                raise "Failed to determine version for "+self.Cname  
+                
+                
         elif (self.vendor == "IBM"):
-            self.Fname    = ""
-            self.Cname    = ""
+            self.Fname    = "xlf"
+            self.Cname    = "xlc"
             self.Fversion = ""
             self.Cversion = ""
         elif (self.vendor == "GNU"):
-            self.Fname    = ""
-            self.Cname    = ""
+            self.Fname    = "gfortran" # no support for g77
+            self.Cname    = "gcc"
             self.Fversion = ""
             self.Cversion = ""    
         elif (self.vendor == "Pathscale"):
