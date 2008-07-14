@@ -10,6 +10,47 @@ class Subroutine:
         """Creates a subroutine class"""
         self.name = []
 
+    def __str__(self):
+        """Prints subroutine details"""
+        raise "Printing not yet enabled."
+     
+     
+class TransposeAlgorithm:
+    
+    def __init__(self):
+        """Creates a transpose algorithm class"""
+        self.dimension = []
+        self.tuple = []
+        
+    def defineAlgorithm(self,tuple):
+        """Defines a transpose algorithm"""
+        # This part is not robust at all and needs to be upgraded
+        if type(tuple) == type([1,2,3,4]):
+            self.tuple = tuple
+        else:
+            raise "The transpose algorithm must be defined by a list"  
+        
+    def __str__(self):
+        """Prints transpose algorithm details"""
+        raise "Printing not yet enabled."
+
+
+class TransposeImplementation:
+       
+    def __init__(self,TransposeAlgorithm):
+        """Creates a transpose implementation class"""
+        self.dimension = TransposeAlgorithm.dimension
+        self.tuple = TransposeAlgorithm.tuple
+        self.permutations = [] 
+        
+    def generateLoopPermutations(self):
+        """Generates all possible loop permutations of the transpose algorithm"""
+        self.permutations = perm(self.tuple)
+        
+    def __str__(self):
+        """Prints transpose implementation details"""
+        raise "Printing not yet enabled."
+
 
 class Language:
     
@@ -42,12 +83,12 @@ class Language:
             self.ordering   = "C"
             self.offset     = 0            
         else:
-            raise "Unsupported language"
-        
+            raise "Unsupported language"        
         
     def __str__(self):
-        """Prints code"""
+        """Prints language details"""
         raise "Printing not yet enabled."
+        
         
 class Processor:
     def __init__(self):
@@ -68,13 +109,11 @@ class Processor:
         """Tries to identify processor""" 
         if commands.getstatusoutput('uname -p')[0] == 0:  
             self.processor_type  = commands.getoutput('uname -p')
-            
 
     def determineNumberProcessorCores(self):    
         """Tries to determine the number of processor cores"""       
         # Cannot implement multi-core support in a universal way  
         self.number_of_cores = 1 
-        
 
     def determineSpecialInstructions(self): 
         if ' sse ' in commands.getoutput('cat /proc/cpuinfo'):
@@ -96,15 +135,13 @@ class Processor:
             self.has_ssse3 = True
         else:
             self.has_ssse3 = False      
-            
         
     def setCacheSizes(self,cache_sizes):
         """Manually set cache sizes: cache_sizes[n] is Ln cache"""          
         raise "The setCacheSizes feature is not available"                                   
         
-        
     def __str__(self):
-        """Prints code"""
+        """Prints processor details"""
         raise "Printing not yet enabled."
                 
         
@@ -120,50 +157,53 @@ class Compiler:
                 try:
                     self.Fversion = float(commands.getoutput(Fname+" --version").split()[2])
                 except:
+                    self.Fversion = []
                     raise "Failed to parse version for "+self.Fname
                 
             else:
+                self.Fversion = []
                 raise "Failed to determine version for "+self.Fname   
                 
             if commands.getstatusoutput(self.Cname+" --version")[0] == 0:
                 try:
                     self.Cversion = float(commands.getoutput(Cname+" --version").split()[2])
                 except:
+                    self.Cversion = []
                     raise "Failed to parse version for "+self.Cname
                 
             else:
-                raise "Failed to determine version for "+self.Cname  
-                
+                self.Cversion = []
+                raise "Failed to determine version for "+self.Cname      
                 
         elif (self.vendor == "IBM"):
             self.Fname    = "xlf"
             self.Cname    = "xlc"
-            self.Fversion = ""
-            self.Cversion = ""
+            self.Fversion = []
+            self.Cversion = []
         elif (self.vendor == "GNU"):
             self.Fname    = "gfortran" # no support for g77
             self.Cname    = "gcc"
-            self.Fversion = ""
-            self.Cversion = ""    
-        elif (self.vendor == "Pathscale"):
-            self.Fname    = ""
-            self.Cname    = ""
-            self.Fversion = ""
-            self.Cversion = ""   
-        elif (self.vendor == "PGI"):
-            self.Fname    = ""
-            self.Cname    = ""
-            self.Fversion = ""
-            self.Cversion = ""      
-        elif (self.vendor == "NVIDIA"):
-            self.Cname    = ""
-            self.Cversion = ""        
+            self.Fversion = []
+            self.Cversion = []    
+#        elif (self.vendor == "Pathscale"):
+#            self.Fname    = ""
+#            self.Cname    = ""
+#            self.Fversion = []
+#           self.Cversion = []  
+#        elif (self.vendor == "PGI"):
+#            self.Fname    = ""
+#            self.Cname    = ""
+#            self.Fversion = []
+#            self.Cversion = []       
+#        elif (self.vendor == "NVIDIA"):
+#            self.Cname    = ""
+#            self.Cversion = []         
         else:
             raise "Unsupported compiler"
         
         
     def __str__(self):
-        """Prints code"""
+        """Prints compiler details"""
         raise "Printing not yet enabled."
 
         
@@ -183,6 +223,12 @@ class Loop:
             self.loop_index   = loop_index
         else:
             raise "A loop index must be a string"
+
+    def setLoopOffset(self,loop_offset):
+        if type(loop_offset) == type(1):
+            self.loop_offset   = loop_offset
+        else:
+            raise "A loop offset must be a integer"   
         
     def setIndexBegin(self,index_begin):
         if type(index_begin) == type(1):
@@ -203,5 +249,15 @@ class Loop:
             raise "A loop stride must be a integer"
         
     def __str__(self):
-        """Prints code"""
+        """Prints loop details"""
         raise "Printing not yet enabled."
+    
+# I found this somewhere on the Internet; it appears to be "free" code.    
+def perm(l):
+    sz = len(l)
+    if sz <= 1:
+        return [l]
+    return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]    
+
+
+
