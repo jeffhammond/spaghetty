@@ -37,3 +37,6 @@ o.setIndexBegin(1)
 o.setIndexEnd(10)
 o.setLoopStride(1)
 o.details()
+
+t = spaghetty.Tensor("a",4)
+t.details()
