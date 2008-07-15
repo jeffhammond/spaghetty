@@ -257,19 +257,23 @@ class Tensor:
         
         self.indices = []
         
-    def makeIndices(self):
-        for i in range(0,self.dimension):
-            self.indices += [self.name+'_'+'i'+str(i)]
-
-    def printIndices(self):
-        for i in range(0,self.dimension):
-            print self.name+'_'+'i'+str(i)
         
     def setType(self,type):
         if type(loop_index) == type("string"):
             self.type = type
         else:
-            raise "A loop index must be a string"          
+            raise "A loop index must be a string"       
+                
+        
+    def makeIndices(self):
+        for i in range(0,self.dimension):
+            self.indices += [self.name+'_'+'i'+str(i)]
+            
+
+    def printIndices(self):
+        if len(self.indices) > 0:
+            for i in range(0,self.dimension):
+                print self.indices[i]  
         
     def allocate(self,Language):
         """Prints the code to allocate the tensor"""
@@ -281,9 +285,7 @@ class Tensor:
         """Prints tensor details"""
         print "name      = "+str(self.name)
         print "dimension = "+str(self.dimension)
-        if len(self.indices) > 0:
-            for i in range(0,self.dimension):
-                print self.indices[i]
+        self.printIndices()
     
 class Loop:        
     
