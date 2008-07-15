@@ -4,6 +4,8 @@ import sys
 import os
 import commands
 
+space = ' '
+
 class Timer:
     
     def __init__(self,name):
@@ -77,35 +79,42 @@ class Language:
     
     def __init__(self,language):
         """Creates a language class"""        
-        self.language = language
-        if self.language == "Fortran77" or self.language == "Fortran":
+        if language == "Fortran77" or language == "Fortran":
+            self.language   = "Fortran77"
             self.comment    = "C     "
             self.indent     = "      "
             self.ordering   = "F" # Fortran indexing, ie left-to-right
             self.offset     = 1
-        elif self.language == "Fortran90":
+            self.integer    = "integer"
+            self.real       = "double precision"
+        elif language == "Fortran90":
+            self.language   = "Fortran90"
             self.comment    = "! "
             self.indent     = ""
             self.ordering   = "F"
             self.offset     = 1
-        elif self.language == "C":
+        elif language == "C":
+            self.language   = "C"
             self.comment    = "// "
             self.indent     = ""
             self.ordering   = "C" # C indexing, ie right-to-left
             self.offset     = 0            
-        elif self.language == "C++":
+        elif language == "C++":
+            self.language   = "C++"
             self.comment    = "// "
             self.indent     = ""
             self.ordering   = "C"
             self.offset     = 0            
-        elif self.language == "Cuda":
+        elif language == "Cuda":
+            self.language   = "Cuda"
             self.comment    = "// "
             self.indent     = ""
             self.ordering   = "C"
             self.offset     = 0            
         else:
-            raise "Unsupported language"        
-        
+            raise "Unsupported language"
+            
+
     def details(self):
         """Prints language details"""
         print "comment  = "+str(self.comment)
@@ -236,13 +245,45 @@ class Tensor:
     
     def __init__(self,name,dimension):
         """Constructs a tensor"""
-        self.name      = name
-        self.dimension = dimension
+        if type(name) == type("a"):
+            self.name = name
+        else:
+            raise "A loop index must be a integer"
+        
+        if type(dimension) == type(1):
+            self.dimension = dimension
+        else:
+            raise "A loop index must be a integer"
+        
+        self.indices = []
+        
+    def makeIndices(self):
+        for i in range(0,self.dimension):
+            self.indices += [self.name+'_'+'i'+str(i)]
+
+    def printIndices(self):
+        for i in range(0,self.dimension):
+            print self.name+'_'+'i'+str(i)
+        
+    def setType(self,type):
+        if type(loop_index) == type("string"):
+            self.type = type
+        else:
+            raise "A loop index must be a string"          
+        
+    def allocate(self,Language):
+        """Prints the code to allocate the tensor"""
+        if Language.language == Fortran:
+            codelet = Language.real+space+self.name+'('+self.indices+')'
+            return codelet
 
     def details(self):
         """Prints tensor details"""
         print "name      = "+str(self.name)
         print "dimension = "+str(self.dimension)
+        if len(self.indices) > 0:
+            for i in range(0,self.dimension):
+                print self.indices[i]
     
 class Loop:        
     

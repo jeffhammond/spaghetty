@@ -40,3 +40,5 @@ o.details()
 
 t = spaghetty.Tensor("a",4)
 t.details()
+t.makeIndices()
+t.details()
