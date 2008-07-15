@@ -10,7 +10,7 @@ a.details()
 
 i = spaghetty.TransposeImplementation(a)
 i.details()
-i.generateLoopPermutations()
+i.setLoopOrdering([1,2,3,4])
 i.details()
 
 l = spaghetty.Language("Fortran")

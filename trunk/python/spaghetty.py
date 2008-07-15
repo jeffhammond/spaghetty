@@ -4,6 +4,18 @@ import sys
 import os
 import commands
 
+class Timer:
+    
+    def __init__(self,name):
+        """Creates a timer class"""
+        self.repetitions = 0
+        self.total_time  = 0.0
+
+    def details(self):
+        """Prints timer details"""
+        print "repetitions = "+str(self.repetitions)
+        print "total_time  = "+str(self.total_time) 
+
 class Subroutine:
     
     def __init__(self,name):
@@ -42,18 +54,23 @@ class TransposeImplementation:
     def __init__(self,TransposeAlgorithm):
         """Creates a transpose implementation class"""
         self.dimension = TransposeAlgorithm.dimension
-        self.tuple = TransposeAlgorithm.tuple
-        self.permutations = [] 
+        self.transpose_order = TransposeAlgorithm.tuple
+        self.loop_order = [] 
         
-    def generateLoopPermutations(self):
-        """Generates all possible loop permutations of the transpose algorithm"""
-        self.permutations = perm(self.tuple)
+    def setLoopOrdering(self,loop_order):
+        """Sets the particular loop ordering for a given transpose ordering"""
+        # This part is not robust at all and needs to be upgraded
+        if type(loop_order) == type([1,2,3,4]):
+            self.loop_order = loop_order
+        else:
+            raise "The loop ordering must be defined by a list"
         
+            
     def details(self):
         """Prints transpose implementation details"""
         print "dimension    = "+str(self.dimension)
-        print "transpose    = "+str(self.tuple) 
-        print "permutations = "+str(self.permutations)         
+        print "transpose    = "+str(self.transpose_order) 
+        print "loop order   = "+str(self.loop_order)         
 
 
 class Language:
@@ -215,7 +232,18 @@ class Compiler:
         print "C       compiler name    = "+str(self.Cname)        
         print "C       compiler version = "+str(self.Cversion)
 
-        
+class Tensor:
+    
+    def __init__(self,name,dimension):
+        """Constructs a tensor"""
+        self.name      = name
+        self.dimension = dimension
+
+    def details(self):
+        """Prints tensor details"""
+        print "name      = "+str(self.name)
+        print "dimension = "+str(self.dimension)
+    
 class Loop:        
     
     def __init__(self):
@@ -224,7 +252,7 @@ class Loop:
         self.loop_index   = ""
         self.loop_active  = True
         self.index_begin  = 0
-        self.index_end    = 2^31
+        self.index_end    = 2**31
         self.index_stride = 1
 
     def setLoopIndex(self,loop_index):
