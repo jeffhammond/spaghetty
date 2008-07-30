@@ -51,14 +51,14 @@ def generate_subroutine(inVec,outVec,blkVec):
         blkBout=blkVec[outVec[1]]
         blkCout=blkVec[outVec[2]]
         blkDout=blkVec[outVec[3]]
-	SinA = str(inA)
-	SinB = str(inB)
-	SinC = str(inC)
-	SinD = str(inD)
-	SoutA = str(outA)	
-	SoutB = str(outB)
-	SoutC = str(outC)
-	SoutD = str(outD)
+	SinA = str(inA+1)
+	SinB = str(inB+1)
+	SinC = str(inC+1)
+	SinD = str(inD+1)
+	SoutA = str(outA+1)	
+	SoutB = str(outB+1)
+	SoutC = str(outC+1)
+	SoutD = str(outD+1)
 	SblkAin = str(blkAin)
 	SblkBin = str(blkBin)
 	SblkCin = str(blkCin)
@@ -113,28 +113,11 @@ def generate_subroutine(inVec,outVec,blkVec):
 	os.system(fortran_compiler+' '+fortran_opt_flags+' '+source_name)
 	os.system('ar -r tce_sort_jeff.a '+subroutine_name+'.o')
 	os.system('mv '+subroutine_name+'.F '+src_dir)
+	os.system('mv '+subroutine_name+'.lst '+lst_dir)
 	os.system('rm '+subroutine_name+'.o')
 
 
 # TESTER
 
-generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,2,2])
+generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,1,1])
 
-
-#for transpose_order in transpose:
-#	SinA = str(transpose_order[0])
-#	SinB = str(transpose_order[1])
-#	SinC = str(transpose_order[2])
-#	SinD = str(transpose_order[3])
-#	It = ['j'+SinA,'j'+SinB,'j'+SinC,'j'+SinD]
-#	for loop_order in looporder:
-#		SoutA = str(transpose_order[loop_order[0]])
-#		SoutB = str(transpose_order[loop_order[1]])
-#		SoutC = str(transpose_order[loop_order[2]])
-#		SoutD = str(transpose_order[loop_order[3]])
-#		Il = [ It[loop_order[0]], It[loop_order[1]], It[loop_order[2]], It[loop_order[3]] ]
-#		print '--------------------'
-#		print SinA,SinB,SinC,SinD
-#		print SoutA,SoutB,SoutC,SoutD
-#		for first_blocking in range(2,max_blocking,blocking_step):
-#			for second_blocking in range(2,max_blocking,blocking_step):

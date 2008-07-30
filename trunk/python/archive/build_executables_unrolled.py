@@ -34,17 +34,17 @@ os.system('ar -r tce_sort_jeff.a tce_sort_hirata.o')
 
 def generate_driver(inVec,outVec,blkVec):
         dummy = 0
-        inA=str(inVec[0])
-        inB=str(inVec[1])
-        inC=str(inVec[2])
-        inD=str(inVec[3])
+        inA=str(inVec[0]+1)
+        inB=str(inVec[1]+1)
+        inC=str(inVec[2]+1)
+        inD=str(inVec[3]+1)
 	driver_name = 'transpose_'+inA+inB+inC+inD
 	print driver_name
 	source_name = driver_name+'_driver.F'
-        outA=str(inVec[outVec[0]])
-        outB=str(inVec[outVec[1]])
-        outC=str(inVec[outVec[2]])
-        outD=str(inVec[outVec[3]])
+        outA=str(inVec[outVec[0]]+1)
+        outB=str(inVec[outVec[1]]+1)
+        outC=str(inVec[outVec[2]]+1)
+        outD=str(inVec[outVec[3]]+1)
         blkAin=str(blkVec[0])
         blkBin=str(blkVec[1])
         blkCin=str(blkVec[2])
@@ -115,7 +115,7 @@ def generate_driver(inVec,outVec,blkVec):
                 source_file.write('        PRINT*,"Loop '+outA+outB+outC+outD+'     ",Tjeff,Tspeedup\n')
 	        source_file.write('        DO '+str(500+dummy)+' i = 1, '+sizechar+'\n')
 	        source_file.write('          IF (after_jeff(i).ne.after_hirata(i)) THEN\n')
-        	source_file.write('            PRINT*,"transpose is wrong for element = ",i\n')
+        	source_file.write('            PRINT*,"error at position ",i,after_jeff(i),after_hirata(i)\n')
                 source_file.write('          ENDIF\n')
 	        source_file.write(str(500+dummy)+'     CONTINUE\n')
 
@@ -127,5 +127,5 @@ def generate_driver(inVec,outVec,blkVec):
 	os.system('mv '+source_name+' '+src_dir)
 
 
-generate_driver([0,1,2,3],[0,1,2,3],[1,1,2,2])
+generate_driver([0,1,2,3],[0,1,2,3],[1,1,1,1])
 
