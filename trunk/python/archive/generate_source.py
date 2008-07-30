@@ -3,9 +3,10 @@ import string
 import sys
 import os
 
-fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -pad -unroll-aggressive -mtune=core2 -msse3 -c'
-src_dir = '/home/jeff/code/Transpose/autotune/autofiles/src/'
+fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
+fortran_opt_flags = '-O5 -qhot -qprefetch -qcache=auto -qalign=4k -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qnoextname -qnosmp -qreport=hotlist -c'
+src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
+lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 
 def perm(l):
     sz = len(l)
@@ -15,20 +16,24 @@ def perm(l):
 
 indices = ['1','2','3','4']
 
-all_permutations = perm(indices)
+#all_permutations = perm(indices)
 #all_permutations = [indices]
 
-for transpose_order in all_permutations:
+transpose_list = perm(indices)
+loop_list = perm(indices)
+
+for transpose_order in transpose_list:
 	A = transpose_order[0]
 	B = transpose_order[1]
 	C = transpose_order[2]
 	D = transpose_order[3]
-	for loop_order in all_permutations:
+	for loop_order in loop_list:
 		a = loop_order[0]
 		b = loop_order[1]
 		c = loop_order[2]
 		d = loop_order[3]
 		subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d
+		#subroutine_name = 'transpose_'+str(int(A)*int(B)*int(C)*int(D))+'_loop_'+str(int(a)*int(b)*int(c)*int(d))
 		source_name = subroutine_name+'.F'
 		#print source_name
 		source_file = open(source_name,'w')
@@ -41,6 +46,7 @@ for transpose_order in all_permutations:
 		source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
 		source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
 		source_file.write('        double precision factor\n')
+		source_file.write('cdir$ ivdep\n') 
 		source_file.write('        do j'+a+' = 1,dim'+a+'\n')
 		source_file.write('         do j'+b+' = 1,dim'+b+'\n')
 		source_file.write('          do j'+c+' = 1,dim'+c+'\n')
@@ -59,4 +65,5 @@ for transpose_order in all_permutations:
 		os.system('ar -r tce_sort_jeff.a '+subroutine_name+'.o')
 		os.system('rm '+subroutine_name+'.o')
 		os.system('mv '+subroutine_name+'.F '+src_dir)
+		os.system('mv '+subroutine_name+'.lst '+lst_dir)
 
