@@ -1,2 +1,0 @@
-#! /bin/tcsh -f
-qsub -q prod-devel -n 1 -t 10 --mode co $1
