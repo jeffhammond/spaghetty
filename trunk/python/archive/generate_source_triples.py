@@ -13,8 +13,6 @@ fortran_compiler = 'ifort'
 fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -c'
 src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
 
-
-
 def perm(l):
     sz = len(l)
     if sz <= 1:
@@ -63,8 +61,10 @@ for transpose_order in transpose_list:
         source_file.write('           do j'+d+' = 1,dim'+d+'\n')
         source_file.write('            do j'+e+' = 1,dim'+e+'\n')
         source_file.write('             do j'+f+' = 1,dim'+f+'\n')
-        source_file.write('              old_offset = j4+dim4*(j5-1+dim5*(j4-1+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))\n')
-        source_file.write('              new_offset = j'+F+'+dim'+F+'*(j'+E+'-1+dim'+E+'*(j'+D+'-1+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))\n')
+        source_file.write('              old_offset = j4+dim4*(j5-1+dim5*(j4-1+dim4*\n')
+        source_file.write('     &                    (j3-1+dim3*(j2-1+dim2*(j1-1)))))\n')
+        source_file.write('              new_offset = j'+F+'+dim'+F+'*(j'+E+'-1+dim'+E+'*(j'+D+'-1+dim'+D+'*\n')
+        source_file.write('     &                    (j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))))\n')
         source_file.write('              sorted(new_offset) = unsorted(old_offset) * factor\n')
         source_file.write('             enddo\n')
         source_file.write('            enddo\n')
