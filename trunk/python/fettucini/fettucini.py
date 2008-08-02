@@ -218,8 +218,8 @@ build_hirata()
 
 indices = [0,1,2,3,4,5]
 
-#all_permutations = perm(indices)
-all_permutations = [indices]
+all_permutations = perm(indices)
+#all_permutations = [indices]
 
 for transpose_order in all_permutations:
     A = transpose_order[0]
@@ -228,13 +228,14 @@ for transpose_order in all_permutations:
     D = transpose_order[3]
     E = transpose_order[4]
     F = transpose_order[5]    
-    for loop_order in all_permutations:
-        a = loop_order[0]
-        b = loop_order[1]
-        c = loop_order[2]
-        d = loop_order[3]
-        e = loop_order[4]
-        f = loop_order[5]
-        generate_subroutine([A,B,C,D,E,F],[a,b,c,d,e,f]) 
-        generate_driver([A,B,C,D,E,F],[a,b,c,d,e,f])
+    #for loop_order in all_permutations:
+    loop_order = transpose_order
+    a = loop_order[0]
+    b = loop_order[1]
+    c = loop_order[2]
+    d = loop_order[3]
+    e = loop_order[4]
+    f = loop_order[5]
+    generate_subroutine([A,B,C,D,E,F],[a,b,c,d,e,f]) 
+    generate_driver([A,B,C,D,E,F],[a,b,c,d,e,f])
         
