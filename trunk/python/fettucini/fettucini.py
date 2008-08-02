@@ -12,7 +12,7 @@ exe_dir = '/home/jeff/code/spaghetty/trunk/python/fettucini/exe/'
 log_dir = '/home/jeff/code/spaghetty/trunk/python/fettucini/log/'
 
 count = '100'
-rank = '15'
+rank = '5'
 ranks = [rank,rank,rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])*int(ranks[4])*int(ranks[5])
 sizechar = str(size)
@@ -48,43 +48,42 @@ def generate_subroutine(inVec,outVec):
     outD=outVec[3]
     outE=outVec[4]
     outF=outVec[5]
-    SinA = str(inA+1)
-    SinB = str(inB+1)
-    SinC = str(inC+1)
-    SinD = str(inD+1)
-    SinE = str(inE+1)
-    SinF = str(inF+1)    
-    SoutA = str(outA+1)	
-    SoutB = str(outB+1)
-    SoutC = str(outC+1)
-    SoutD = str(outD+1)
-    SoutE = str(outE+1)
-    SoutF = str(outF+1)    
+    SinA = str(inA)
+    SinB = str(inB)
+    SinC = str(inC)
+    SinD = str(inD)
+    SinE = str(inE)
+    SinF = str(inF)    
+    SoutA = str(outA)	
+    SoutB = str(outB)
+    SoutC = str(outC)
+    SoutD = str(outD)
+    SoutE = str(outE)
+    SoutF = str(outF)    
     subroutine_name = 'transpose_in'+SinA+SinB+SinC+SinD+SinE+SinF+'_out'+SoutA+SoutB+SoutC+SoutD+SoutE+SoutF
     source_name = subroutine_name+'.F'
     source_file = open(source_name,'w')
-    source_file.write(f8+'subroutine '+subroutine_name+'(unsorted,sorted,\n')
-    source_file.write(f5+'&'+2*f8+'dim'+SinA+',dim'+SinB+',dim'+SinC+',dim'+SinD+',\n')
-    source_file.write(f5+'&'+2*f8+'dim'+SinE+',dim'+SinF+',factor)\n')
+    source_file.write(f8+'subroutine '+subroutine_name+'(old,new,\n')
+    source_file.write(f5+'&'+2*f8+'d'+SinA+',d'+SinB+',d'+SinC+',d'+SinD+',d'+SinE+',d'+SinF+',factor)\n')
     source_file.write(f8+'implicit none\n')
-    source_file.write(f8+'integer dim'+SinA+',dim'+SinB+',dim'+SinC+',dim'+SinD+',dim'+SinE+',dim'+SinF+'\n')
-    source_file.write(f8+'integer j'+SinA+',j'+SinB+',j'+SinC+',j'+SinD+',j'+SinE+',j'+SinF+'\n')
-    source_file.write(f8+'double precision sorted(dim'+SinA+'*dim'+SinB+'*dim'+SinC+'*dim'+SinD+'*dim'+SinE+'*dim'+SinF+')\n')
-    source_file.write(f8+'double precision unsorted(dim'+SinA+'*dim'+SinB+'*dim'+SinC+'*dim'+SinD+'*dim'+SinE+'*dim'+SinF+')\n')
+    source_file.write(f8+'integer d'+SinA+',d'+SinB+',d'+SinC+',d'+SinD+',d'+SinE+',d'+SinF+'\n')
+    source_file.write(f8+'integer i'+SinA+',i'+SinB+',i'+SinC+',i'+SinD+',i'+SinE+',i'+SinF+'\n')
+    source_file.write(f8+'double precision new(d'+SinA+'*d'+SinB+'*d'+SinC+'*d'+SinD+'*d'+SinE+'*d'+SinF+')\n')
+    source_file.write(f8+'double precision old(d'+SinA+'*d'+SinB+'*d'+SinC+'*d'+SinD+'*d'+SinE+'*d'+SinF+')\n')
     source_file.write(f8+'double precision factor\n')
-    source_file.write(f8+'do j'+SoutA+' = 1,dim'+SoutA+'\n')
-    source_file.write(f9+'do j'+SoutB+' = 1,dim'+SoutB+'\n')
-    source_file.write(f10+'do j'+SoutC+' = 1,dim'+SoutC+'\n')
-    source_file.write(f11+'do j'+SoutD+' = 1,dim'+SoutD+'\n')
-    source_file.write(f12+'do j'+SoutE+' = 1,dim'+SoutE+'\n')
-    source_file.write(f13+'do j'+SoutF+' = 1,dim'+SoutF+'\n')
-    #source_file.write(f14+'print*,"ijklmn=",j'+SinA+',j'+SinB+',j'+SinC+',j'+SinD+',j'+SinE+',j'+SinF+'\n')        
-    source_file.write(f14+'sorted('+'j'+SinF+'+dim'+SinF+'*('+'j'+SinE+'-1+dim'+SinE+'*\n')
-    source_file.write(f5+'&'+f10+'('+'j'+SinD+'-1+dim'+SinD+'*('+'j'+SinC+'-1+dim'+SinC+'*\n')
-    source_file.write(f5+'&'+f10+'('+'j'+SinB+'-1+dim'+SinB+'*('+'j'+SinA+'-1)))))) = factor*\n')
-    source_file.write(f5+'&'+f10+'unsorted('+'j'+SoutF+'+dim'+SoutF+'*('+'j'+SoutE+'-1+dim'+SoutE+'*\n')
-    source_file.write(f5+'&'+f10+'('+'j'+SoutD+'-1+dim'+SoutD+'*('+'j'+SoutC+'-1+dim'+SoutC+'*\n')
-    source_file.write(f5+'&'+f10+'('+'j'+SoutB+'-1+dim'+SoutB+'*('+'j'+SoutA+'-1))))))\n')
+    source_file.write(f8+'do i'+SoutA+' = 1,d'+SoutA+'\n')
+    source_file.write(f9+'do i'+SoutB+' = 1,d'+SoutB+'\n')
+    source_file.write(f10+'do i'+SoutC+' = 1,d'+SoutC+'\n')
+    source_file.write(f11+'do i'+SoutD+' = 1,d'+SoutD+'\n')
+    source_file.write(f12+'do i'+SoutE+' = 1,d'+SoutE+'\n')
+    source_file.write(f13+'do i'+SoutF+' = 1,d'+SoutF+'\n')
+    #source_file.write(f14+'print*,"ijklmn=",i'+SinA+',i'+SinB+',i'+SinC+',i'+SinD+',i'+SinE+',i'+SinF+'\n')        
+    source_file.write(f14+'new(1+'+'i'+SinF+'-1+d'+SinF+'*('+'i'+SinE+'-1+d'+SinE+'*\n')
+    source_file.write(f5+'&'+f10+'('+'i'+SinD+'-1+d'+SinD+'*('+'i'+SinC+'-1+d'+SinC+'*\n')
+    source_file.write(f5+'&'+f10+'('+'i'+SinB+'-1+d'+SinB+'*('+'i'+SinA+'-1)))))) = factor*\n')
+    source_file.write(f5+'&'+f10+'old(1+'+'i'+SoutF+'-1+d'+SoutF+'*('+'i'+SoutE+'-1+d'+SoutE+'*\n')
+    source_file.write(f5+'&'+f10+'('+'i'+SoutD+'-1+d'+SoutD+'*('+'i'+SoutC+'-1+d'+SoutC+'*\n')
+    source_file.write(f5+'&'+f10+'('+'i'+SoutB+'-1+d'+SoutB+'*('+'i'+SoutA+'-1))))))\n')
     source_file.write(f13+'enddo\n')
     source_file.write(f12+'enddo\n')
     source_file.write(f11+'enddo\n')
@@ -104,24 +103,25 @@ def build_hirata():
     print fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F'
     os.system(fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F')
     os.system('ar -r tce_sort_jeff.a tce_sort_hirata.o')
+    os.system('rm tce_sort_hirata.o')
 
 def generate_driver(inVec,outVec):
     dummy = 0
-    inA=str(inVec[0]+1)
-    inB=str(inVec[1]+1)
-    inC=str(inVec[2]+1)
-    inD=str(inVec[3]+1)
-    inE=str(inVec[4]+1)
-    inF=str(inVec[5]+1)
+    inA=str(inVec[0])
+    inB=str(inVec[1])
+    inC=str(inVec[2])
+    inD=str(inVec[3])
+    inE=str(inVec[4])
+    inF=str(inVec[5])
     driver_name = 'transpose_'+inA+inB+inC+inD+inE+inF
     print driver_name
     source_name = driver_name+'_driver.F'
-    outA=str(outVec[0]+1)
-    outB=str(outVec[1]+1)
-    outC=str(outVec[2]+1)
-    outD=str(outVec[3]+1)
-    outE=str(outVec[4]+1)
-    outF=str(outVec[5]+1)    
+    outA=str(outVec[0])
+    outB=str(outVec[1])
+    outC=str(outVec[2])
+    outD=str(outVec[3])
+    outE=str(outVec[4])
+    outF=str(outVec[5])    
     source_file = open(source_name,'w')
     source_file.write('        PROGRAM ARRAYTEST\n')
     source_file.write('        REAL*8 before('+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+')\n')
@@ -212,30 +212,77 @@ def generate_driver(inVec,outVec):
     os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sort_jeff.a '+' -o '+exe_dir+driver_name+'.x')
     os.system('mv '+source_name+' '+src_dir)
 
-build_hirata()
+def build_subroutines_simple(all_permutations):
+    for transpose_order in all_permutations:
+        A = transpose_order[0]
+        B = transpose_order[1]
+        C = transpose_order[2]
+        D = transpose_order[3]
+        E = transpose_order[4]
+        F = transpose_order[5]    
+        generate_subroutine([A,B,C,D,E,F],[A,B,C,D,E,F]) 
+
+def build_drivers_simple(all_permutations):
+    for transpose_order in all_permutations:
+        A = transpose_order[0]
+        B = transpose_order[1]
+        C = transpose_order[2]
+        D = transpose_order[3]
+        E = transpose_order[4]
+        F = transpose_order[5]    
+        generate_driver([A,B,C,D,E,F],[A,B,C,D,E,F])
+
+def build_executables_simple(all_permutations):
+    for transpose_order in all_permutations:
+        A = transpose_order[0]
+        B = transpose_order[1]
+        C = transpose_order[2]
+        D = transpose_order[3]
+        E = transpose_order[4]
+        F = transpose_order[5]    
+        generate_subroutine([A,B,C,D,E,F],[A,B,C,D,E,F]) 
+        generate_driver([A,B,C,D,E,F],[A,B,C,D,E,F])
+
+def build_executables(all_permutations):
+    for transpose_order in all_permutations:
+        A = transpose_order[0]
+        B = transpose_order[1]
+        C = transpose_order[2]
+        D = transpose_order[3]
+        E = transpose_order[4]
+        F = transpose_order[5]    
+        for loop_order in all_permutations:
+            loop_order = transpose_order
+            a = loop_order[0]
+            b = loop_order[1]
+            c = loop_order[2]
+            d = loop_order[3]
+            e = loop_order[4]
+            f = loop_order[5]
+            generate_subroutine([A,B,C,D,E,F],[a,b,c,d,e,f]) 
+            generate_driver([A,B,C,D,E,F],[a,b,c,d,e,f])
+
+def run_simple(all_permutations):
+    for transpose_order in all_permutations:
+        A = transpose_order[0]
+        B = transpose_order[1]
+        C = transpose_order[2]
+        D = transpose_order[3]
+        E = transpose_order[4]
+        F = transpose_order[5]    
+        driver_name = 'transpose_'+str(A)+str(B)+str(C)+str(D)+str(E)+str(F)
+        os.system('./exe/'+driver_name+'.x > '+log_dir+driver_name+'.log')
+
 #generate_subroutine([1,0,2,3,4,5],[0,1,2,3,4,5]) 
 #generate_driver([1,0,2,3,4,5],[0,1,2,3,4,5])
 
-indices = [0,1,2,3,4,5]
+indices = [5,4,0,1,2,3]
+#indices = [1,2,3,4,5,6]
 
-all_permutations = perm(indices)
-#all_permutations = [indices]
+#all_permutations = perm(indices)
+all_permutations = [indices]
 
-for transpose_order in all_permutations:
-    A = transpose_order[0]
-    B = transpose_order[1]
-    C = transpose_order[2]
-    D = transpose_order[3]
-    E = transpose_order[4]
-    F = transpose_order[5]    
-    #for loop_order in all_permutations:
-    loop_order = transpose_order
-    a = loop_order[0]
-    b = loop_order[1]
-    c = loop_order[2]
-    d = loop_order[3]
-    e = loop_order[4]
-    f = loop_order[5]
-    generate_subroutine([A,B,C,D,E,F],[a,b,c,d,e,f]) 
-    generate_driver([A,B,C,D,E,F],[a,b,c,d,e,f])
-        
+build_hirata()
+build_subroutines_simple(all_permutations)
+build_drivers_simple(all_permutations)
+run_simple(all_permutations)    
