@@ -9,9 +9,10 @@ fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -c'
 fortran_link_flags = '-O0'
 src_dir = '/home/jeff/code/spaghetty/trunk/python/fettucini/src/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/python/fettucini/exe/'
+log_dir = '/home/jeff/code/spaghetty/trunk/python/fettucini/log/'
 
 count = '100'
-rank = '20'
+rank = '15'
 ranks = [rank,rank,rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])*int(ranks[4])*int(ranks[5])
 sizechar = str(size)
@@ -41,12 +42,12 @@ def generate_subroutine(inVec,outVec):
     inD=inVec[3]
     inE=inVec[4]
     inF=inVec[5]
-    outA=inVec[outVec[0]]
-    outB=inVec[outVec[1]]
-    outC=inVec[outVec[2]]
-    outD=inVec[outVec[3]]
-    outE=inVec[outVec[4]]
-    outF=inVec[outVec[5]]
+    outA=outVec[0]
+    outB=outVec[1]
+    outC=outVec[2]
+    outD=outVec[3]
+    outE=outVec[4]
+    outF=outVec[5]
     SinA = str(inA+1)
     SinB = str(inB+1)
     SinC = str(inC+1)
@@ -115,12 +116,12 @@ def generate_driver(inVec,outVec):
     driver_name = 'transpose_'+inA+inB+inC+inD+inE+inF
     print driver_name
     source_name = driver_name+'_driver.F'
-    outA=str(inVec[outVec[0]]+1)
-    outB=str(inVec[outVec[1]]+1)
-    outC=str(inVec[outVec[2]]+1)
-    outD=str(inVec[outVec[3]]+1)
-    outE=str(inVec[outVec[4]]+1)
-    outF=str(inVec[outVec[5]]+1)    
+    outA=str(outVec[0]+1)
+    outB=str(outVec[1]+1)
+    outC=str(outVec[2]+1)
+    outD=str(outVec[3]+1)
+    outE=str(outVec[4]+1)
+    outF=str(outVec[5]+1)    
     source_file = open(source_name,'w')
     source_file.write('        PROGRAM ARRAYTEST\n')
     source_file.write('        REAL*8 before('+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+')\n')
@@ -150,7 +151,7 @@ def generate_driver(inVec,outVec):
     source_file.write('            DO 50 m = 1, '+ranks[4]+'\n')
     source_file.write('             DO 45 n = 1, '+ranks[5]+'\n')    
     source_file.write('                before(i,j,k,l,m,n) = n + m*10 + l*100 + k*1000\n')
-    source_file.write('     &                          + j*10000 + i*1000000\n')
+    source_file.write('     &                          + j*10000 + i*100000\n')
     source_file.write('45           CONTINUE\n')
     source_file.write('50          CONTINUE\n')    
     source_file.write('55         CONTINUE\n')
@@ -212,9 +213,6 @@ def generate_driver(inVec,outVec):
     os.system('mv '+source_name+' '+src_dir)
 
 
-   
-generate_subroutine([0,1,2,3,4,5],[0,1,2,3,4,5])
-
 build_hirata()
-        
-generate_driver([0,1,2,3,4,5],[0,1,2,3,4,5])
+generate_subroutine([1,0,2,3,4,5],[0,1,2,3,4,5]) 
+generate_driver([1,0,2,3,4,5],[0,1,2,3,4,5])
