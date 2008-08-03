@@ -15,8 +15,8 @@ fortran_link_flags = '-O0'
 src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe/'
 
-count = '100'
-rank = '16'
+count = '30'
+rank = '8'
 ranks = [rank,rank,rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])*int(ranks[4])*int(ranks[5])
 sizechar = str(size)
@@ -32,7 +32,8 @@ indices = ['1','2','3','4','5','6']
 #all_permutations = perm(indices)
 #all_permutations = [indices]
 
-transpose_list = perm(indices)
+#transpose_list = perm(indices)
+transpose_list = [indices]
 loop_list = perm(indices)
 
 #print fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F'
@@ -56,7 +57,7 @@ for transpose_order in transpose_list:
     source_file.write('        REAL*8 after_jeff('+sizechar+')\n')
     source_file.write('        REAL*8 after_hirata('+sizechar+')\n')
     source_file.write('        REAL*8 factor\n')
-    source_file.write('        REAL*8 Tstart,Tfinish,Thirata,Tjeff,Tspeedup\n')
+    source_file.write('        REAL*4 Tstart,Tfinish,Thirata,Tjeff,Tspeedup,Tbest\n')
     source_file.write('        INTEGER*4 i,j,k,l,m,n\n')
     source_file.write('        INTEGER*4 aSize(6)\n')
     source_file.write('        INTEGER*4 perm(6)\n')
@@ -87,7 +88,8 @@ for transpose_order in transpose_list:
     source_file.write('65       CONTINUE\n')
     source_file.write('70      CONTINUE\n')
     source_file.write('        factor = 1.0\n')
-    source_file.write('        Tstart=0.0\n')
+    source_file.write('        Tbest=999999.0\n')
+    source_file.write('        Tstart=0.0\n')    
     source_file.write('        Tfinish=0.0\n')
     source_file.write('        CALL CPU_TIME(Tstart)\n')
     #source_file.write('        Tstart=rtc()\n')
@@ -101,7 +103,7 @@ for transpose_order in transpose_list:
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     source_file.write('        PRINT*,"TESTING TRANPOSE TYPE '+A+B+C+D+E+F+'"\n')
     source_file.write('        PRINT*,"Hirata Reference = ",Thirata,"seconds"\n')
-    source_file.write('        PRINT*,"Algorithm         Jeff           "\n')
+    source_file.write('        PRINT*,"Algorithm         Jeff           Speedup          Best"\n')
     for loop_order in loop_list:
         dummy = dummy+1
         a = loop_order[0]
@@ -124,14 +126,28 @@ for transpose_order in transpose_list:
         #source_file.write('        Tfinish=rtc()\n')
         source_file.write('        Tjeff=(Tfinish-Tstart)\n')
         source_file.write('        Tspeedup=Thirata/Tjeff\n')
-        source_file.write('        PRINT*,"Loop '+a+b+c+d+e+f+'     ",Tjeff,Tspeedup\n')
+        source_file.write('        Tbest=min(Tjeff,Tbest)\n')
+        if 0 < dummy < 10:
+            nice_dummy='  '+str(dummy)
+        
+        if 9 < dummy < 100:
+            nice_dummy=' '+str(dummy)
+            
+        if 99 < dummy < 999:
+            nice_dummy=''+str(dummy)
+            
+        #source_file.write('        PRINT*,"'+nice_dummy+' Loop '+a+b+c+d+e+f+'     ",Tjeff,Tspeedup,Tbest\n')
+        source_file.write('        write(6,1) "'+nice_dummy+' Loop '+a+b+c+d+e+f+' ",Tjeff,Tspeedup,Tbest,Thirata/Tbest\n')
         source_file.write('        DO '+str(2000+dummy)+' i = 1, '+sizechar+'\n')
         source_file.write('          IF (after_jeff(i).ne.after_hirata(i)) THEN\n')
-        source_file.write('            PRINT*,"transpose is wrong for element = ",i\n')
+        source_file.write('            PRINT*,"error at position ",i,after_jeff(i),after_hirata(i)\n')
         source_file.write('          ENDIF\n')
         source_file.write(str(2000+dummy)+'     CONTINUE\n')
 
+    source_file.write('        PRINT*,"The best time is: ",Tbest\n')
+    source_file.write('        PRINT*,"The speedup is:   ",Thirata/Tbest\n')
     source_file.write('        STOP\n')
+    source_file.write('    1     format(1x,1a20,4f12.5)\n')
     source_file.write('      END\n')
     source_file.close()
     print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sort_jeff.a tce_sort_hirata.o '+' -o '+exe_dir+driver_name+'.x'
