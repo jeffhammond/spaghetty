@@ -16,7 +16,7 @@ src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe/'
 
 count = '50'
-rank = '12'
+rank = '4'
 ranks = [rank,rank,rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])*int(ranks[4])*int(ranks[5])
 sizechar = str(size)
@@ -27,8 +27,6 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['1','2','3','4','5','6']
-
 #indices = ['3','2','6','1','5','4']
 #indices = ['3','2','6','5','1','4']
 #indices = ['3','2','6','5','4','1']
@@ -38,7 +36,6 @@ indices = ['1','2','3','4','5','6']
 #indices = ['3','6','5','2','4','1']
 #indices = ['3','6','5','2','1','4']
 #indices = ['3','6','5','4','2','1']
-
 #indices = ['4','3','6','2','1','5']
 #indices = ['4','3','6','2','5','1']
 #indices = ['4','3','6','5','2','1']
@@ -56,14 +53,18 @@ indices = ['1','2','3','4','5','6']
 #indices = ['6','3','5','4','2','1']
 #indices = ['6','3','2','1','5','4']
 #indices = ['6','3','2','5','1','4']
-indices = ['6','3','2','5','4','1']
+#indices = ['6','3','2','5','4','1']
+
+indices_ccsd_t = [['3','2','6','1','5','4'],['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4'],['6','3','2','5','4','1']]
+
+indices_basic  = ['1','2','3','4','5','6']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
 
 #transpose_list = perm(indices)
-transpose_list = [indices]
-loop_list = perm(indices)
+transpose_list = indices_ccsd_t
+loop_list = perm(indices_basic)
 #loop_list = [indices]
 
 print fortran_compiler+' '+fortran_opt_flags+' tce_sortacc_hirata.F'
@@ -103,6 +104,12 @@ for transpose_order in transpose_list:
     source_file.write('        perm(4) = '+D+'\n')
     source_file.write('        perm(5) = '+E+'\n')
     source_file.write('        perm(6) = '+F+'\n')
+    source_file.write('        DO 10 i = 1, '+sizechar+'\n')
+    source_file.write('           after_jeff(i) = 0.0d0 \n')
+    source_file.write('10      CONTINUE\n') 
+    source_file.write('        DO 20 i = 1, '+sizechar+'\n')
+    source_file.write('           after_hirata(i) = 0.0d0 \n')
+    source_file.write('20      CONTINUE\n')        
     source_file.write('        DO 70 i = 1, '+ranks[0]+'\n')
     source_file.write('         DO 65 j = 1, '+ranks[1]+'\n')
     source_file.write('          DO 60 k = 1, '+ranks[2]+'\n')
