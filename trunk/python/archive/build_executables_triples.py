@@ -27,7 +27,36 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['3','2','3','4','5','6']
+indices = ['1','2','3','4','5','6']
+
+#indices = ['3','2','6','1','5','4']
+#indices = ['3','2','6','5','1','4']
+#indices = ['3','2','6','5','4','1']
+#indices = ['3','6','2','1','5','4']
+#indices = ['3','6','2','5','1','4']
+#indices = ['3','6','2','5','4','1']
+#indices = ['3','6','5','2','4','1']
+#indices = ['3','6','5','2','1','4']
+#indices = ['3','6','5','4','2','1']
+
+#indices = ['4','3','6','2','1','5']
+#indices = ['4','3','6','2','5','1']
+#indices = ['4','3','6','5','2','1']
+#indices = ['4','6','3','2','1','5']
+#indices = ['4','6','3','2','5','1']
+#indices = ['4','6','3','5','2','1']
+#indices = ['6','4','3','2','1','5']
+#indices = ['6','4','3','2','5','1']
+#indices = ['6','4','3','5','2','1']
+#indices = ['6','5','3','2','1','4']
+#indices = ['6','5','3','2','4','1']
+#indices = ['6','5','3','4','2','1']
+#indices = ['6','3','5','2','1','4']
+#indices = ['6','3','5','2','4','1']
+#indices = ['6','3','5','4','2','1']
+#indices = ['6','3','2','1','5','4']
+#indices = ['6','3','2','5','1','4']
+indices = ['6','3','2','5','4','1']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
@@ -35,6 +64,7 @@ indices = ['3','2','3','4','5','6']
 #transpose_list = perm(indices)
 transpose_list = [indices]
 loop_list = perm(indices)
+#loop_list = [indices]
 
 #print fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F'
 #os.system(fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F')
