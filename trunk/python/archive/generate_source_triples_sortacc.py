@@ -19,8 +19,9 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-##indices = ['1','2','3','4','5','6']
-indices = ['3','2','6','1','5','4']
+indices = ['1','2','3','4','5','6']
+
+#indices = ['3','2','6','1','5','4']
 #indices = ['3','2','6','5','1','4']
 #indices = ['3','2','6','5','4','1']
 #indices = ['3','6','2','1','5','4']
@@ -29,6 +30,7 @@ indices = ['3','2','6','1','5','4']
 #indices = ['3','6','5','2','4','1']
 #indices = ['3','6','5','2','1','4']
 #indices = ['3','6','5','4','2','1']
+
 #indices = ['4','3','6','2','1','5']
 #indices = ['4','3','6','2','5','1']
 #indices = ['4','3','6','5','2','1']
@@ -46,7 +48,7 @@ indices = ['3','2','6','1','5','4']
 #indices = ['6','3','5','4','2','1']
 #indices = ['6','3','2','1','5','4']
 #indices = ['6','3','2','5','1','4']
-#indices = ['6','3','2','5','4','1']
+indices = ['6','3','2','5','4','1']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
@@ -54,6 +56,7 @@ indices = ['3','2','6','1','5','4']
 #transpose_list = perm(indices)
 transpose_list = [indices]
 loop_list = perm(indices)
+#loop_list = [indices]
 
 for transpose_order in transpose_list:
     A = transpose_order[0]
@@ -93,7 +96,8 @@ for transpose_order in transpose_list:
         source_file.write('     &                    (j3-1+dim3*(j2-1+dim2*(j1-1)))))\n')
         source_file.write('              new_offset = j'+F+'+dim'+F+'*(j'+E+'-1+dim'+E+'*(j'+D+'-1+dim'+D+'*\n')
         source_file.write('     &                    (j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))))\n')
-        source_file.write('              sorted(new_offset) = sorted(new_offset)+unsorted(old_offset)*factor\n')
+        source_file.write('              sorted(new_offset) = sorted(new_offset)\n')
+        source_file.write('     &                           + unsorted(old_offset)*factor\n')
         source_file.write('             enddo\n')
         source_file.write('            enddo\n')
         source_file.write('           enddo\n')                
@@ -104,7 +108,7 @@ for transpose_order in transpose_list:
         source_file.write('        end\n')
         source_file.close()
         os.system(fortran_compiler+' '+fortran_opt_flags+' '+source_name)
-        os.system('ar -r tce_sort_jeff.a '+subroutine_name+'.o')
+        os.system('ar -r tce_sortacc_jeff.a '+subroutine_name+'.o')
         os.system('rm '+subroutine_name+'.o')
         os.system('mv '+subroutine_name+'.F '+src_dir)
         #os.system('mv '+subroutine_name+'.lst '+lst_dir)

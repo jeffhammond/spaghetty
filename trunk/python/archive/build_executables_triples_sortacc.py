@@ -27,7 +27,36 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['3','2','3','4','5','6']
+indices = ['1','2','3','4','5','6']
+
+#indices = ['3','2','6','1','5','4']
+#indices = ['3','2','6','5','1','4']
+#indices = ['3','2','6','5','4','1']
+#indices = ['3','6','2','1','5','4']
+#indices = ['3','6','2','5','1','4']
+#indices = ['3','6','2','5','4','1']
+#indices = ['3','6','5','2','4','1']
+#indices = ['3','6','5','2','1','4']
+#indices = ['3','6','5','4','2','1']
+
+#indices = ['4','3','6','2','1','5']
+#indices = ['4','3','6','2','5','1']
+#indices = ['4','3','6','5','2','1']
+#indices = ['4','6','3','2','1','5']
+#indices = ['4','6','3','2','5','1']
+#indices = ['4','6','3','5','2','1']
+#indices = ['6','4','3','2','1','5']
+#indices = ['6','4','3','2','5','1']
+#indices = ['6','4','3','5','2','1']
+#indices = ['6','5','3','2','1','4']
+#indices = ['6','5','3','2','4','1']
+#indices = ['6','5','3','4','2','1']
+#indices = ['6','3','5','2','1','4']
+#indices = ['6','3','5','2','4','1']
+#indices = ['6','3','5','4','2','1']
+#indices = ['6','3','2','1','5','4']
+#indices = ['6','3','2','5','1','4']
+indices = ['6','3','2','5','4','1']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
@@ -35,10 +64,11 @@ indices = ['3','2','3','4','5','6']
 #transpose_list = perm(indices)
 transpose_list = [indices]
 loop_list = perm(indices)
+#loop_list = [indices]
 
-#print fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F'
-#os.system(fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F')
-#os.system('ar -r tce_sort_jeff.a tce_sort_hirata.o')
+print fortran_compiler+' '+fortran_opt_flags+' tce_sortacc_hirata.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' tce_sortacc_hirata.F')
+#os.system('ar -r tce_sortacc_jeff.a tce_sortacc_hirata.o')
 
 for transpose_order in transpose_list:
     dummy = 0
@@ -150,8 +180,8 @@ for transpose_order in transpose_list:
     source_file.write('    1     format(1x,1a20,4f12.5)\n')
     source_file.write('      END\n')
     source_file.close()
-    print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sort_jeff.a tce_sort_hirata.o '+' -o '+exe_dir+driver_name+'.x'
-    os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sort_jeff.a tce_sort_hirata.o '+' -o '+exe_dir+driver_name+'.x')
+    print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sortacc_jeff.a tce_sortacc_hirata.o '+' -o '+exe_dir+driver_name+'.x'
+    os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sortacc_jeff.a tce_sortacc_hirata.o '+' -o '+exe_dir+driver_name+'.x')
     os.system('mv '+source_name+' '+src_dir)
 
 
