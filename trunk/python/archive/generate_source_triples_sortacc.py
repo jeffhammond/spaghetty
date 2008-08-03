@@ -69,7 +69,7 @@ for transpose_order in transpose_list:
         d = loop_order[3]
         e = loop_order[4]
         f = loop_order[5] 
-        subroutine_name = 'transpose_'+A+B+C+D+E+F+'_loop_'+a+b+c+d+e+f
+        subroutine_name = 'transaccu_'+A+B+C+D+E+F+'_loop_'+a+b+c+d+e+f
         source_name = subroutine_name+'.F'
         #print source_name
         source_file = open(source_name,'w')
@@ -93,7 +93,7 @@ for transpose_order in transpose_list:
         source_file.write('     &                    (j3-1+dim3*(j2-1+dim2*(j1-1)))))\n')
         source_file.write('              new_offset = j'+F+'+dim'+F+'*(j'+E+'-1+dim'+E+'*(j'+D+'-1+dim'+D+'*\n')
         source_file.write('     &                    (j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))))\n')
-        source_file.write('              sorted(new_offset) = unsorted(old_offset) * factor\n')
+        source_file.write('              sorted(new_offset) = sorted(new_offset)+unsorted(old_offset)*factor\n')
         source_file.write('             enddo\n')
         source_file.write('            enddo\n')
         source_file.write('           enddo\n')                
