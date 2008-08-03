@@ -15,8 +15,8 @@ fortran_link_flags = '-O0'
 src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe/'
 
-count = '30'
-rank = '8'
+count = '50'
+rank = '12'
 ranks = [rank,rank,rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])*int(ranks[4])*int(ranks[5])
 sizechar = str(size)
@@ -27,7 +27,7 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['1','2','3','4','5','6']
+indices = ['3','2','3','4','5','6']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
