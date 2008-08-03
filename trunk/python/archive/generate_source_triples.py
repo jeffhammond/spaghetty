@@ -24,7 +24,8 @@ indices = ['1','2','3','4','5','6']
 #all_permutations = perm(indices)
 #all_permutations = [indices]
 
-transpose_list = perm(indices)
+#transpose_list = perm(indices)
+transpose_list = [indices]
 loop_list = perm(indices)
 
 for transpose_order in transpose_list:
@@ -61,7 +62,7 @@ for transpose_order in transpose_list:
         source_file.write('           do j'+d+' = 1,dim'+d+'\n')
         source_file.write('            do j'+e+' = 1,dim'+e+'\n')
         source_file.write('             do j'+f+' = 1,dim'+f+'\n')
-        source_file.write('              old_offset = j4+dim4*(j5-1+dim5*(j4-1+dim4*\n')
+        source_file.write('              old_offset = j6+dim6*(j5-1+dim5*(j4-1+dim4*\n')
         source_file.write('     &                    (j3-1+dim3*(j2-1+dim2*(j1-1)))))\n')
         source_file.write('              new_offset = j'+F+'+dim'+F+'*(j'+E+'-1+dim'+E+'*(j'+D+'-1+dim'+D+'*\n')
         source_file.write('     &                    (j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))))\n')
