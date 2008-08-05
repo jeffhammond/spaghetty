@@ -10,10 +10,10 @@ import os
 #exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
 
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -c'
+fortran_opt_flags = '-O3 -xT -mtune=core2 -msse3 -align -pad -unroll-aggressive -parallel -vec-guard-write -opt-streaming-stores=always -c'
 fortran_link_flags = '-O0'
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe/'
+src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
+exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_new/'
 
 count = '20'
 rank = '16'
@@ -55,7 +55,7 @@ indices = ['3','2','6','1','5','4']
 #indices = ['6','3','2','5','1','4']
 #indices = ['6','3','2','5','4','1']
 
-#indices_ccsd_t = [['3','2','6','1','5','4'],['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4'],['6','3','2','5','4','1']]
+indices_ccsd_t = [['3','2','6','1','5','4'],['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4'],['6','3','2','5','4','1']]
 
 indices_basic  = ['1','2','3','4','5','6']
 
@@ -63,8 +63,8 @@ indices_basic  = ['1','2','3','4','5','6']
 #all_permutations = [indices]
 
 #transpose_list = perm(indices)
-#transpose_list = indices_ccsd_t
-transpose_list = [indices]
+transpose_list = indices_ccsd_t
+#transpose_list = [indices]
 loop_list = perm(indices_basic)
 #loop_list = [indices]
 
@@ -93,6 +93,7 @@ for transpose_order in transpose_list:
     source_file.write('        INTEGER*4 i,j,k,l,m,n\n')
     source_file.write('        INTEGER*4 aSize(6)\n')
     source_file.write('        INTEGER*4 perm(6)\n')
+    source_file.write('        INTEGER*4 fastest(6)\n')
     source_file.write('        aSize(1) = '+ranks[0]+'\n')
     source_file.write('        aSize(2) = '+ranks[1]+'\n')
     source_file.write('        aSize(3) = '+ranks[2]+'\n')

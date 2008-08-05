@@ -10,10 +10,10 @@ import os
 #exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
 
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -c'
-fortran_link_flags = '-O0'
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe/'
+fortran_opt_flags = '-O3 -xT -mtune=core2 -msse3 -align -pad -unroll-aggressive -parallel -vec-guard-write -opt-streaming-stores=always -c'
+fortran_link_flags = '-O1 -mtune=core2 -msse3 -align'
+src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
+exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_new/'
 
 count = '50'
 rank = '12'
@@ -94,6 +94,7 @@ for transpose_order in transpose_list:
     source_file.write('        INTEGER*4 i,j,k,l,m,n\n')
     source_file.write('        INTEGER*4 aSize(6)\n')
     source_file.write('        INTEGER*4 perm(6)\n')
+    source_file.write('        INTEGER*4 fastest(6)\n')
     source_file.write('        aSize(1) = '+ranks[0]+'\n')
     source_file.write('        aSize(2) = '+ranks[1]+'\n')
     source_file.write('        aSize(3) = '+ranks[2]+'\n')

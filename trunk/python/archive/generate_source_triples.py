@@ -10,8 +10,8 @@ import os
 #lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -c'
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src/'
+fortran_opt_flags = '-O3 -xT -mtune=core2 -msse3 -align -pad -unroll-aggressive -parallel -vec-guard-write -opt-streaming-stores=always -c'
+src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
 
 def perm(l):
     sz = len(l)
@@ -107,9 +107,16 @@ for transpose_order in transpose_list:
         source_file.write('        return\n')
         source_file.write('        end\n')
         source_file.close()
+        #os.system(fortran_compiler+' '+fortran_opt_flags+' '+source_name)
+        #os.system('ar -r tce_sort_jeff.a '+subroutine_name+'.o')
+        #os.system('rm '+subroutine_name+'.o')
+        #os.system('mv '+subroutine_name+'.F '+src_dir)
+        #os.system('mv '+subroutine_name+'.lst '+lst_dir)
         os.system(fortran_compiler+' '+fortran_opt_flags+' '+source_name)
-        os.system('ar -r tce_sort_jeff.a '+subroutine_name+'.o')
-        os.system('rm '+subroutine_name+'.o')
+        #os.system('ar -r tce_sort_jeff.a '+subroutine_name+'.o')
+        #os.system('rm '+subroutine_name+'.o')
         os.system('mv '+subroutine_name+'.F '+src_dir)
         #os.system('mv '+subroutine_name+'.lst '+lst_dir)
-
+        
+    os.system('ar -r tce_sort_jeff.a transpose_'+A+B+C+D+E+F+'_loop_*.o')
+    os.system('rm transpose_'+A+B+C+D+E+F+'_loop_*.o')
