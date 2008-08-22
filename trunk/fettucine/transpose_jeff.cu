@@ -41,7 +41,7 @@ void
 runTest( int argc, char** argv) 
 {
     // number of runs to average timing over
-    int numIterations = 8;
+    int numIterations = 10;
     // size of the matrix
 #ifdef __DEVICE_EMULATION__
     const unsigned int size_a = 4;
@@ -77,21 +77,26 @@ runTest( int argc, char** argv)
       }
     }
 
+    // to zero the device memory
+    float* h_zero = (float*) calloc(mem_size,sizeof(float));
+
     // allocate device memory
     float* d_idata;
     float* d_odata;
     CUDA_SAFE_CALL( cudaMalloc( (void**) &d_idata, mem_size));
     CUDA_SAFE_CALL( cudaMalloc( (void**) &d_odata, mem_size));
 
-    // copy host memory to device
+    // copy host memory to device (zero output array)
     CUDA_SAFE_CALL( cudaMemcpy( d_idata, h_idata, mem_size,
+                                cudaMemcpyHostToDevice) );
+    CUDA_SAFE_CALL( cudaMemcpy( d_odata, h_zero, mem_size,
                                 cudaMemcpyHostToDevice) );
 
     printf("Transposing a %d by %d by %d by %d matrix of floats...\n", size_a, size_b, size_c, size_d);
 
     // setup execution parameters
-    dim3 dimBlock(8,8,8);
-    dim3 dimGrid(size_a/dimBlock.x, size_b/dimBlock.y, size_c/dimBlock.z);
+    dim3 dimBlock(1,1,1);
+    dim3 dimGrid(1,1,1);
 
     // warmup so we don't time CUDA startup
     transpose_jeff<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);

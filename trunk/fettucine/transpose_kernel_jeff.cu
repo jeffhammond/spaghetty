@@ -9,18 +9,26 @@
 #ifndef _TRANSPOSE_KERNEL_H_
 #define _TRANSPOSE_KERNEL_H_
 
-#define BLOCK_DIM 16
-
 __global__ void transpose_jeff(float *odata, float* idata,
                                const unsigned int dim_1, const unsigned int dim_2,
                                const unsigned int dim_3, const unsigned int dim_4)
 {
 
+	unsigned int bdx = blockDim.x;
+	unsigned int bdy = blockDim.y;
+
+        unsigned int bix = blockIdx.x;
+        unsigned int biy = blockIdx.y;
+
+        unsigned int tix = threadIdx.x;
+        unsigned int tiy = threadIdx.y;
+        unsigned int tiz = threadIdx.z;
+
 	unsigned int index_in,index_out;
 
-	for (unsigned int j1 = 0; j1 < dim_1; ++j1){
+	for (unsigned int j3 = 0; j3 < dim_3; ++j3){
 		for (unsigned int j2 = 0; j2 < dim_2; ++j2){
-			for (unsigned int j3 = 0; j3 < dim_3; ++j3){
+			for (unsigned int j1 = 0; j1 < dim_1; ++j1){
 				for (unsigned int j4 = 0; j4 < dim_4; ++j4){
 					index_in  = j4 + dim_4*j3 + dim_4*dim_3*j2 + dim_4*dim_3*dim_2*j1;
 					index_out = j1 + dim_1*j2 + dim_1*dim_2*j3 + dim_1*dim_2*dim_3*j4;
