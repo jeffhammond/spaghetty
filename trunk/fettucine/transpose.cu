@@ -9,7 +9,8 @@
 #include <math.h>
 
 // includes, project
-#include <cutil.h>
+//#include <cutil.h>
+#include "/opt/nvidia/cuda/common/inc/cutil.h"
 
 // includes, kernels
 #include <transpose_kernel.cu>

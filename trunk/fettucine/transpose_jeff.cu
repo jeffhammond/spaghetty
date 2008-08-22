@@ -9,7 +9,8 @@
 #include <math.h>
 
 // includes, project
-#include <cutil.h>
+//#include <cutil.h>
+#include "/opt/nvidia/cuda/common/inc/cutil.h"
 
 // includes, kernels
 #include <transpose_kernel_jeff.cu>
@@ -93,7 +94,7 @@ runTest( int argc, char** argv)
     dim3 dimGrid(size_a/dimBlock.x, size_b/dimBlock.y, size_c/dimBlock.z);
 
     // warmup so we don't time CUDA startup
-    transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
+    transpose_jeff<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
 
     // execute the kernel
     cutStartTimer(timer);
