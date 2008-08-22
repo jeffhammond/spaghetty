@@ -88,8 +88,8 @@ runTest( int argc, char** argv)
                                 cudaMemcpyHostToDevice) );
 
     // setup execution parameters
-    dim3 dimGrid();
-    dim3 dimBlock();
+    dim3 dimGrid(1,1,1);
+    dim3 dimBlock(1,1,1);
 
     // warmup so we don't time CUDA startup
     transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
@@ -102,7 +102,7 @@ runTest( int argc, char** argv)
     cutStartTimer(timer);
     for (int i = 0; i < numIterations; ++i)
     {
-        transpose<<< grid, threads >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
+        transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
     }
     cudaThreadSynchronize();
     cutStopTimer(timer);
