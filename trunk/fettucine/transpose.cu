@@ -39,6 +39,8 @@ main( int argc, char** argv)
 void
 runTest( int argc, char** argv) 
 {
+    // number of runs to average timing over
+    int numIterations = 8;
     // size of the matrix
 #ifdef __DEVICE_EMULATION__
     const unsigned int size_a = 4;
@@ -46,14 +48,11 @@ runTest( int argc, char** argv)
     const unsigned int size_c = 4;
     const unsigned int size_d = 4;
 #else
-    const unsigned int size_a = 4;
-    const unsigned int size_b = 4;
-    const unsigned int size_c = 4;
-    const unsigned int size_d = 4;
-//    const unsigned int size_a = 64;
-//    const unsigned int size_b = 64;
-//    const unsigned int size_c = 64;
-//    const unsigned int size_d = 64;
+    const unsigned int size = 8;
+    const unsigned int size_a = size;
+    const unsigned int size_b = size;
+    const unsigned int size_c = size;
+    const unsigned int size_d = size;
 #endif
     // size of memory required to store the matrix
     const unsigned int mem_size = sizeof(float) * size_a * size_b * size_c * size_d;
@@ -87,21 +86,18 @@ runTest( int argc, char** argv)
     CUDA_SAFE_CALL( cudaMemcpy( d_idata, h_idata, mem_size,
                                 cudaMemcpyHostToDevice) );
 
+    printf("Transposing a %d by %d by %d by %d matrix of floats...\n", size_a, size_b, size_c, size_d);
+
     // setup execution parameters
-    dim3 dimGrid(1,1,1);
-    dim3 dimBlock(1,1,1);
+    dim3 dimBlock(8,8,8);
+    dim3 dimGrid(size_a/dimBlock.x, size_b/dimBlock.y, size_c/dimBlock.z);
 
     // warmup so we don't time CUDA startup
     transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
-    
-    int numIterations = 1;
-
-    printf("Transposing a %d by %d by %d by %d matrix of floats...\n", size_a, size_b, size_c, size_d);
 
     // execute the kernel
     cutStartTimer(timer);
-    for (int i = 0; i < numIterations; ++i)
-    {
+    for (int i = 0; i < numIterations; ++i){
         transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
     }
     cudaThreadSynchronize();
@@ -124,8 +120,7 @@ runTest( int argc, char** argv)
     // execute the kernel
     cutResetTimer(timer);
     cutStartTimer(timer);
-    for (int i = 0; i < numIterations; ++i)
-    {
+    for (int i = 0; i < numIterations; ++i){
          computeGold( reference, h_idata, size_a, size_b, size_c, size_d);
     }
     cutStopTimer(timer);
@@ -135,6 +130,7 @@ runTest( int argc, char** argv)
 
     // check result
 
+    if((size_a * size_b * size_c * size_d)<10001){
     printf("==================================================================\n");
     printf("                    Initial      Reference     OutputData\n");
     printf("==================================================================\n");
@@ -150,6 +146,7 @@ runTest( int argc, char** argv)
         }
       }
     }
+    }
     CUTBoolean res = cutComparef( reference, h_odata, size_a * size_b * size_c * size_d);
     printf("==================================================================\n");
     printf(    "Test %s\n", (1    == res)    ? "PASSED" : "FAILED");
@@ -157,6 +154,7 @@ runTest( int argc, char** argv)
 
     printf("GPU transpose average time: %0.3f ms\n", gpuTime / numIterations);
     printf("CPU transpose average time: %0.3f ms\n", cpuTime / numIterations);
+    printf("Averaged over %d runs\n", numIterations);
 
     // cleanup memory
     free(h_idata);

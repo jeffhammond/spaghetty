@@ -18,9 +18,9 @@ __global__ void transpose(float *odata, float* idata,
 
 	unsigned int index_in,index_out;
 
-	for (unsigned int j3 = 0; j3 < dim_3; ++j3){
+	for (unsigned int j1 = 0; j1 < dim_1; ++j1){
 		for (unsigned int j2 = 0; j2 < dim_2; ++j2){
-			for (unsigned int j1 = 0; j1 < dim_1; ++j1){
+			for (unsigned int j3 = 0; j3 < dim_3; ++j3){
 				for (unsigned int j4 = 0; j4 < dim_4; ++j4){
 					index_in  = j4 + dim_4*j3 + dim_4*dim_3*j2 + dim_4*dim_3*dim_2*j1;
 					index_out = j1 + dim_1*j2 + dim_1*dim_2*j3 + dim_1*dim_2*dim_3*j4;
