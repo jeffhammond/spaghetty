@@ -108,7 +108,7 @@ runTest( int argc, char** argv)
     cutStopTimer(timer);
     float gpuTime = cutGetTimerValue(timer);
 
-    printf("GPU transpose average time: %0.3f ms\n\n", gpuTime / numIterations);
+    printf("GPU transpose average time: %0.3f ms\n", gpuTime / numIterations);
 
     // check if kernel execution generated and error
     CUT_CHECK_ERROR("Kernel execution failed");
@@ -131,7 +131,7 @@ runTest( int argc, char** argv)
     cutStopTimer(timer);
     float cpuTime = cutGetTimerValue(timer);
 
-    printf("CPU transpose average time: %0.3f ms\n\n", cpuTime / numIterations);
+    printf("CPU transpose average time: %0.3f ms\n", cpuTime / numIterations);
 
     // check result
 
@@ -154,6 +154,9 @@ runTest( int argc, char** argv)
     printf("==================================================================\n");
     printf(    "Test %s\n", (1    == res)    ? "PASSED" : "FAILED");
     printf("==================================================================\n");
+
+    printf("GPU transpose average time: %0.3f ms\n", gpuTime / numIterations);
+    printf("CPU transpose average time: %0.3f ms\n", cpuTime / numIterations);
 
     // cleanup memory
     free(h_idata);
