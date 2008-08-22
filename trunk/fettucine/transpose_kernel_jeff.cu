@@ -11,9 +11,9 @@
 
 #define BLOCK_DIM 16
 
-__global__ void transpose(float *odata, float* idata,
-                          const unsigned int dim_1, const unsigned int dim_2,
-                          const unsigned int dim_3, const unsigned int dim_4)
+__global__ void transpose_jeff(float *odata, float* idata,
+                               const unsigned int dim_1, const unsigned int dim_2,
+                               const unsigned int dim_3, const unsigned int dim_4)
 {
 
 	unsigned int index_in,index_out;
@@ -32,9 +32,9 @@ __global__ void transpose(float *odata, float* idata,
 }
 
 /*
-__global__ void transpose(float *odata, float* idata,
-                          const unsigned int dim_1, const unsigned int dim_2,
-                          const unsigned int dim_3, const unsigned int dim_4)
+__global__ void transpose_jeff(float *odata, float* idata,
+                               const unsigned int dim_1, const unsigned int dim_2,
+                               const unsigned int dim_3, const unsigned int dim_4)
 {
 
 	unsigned int j1 = blockDim.x * blockIdx.x + threadIdx.x;
