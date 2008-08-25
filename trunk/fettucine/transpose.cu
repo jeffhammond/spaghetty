@@ -1,5 +1,46 @@
 /*
- * My heavily modified version of the NVIDIA transpose code.
+ * Copyright 1993-2007 NVIDIA Corporation.  All rights reserved.
+ *
+ * NOTICE TO USER:
+ *
+ * This source code is subject to NVIDIA ownership rights under U.S. and
+ * international Copyright laws.  Users and possessors of this source code
+ * are hereby granted a nonexclusive, royalty-free license to use this code
+ * in individual and commercial software.
+ *
+ * NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
+ * CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
+ * IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
+ * IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE
+ * OR PERFORMANCE OF THIS SOURCE CODE.
+ *
+ * U.S. Government End Users.   This source code is a "commercial item" as
+ * that term is defined at  48 C.F.R. 2.numIterations1 (OCT 1995), consisting  of
+ * "commercial computer  software"  and "commercial computer software
+ * documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995)
+ * and is provided to the U.S. Government only as a commercial end item.
+ * Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
+ * 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
+ * source code with only those rights set forth herein.
+ *
+ * Any use of this source code in individual and commercial software must
+ * include, in the user documentation and internal comments to the code,
+ * the above Disclaimer and U.S. Government End Users Notice.
+ */
+ 
+/* Matrix transpose with Cuda 
+ * Host code.
+
+ * This example transposes arbitrary-size matrices.  It compares a naive
+ * transpose kernel that suffers from non-coalesced writes, to an optimized
+ * transpose with fully coalesced memory access and no bank conflicts.  On 
+ * a G80 GPU, the optimized transpose can be more than 10x faster for large
+ * matrices.
  */
 
 // includes, system
@@ -19,8 +60,7 @@
 // declaration, forward
 void runTest( int argc, char** argv);
 extern "C" void computeGold( float* reference, float* idata, 
-                         const unsigned int size_a, const unsigned int size_b,
-                         const unsigned int size_c, const unsigned int size_d );
+                         const unsigned int size_x, const unsigned int size_y );
 
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
@@ -33,30 +73,31 @@ main( int argc, char** argv)
     CUT_EXIT(argc, argv);
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //! Run a simple test for CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void
 runTest( int argc, char** argv) 
 {
-    // number of runs to average timing over
-    int numIterations = 8;
+    int numIterations = 5;
     // size of the matrix
 #ifdef __DEVICE_EMULATION__
-    const unsigned int size_a = 4;
-    const unsigned int size_b = 4;
-    const unsigned int size_c = 4;
-    const unsigned int size_d = 4;
+    const unsigned int size_x = 32;
+    const unsigned int size_y = 128;
 #else
-    const unsigned int size = 8;
-    const unsigned int size_a = size;
-    const unsigned int size_b = size;
-    const unsigned int size_c = size;
-    const unsigned int size_d = size;
+//    const unsigned int size_x = 64;
+//    const unsigned int size_y = 64;
+//    const unsigned int size_x = 256;
+//    const unsigned int size_y = 4096;
+    const unsigned int size_x = 256;
+    const unsigned int size_y = 256;
+//    const unsigned int size_x = 4096;
+//    const unsigned int size_y = 4096;
+//    const unsigned int size_x = 1024;
+//    const unsigned int size_y = 1024;
 #endif
     // size of memory required to store the matrix
-    const unsigned int mem_size = sizeof(float) * size_a * size_b * size_c * size_d;
+    const unsigned int mem_size = sizeof(float) * size_x * size_y;
     
     unsigned int timer;
     cutCreateTimer(&timer);
@@ -66,15 +107,10 @@ runTest( int argc, char** argv)
     // allocate host memory
     float* h_idata = (float*) malloc(mem_size);
     // initalize the memory
-    unsigned int num=0;
-    for( unsigned int i = 0; i < (size_a); ++i){
-      for( unsigned int j = 0; j < (size_b); ++j){
-        for( unsigned int k = 0; k < (size_c); ++k){
-          for( unsigned int l = 0; l < (size_d); ++l){
-            h_idata[num++] = (float) (i + j*10 + k*100 + l*1000);
-          }
-        }
-      }
+    srand(15235911);
+    for( unsigned int i = 0; i < (size_x * size_y); ++i) 
+    {
+        h_idata[i] = (float) i;    // rand(); 
     }
 
     // allocate device memory
@@ -87,30 +123,42 @@ runTest( int argc, char** argv)
     CUDA_SAFE_CALL( cudaMemcpy( d_idata, h_idata, mem_size,
                                 cudaMemcpyHostToDevice) );
 
-    printf("Transposing a %d by %d by %d by %d matrix of floats...\n", size_a, size_b, size_c, size_d);
-
     // setup execution parameters
-    dim3 dimBlock(8,8,8);
-    dim3 dimGrid(size_a/dimBlock.x, size_b/dimBlock.y, size_c/dimBlock.z);
+    dim3 grid(size_x / BLOCK_DIM, size_y / BLOCK_DIM, 1);
+    dim3 threads(BLOCK_DIM, BLOCK_DIM, 1);
 
     // warmup so we don't time CUDA startup
-    transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
+    transpose_naive<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+    transpose<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+    
+    printf("Transposing a %d by %d matrix of floats...\n", size_x, size_y);
 
     // execute the kernel
     cutStartTimer(timer);
-    for (int i = 0; i < numIterations; ++i){
-        transpose<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);
+    for (int i = 0; i < numIterations; ++i)
+    {
+        transpose_naive<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
     }
     cudaThreadSynchronize();
     cutStopTimer(timer);
-    float gpuTime = cutGetTimerValue(timer);
+    float naiveTime = cutGetTimerValue(timer);
 
-    printf("GPU transpose average time: %0.3f ms\n", gpuTime / numIterations);
+    // execute the kernel
+    
+    cutResetTimer(timer);
+    cutStartTimer(timer);
+    for (int i = 0; i < numIterations; ++i)
+    {
+        transpose<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+    }
+    cudaThreadSynchronize();
+    cutStopTimer(timer);
+    float optimizedTime = cutGetTimerValue(timer);
 
     // check if kernel execution generated and error
     CUT_CHECK_ERROR("Kernel execution failed");
 
-    // copy result from device to host
+    // copy result from device to    host
     float* h_odata = (float*) malloc(mem_size);
     CUDA_SAFE_CALL( cudaMemcpy( h_odata, d_odata, mem_size,
                                 cudaMemcpyDeviceToHost) );
@@ -118,44 +166,24 @@ runTest( int argc, char** argv)
     // compute reference solution
     float* reference = (float*) malloc( mem_size);
 
-    // execute the kernel
     cutResetTimer(timer);
     cutStartTimer(timer);
-    for (int i = 0; i < numIterations; ++i){
-         computeGold( reference, h_idata, size_a, size_b, size_c, size_d);
+    for (int i = 0; i < numIterations; ++i)
+    {
+    	computeGold( reference, h_idata, size_x, size_y);
     }
+    cudaThreadSynchronize();
     cutStopTimer(timer);
     float cpuTime = cutGetTimerValue(timer);
 
-    printf("CPU transpose average time: %0.3f ms\n", cpuTime / numIterations);
+    printf("Naive transpose average time:     %0.3f ms\n", naiveTime / numIterations);
+    printf("Optimized transpose average time: %0.3f ms\n", optimizedTime / numIterations);
+    printf("CPU transpose average time:       %0.3f ms\n\n", cpuTime / numIterations);
+
 
     // check result
-
-    if((size_a * size_b * size_c * size_d)<10001){
-    printf("==================================================================\n");
-    printf("                    Initial      Reference     OutputData\n");
-    printf("==================================================================\n");
-    for( unsigned int i = 0; i < (size_a); ++i){
-      for( unsigned int j = 0; j < (size_b); ++j){
-        for( unsigned int k = 0; k < (size_c); ++k){
-          for( unsigned int l = 0; l < (size_d); ++l){
-            printf("%3d %3d %3d %3d", i, j, k, l);
-            printf("%14.7f",h_idata[i+size_b*(j+size_c*(k+size_d*l))]);
-            printf("%14.7f",reference[i+size_b*(j+size_c*(k+size_d*l))]);
-            printf("%14.7f\n",h_odata[i+size_b*(j+size_c*(k+size_d*l))]);
-          }
-        }
-      }
-    }
-    }
-    CUTBoolean res = cutComparef( reference, h_odata, size_a * size_b * size_c * size_d);
-    printf("==================================================================\n");
+    CUTBoolean res = cutComparef( reference, h_odata, size_x * size_y);
     printf(    "Test %s\n", (1    == res)    ? "PASSED" : "FAILED");
-    printf("==================================================================\n");
-
-    printf("GPU transpose average time: %0.3f ms\n", gpuTime / numIterations);
-    printf("CPU transpose average time: %0.3f ms\n", cpuTime / numIterations);
-    printf("Averaged over %d runs\n", numIterations);
 
     // cleanup memory
     free(h_idata);
@@ -163,5 +191,5 @@ runTest( int argc, char** argv)
     free( reference);
     CUDA_SAFE_CALL(cudaFree(d_idata));
     CUDA_SAFE_CALL(cudaFree(d_odata));
-    CUT_SAFE_CALL(cutDeleteTimer(timer));
+    CUT_SAFE_CALL( cutDeleteTimer(timer));
 }

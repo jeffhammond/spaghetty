@@ -14,5 +14,4 @@ CCFILES := transpose_gold.cpp $(NULL)
 ################################################################################
 # Rules and targets
 
-#include ../../common/common.mk
 include /opt/nvidia/cuda/common/common.mk
