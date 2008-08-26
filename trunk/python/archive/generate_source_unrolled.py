@@ -35,22 +35,22 @@ def perm(l):
 # SUBROUTINE GENERATOR
 
 def generate_subroutine(inVec,outVec,blkVec):
-        inA=inVec[0]
-        inB=inVec[1]
-        inC=inVec[2]
-        inD=inVec[3]
-        outA=inVec[outVec[0]]
-        outB=inVec[outVec[1]]
-        outC=inVec[outVec[2]]
-        outD=inVec[outVec[3]]
-        blkAin=blkVec[0]
-        blkBin=blkVec[1]
-        blkCin=blkVec[2]
-        blkDin=blkVec[3]
-        blkAout=blkVec[outVec[0]]
-        blkBout=blkVec[outVec[1]]
-        blkCout=blkVec[outVec[2]]
-        blkDout=blkVec[outVec[3]]
+	inA=inVec[0]
+	inB=inVec[1]
+	inC=inVec[2]
+	inD=inVec[3]
+	outA=inVec[outVec[0]]
+	outB=inVec[outVec[1]]
+	outC=inVec[outVec[2]]
+	outD=inVec[outVec[3]]
+	blkAin=blkVec[0]
+	blkBin=blkVec[1]
+	blkCin=blkVec[2]
+	blkDin=blkVec[3]
+	blkAout=blkVec[outVec[0]]
+	blkBout=blkVec[outVec[1]]
+	blkCout=blkVec[outVec[2]]
+	blkDout=blkVec[outVec[3]]
 	SinA = str(inA+1)
 	SinB = str(inB+1)
 	SinC = str(inC+1)
@@ -86,23 +86,23 @@ def generate_subroutine(inVec,outVec,blkVec):
 		for bB in range(0,blkBin):
 			for bC in range(0,blkCin):
 				for bD in range(0,blkDin):
-                			SbVec = [str(bA),str(bB),str(bC),str(bD)]
-                			SbAi = SbVec[0];
-                			SbBi = SbVec[1];
-                			SbCi = SbVec[2];
-                			SbDi = SbVec[3];
-                			SbAo = SbVec[outVec[0]];
-                			SbBo = SbVec[outVec[1]];
-                			SbCo = SbVec[outVec[2]];
-                			SbDo = SbVec[outVec[3]];
-					source_file.write(f12+'sorted('+SbDi+'+j'+SinD+'+dim'+SinD+'*('+SbCi+'+j'+SinC+'-1+dim'+SinC+'*\n')
-					source_file.write(f5+'&'+f8+'('+SbBi+'+j'+SinB+'-1+dim'+SinB+'*('+SbAi+'+j'+SinA+'-1)))) = factor*\n')
-					source_file.write(f5+'&'+f8+'unsorted('+SbDo+'+j'+SoutD+'+dim'+SoutD+'*('+SbCo+'+j'+SoutC+'-1+dim'+SoutC+'*\n')
-                                        source_file.write(f5+'&'+f8+'('+SbBo+'+j'+SoutB+'-1+dim'+SoutB+'*('+SbAo+'+j'+SoutA+'-1))))\n')
-
-
-
-
+					SbVec = [str(bA),str(bB),str(bC),str(bD)]
+	    			SbAi = SbVec[0];
+	    			SbBi = SbVec[1];
+	    			SbCi = SbVec[2];
+	    			SbDi = SbVec[3];
+	    			SbAo = SbVec[outVec[0]];
+	    			SbBo = SbVec[outVec[1]];
+	    			SbCo = SbVec[outVec[2]];
+	    			SbDo = SbVec[outVec[3]];
+	    			source_file.write(f12+'sorted('+SbDi+'+j'+SinD+'+dim'+SinD+'*('+SbCi+'+j'+SinC+'-1+dim'+SinC+'*\n')
+	    			source_file.write(f5+'&'+f8+'('+SbBi+'+j'+SinB+'-1+dim'+SinB+'*('+SbAi+'+j'+SinA+'-1)))) = factor*\n')
+	    			source_file.write(f5+'&'+f8+'unsorted('+SbDo+'+j'+SoutD+'+dim'+SoutD+'*('+SbCo+'+j'+SoutC+'-1+dim'+SoutC+'*\n')
+	    			source_file.write(f5+'&'+f8+'('+SbBo+'+j'+SoutB+'-1+dim'+SoutB+'*('+SbAo+'+j'+SoutA+'-1))))\n')
+	    			
+					
+					
+					
 	source_file.write(f11+'enddo\n')
 	source_file.write(f10+'enddo\n')
 	source_file.write(f9+'enddo\n')
