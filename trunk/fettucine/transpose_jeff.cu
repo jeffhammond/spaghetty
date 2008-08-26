@@ -15,6 +15,9 @@
 // includes, kernels
 #include <transpose_kernel_jeff.cu>
 
+// Thread block size
+#define BLOCK_SIZE 8
+
 ////////////////////////////////////////////////////////////////////////////////
 // declaration, forward
 void runTest( int argc, char** argv);
@@ -40,6 +43,11 @@ main( int argc, char** argv)
 void
 runTest( int argc, char** argv) 
 {
+    printf("argc = %d\n",argc);
+    printf("argv[1] = %s\n",argv[1]);
+    int temp = atoi(argv[1]);
+    printf("size = %d\n",temp);
+
     // number of runs to average timing over
     int numIterations = 10;
     // size of the matrix
@@ -49,12 +57,13 @@ runTest( int argc, char** argv)
     const unsigned int size_c = 4;
     const unsigned int size_d = 4;
 #else
-    const unsigned int size = 8;
+    unsigned int size = temp;
     const unsigned int size_a = size;
     const unsigned int size_b = size;
     const unsigned int size_c = size;
     const unsigned int size_d = size;
 #endif
+
     // size of memory required to store the matrix
     const unsigned int mem_size = sizeof(float) * size_a * size_b * size_c * size_d;
     
@@ -95,8 +104,10 @@ runTest( int argc, char** argv)
     printf("Transposing a %d by %d by %d by %d matrix of floats...\n", size_a, size_b, size_c, size_d);
 
     // setup execution parameters
-    dim3 dimBlock(1,1,1);
-    dim3 dimGrid(1,1,1);
+    //dim3 dimGrid(size_a / BLOCK_SIZE, size_d / BLOCK_SIZE, 1);
+    //dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
+    dim3 dimGrid((int)ceil((double)size_a/(double)BLOCK_SIZE),(int)ceil((double)size_d/(double)BLOCK_SIZE),1);
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
 
     // warmup so we don't time CUDA startup
     transpose_jeff<<< dimGrid, dimBlock >>>(d_odata, d_idata, size_a, size_b, size_c, size_d);

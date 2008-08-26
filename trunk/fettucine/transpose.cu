@@ -89,10 +89,10 @@ runTest( int argc, char** argv)
 //    const unsigned int size_y = 64;
 //    const unsigned int size_x = 256;
 //    const unsigned int size_y = 4096;
-    const unsigned int size_x = 256;
-    const unsigned int size_y = 256;
-//    const unsigned int size_x = 4096;
-//    const unsigned int size_y = 4096;
+//    const unsigned int size_x = 256;
+//    const unsigned int size_y = 256;
+    const unsigned int size_x = 4096;
+    const unsigned int size_y = 4096;
 //    const unsigned int size_x = 1024;
 //    const unsigned int size_y = 1024;
 #endif
@@ -176,10 +176,9 @@ runTest( int argc, char** argv)
     cutStopTimer(timer);
     float cpuTime = cutGetTimerValue(timer);
 
+    printf("CPU transpose average time:       %0.3f ms\n\n", cpuTime / numIterations);
     printf("Naive transpose average time:     %0.3f ms\n", naiveTime / numIterations);
     printf("Optimized transpose average time: %0.3f ms\n", optimizedTime / numIterations);
-    printf("CPU transpose average time:       %0.3f ms\n\n", cpuTime / numIterations);
-
 
     // check result
     CUTBoolean res = cutComparef( reference, h_odata, size_x * size_y);

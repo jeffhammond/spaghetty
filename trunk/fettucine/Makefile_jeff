@@ -9,7 +9,7 @@
 
 EXECUTABLE  := transpose4d_jeff
 CUFILES   := transpose_jeff.cu
-CCFILES := transpose_gold.cpp $(NULL)
+CCFILES := transpose_gold_jeff.cpp $(NULL)
 
 ################################################################################
 # Rules and targets
