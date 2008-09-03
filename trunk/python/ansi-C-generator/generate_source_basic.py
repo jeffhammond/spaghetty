@@ -11,7 +11,10 @@ fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align '
 fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align '
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
-lib_name = 'tce_sort_new.a'
+
+modlabel = 'new'
+
+lib_name = 'tce_sort_'+modlabel+'.a'
 
 cind = '    '
 ctab = '    '

@@ -11,7 +11,12 @@ fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align '
 fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align -c '
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
-lib_name = 'tce_sort_new.a'
+
+#modlabel = 'new'
+
+modlabel = 'opt'
+
+lib_name = 'tce_sort_'+modlabel+'.a'
 
 count = '20'
 rank  = '32'
@@ -108,7 +113,7 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d#+'_'
+        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d
         source_file.write('        Tstart=0.0\n')
         source_file.write('        Tfinish=0.0\n')
         source_file.write('        CALL CPU_TIME(Tstart)\n')
