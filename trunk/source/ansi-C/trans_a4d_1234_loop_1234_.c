@@ -32,7 +32,7 @@
     for (i=0; i<dim1; i++) {
         for (j=0; j<dim2; j++) {
             for (k=0; k<dim3; k++) {
-                _sorted[i][j][k] = &sorted[dim1*dim2*dim3*i + dim2*dim3*j + dim3*k];
+                _sorted[i][j][k] = sorted[dim1*dim2*dim3*i + dim2*dim3*j + dim3*k];
             }
         }
     }
