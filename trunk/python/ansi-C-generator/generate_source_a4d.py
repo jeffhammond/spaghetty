@@ -27,10 +27,10 @@ def perm(l):
 indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
 
-#transpose_list = [indices]
-transpose_list = perm(indices)
-#loop_list = [indices]
-loop_list = perm(indices)
+transpose_list = [indices]
+#transpose_list = perm(indices)
+loop_list = [indices]
+#loop_list = perm(indices)
 
 for transpose_order in transpose_list:
     A = transpose_order[0]
@@ -47,7 +47,7 @@ for transpose_order in transpose_list:
         source_file = open(source_name,'w')
         source_file.write(cind+'#include <stdlib.h>\n')
         source_file.write(cind+'#include <stdio.h>\n\n')
-        source_file.write(cind+'void '+subroutine_name+'( double ****unsorted, double ****sorted,\n')
+        source_file.write(cind+'void '+subroutine_name+'( double *unsorted, double *sorted,\n')
         source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {\n\n')
         source_file.write(cind+'int dim1,dim2,dim3,dim4;\n')
         source_file.write(cind+'int j1,j2,j3,j4;\n')

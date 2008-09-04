@@ -167,7 +167,7 @@ for transpose_order in transpose_list:
     source_file.close()
     print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x'
     os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x')
-#    os.system('mv '+source_name+' '+src_dir)
+    os.system('mv '+source_name+' '+src_dir)
 
 
 
