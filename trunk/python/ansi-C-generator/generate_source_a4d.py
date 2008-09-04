@@ -71,7 +71,7 @@ for transpose_order in transpose_list:
         source_file.write(cind+0*ctab+'for (i=0; i<dim1; i++) {\n')
         source_file.write(cind+1*ctab+'for (j=0; j<dim2; j++) {\n')
         source_file.write(cind+2*ctab+'for (k=0; k<dim3; k++) {\n')
-        source_file.write(cind+3*ctab+'_sorted[i][j][k] = &sorted[dim1*dim2*dim3*i + dim2*dim3*j + dim3*k];\n')
+        source_file.write(cind+3*ctab+'_sorted[i][j][k] = sorted[dim1*dim2*dim3*i + dim2*dim3*j + dim3*k];\n')
         source_file.write(cind+2*ctab+'}\n')
         source_file.write(cind+1*ctab+'}\n')
         source_file.write(cind+0*ctab+'}\n\n')
