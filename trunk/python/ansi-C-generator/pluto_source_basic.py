@@ -13,9 +13,6 @@ fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align '
 fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -c '
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
-lib_name = 'tce_sort_new.a'
-
-modlabel = ''
 
 def perm(l):
     sz = len(l)
@@ -26,9 +23,9 @@ def perm(l):
 indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
 
-#transpose_list = [indices]
+transpose_list = [indices]
 transpose_list = perm(indices)
-#loop_list = [indices]
+loop_list = [indices]
 loop_list = perm(indices)
 
 for transpose_order in transpose_list:
@@ -41,7 +38,7 @@ for transpose_order in transpose_list:
 		b = loop_order[1]
 		c = loop_order[2]
 		d = loop_order[3]
-		subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
+		subroutine_name = 'trans_a4d_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
 		source_name = subroutine_name+'.c'
 		print pluto_compiler+' '+src_dir+source_name+' '+pluto_flags
 		os.system(pluto_compiler+' '+src_dir+source_name+' '+pluto_flags)
