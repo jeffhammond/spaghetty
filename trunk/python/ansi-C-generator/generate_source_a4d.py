@@ -27,10 +27,10 @@ def perm(l):
 indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
 
-transpose_list = [indices]
-#transpose_list = perm(indices)
-loop_list = [indices]
-#loop_list = perm(indices)
+#transpose_list = [indices]
+transpose_list = perm(indices)
+#loop_list = [indices]
+loop_list = perm(indices)
 
 for transpose_order in transpose_list:
     A = transpose_order[0]
@@ -76,6 +76,6 @@ for transpose_order in transpose_list:
         print c_compiler+' '+c_opt_flags+' -c '+source_name
         os.system(c_compiler+' '+c_opt_flags+' -c '+source_name)
         os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
-#        os.system('rm '+subroutine_name+'.o')
-#        os.system('mv '+subroutine_name+'.c '+src_dir)
+        os.system('rm '+subroutine_name+'.o')
+        os.system('mv '+subroutine_name+'.c '+src_dir)
 

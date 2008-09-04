@@ -3,22 +3,19 @@ import string
 import sys
 import os
 
+pluto_compiler = '/home/jeff/code/PLuTo/pluto-0.3.0/polycc'
+pluto_flags = '--unroll --ufactor=4'
 c_compiler = 'icc'
 c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align -strict-ansi'
-c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -strict-ansi'
+c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align -strict-ansi'
 fortran_compiler = 'ifort'
 fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align '
 fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -c '
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
+lib_name = 'tce_sort_new.a'
 
-#modlabel = 'new'
-#plutomod = ''
-
-modlabel = 'opt'
-plutomod = '.opt'
-
-lib_name = 'tce_sort_'+modlabel+'.a'
+modlabel = ''
 
 def perm(l):
     sz = len(l)
@@ -45,9 +42,7 @@ for transpose_order in transpose_list:
 		c = loop_order[2]
 		d = loop_order[3]
 		subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
-		source_name = subroutine_name+plutomod+'.c'
-		print c_compiler+' '+c_opt_flags+' '+src_dir+source_name
-		os.system(c_compiler+' '+c_opt_flags+' -c '+src_dir+source_name)
-		os.system('ar -r '+lib_name+' '+subroutine_name+plutomod+'.o')
-		os.system('rm '+subroutine_name+plutomod+'.o')
+		source_name = subroutine_name+'.c'
+		print pluto_compiler+' '+src_dir+source_name+' '+pluto_flags
+		os.system(pluto_compiler+' '+src_dir+source_name+' '+pluto_flags)
 
