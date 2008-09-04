@@ -1,7 +1,7 @@
     #include <stdlib.h>
     #include <stdio.h>
 
-    void trans_a4d_1234_loop_1234_( double ****unsorted, double ****sorted,
+    void trans_a4d_1234_loop_1234_( double *unsorted, double *sorted,
                                     int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {
 
     int dim1,dim2,dim3,dim4;
