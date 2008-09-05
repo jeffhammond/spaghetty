@@ -45,10 +45,11 @@ for transpose_order in transpose_list:
     C = transpose_order[2]
     D = transpose_order[3]
     for loop_order in loop_list:
-        a = loop_order[0]
-        b = loop_order[1]
-        c = loop_order[2]
-        d = loop_order[3]
+      a = loop_order[0]
+      b = loop_order[1]
+      c = loop_order[2]
+      d = loop_order[3]
+      if d is '4' and D is '4':
         subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
         source_name = subroutine_name+'.c'
         source_file = open(source_name,'w')
@@ -87,20 +88,26 @@ for transpose_order in transpose_list:
         source_file.write(cind+2*ctab+'#pragma unroll\n')
         source_file.write(cind+2*ctab+'#pragma vector always\n')
         source_file.write(cind+2*ctab+'for( j'+c+' = 0; j'+c+'<dim'+c+'; j'+c+'++) {\n')
-        source_file.write(cind+3*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
-        source_file.write(cind+3*ctab+'#pragma unroll\n')
-        source_file.write(cind+3*ctab+'#pragma vector always\n')
         if d is '4' and D is '4':
+                source_file.write(cind+3*ctab+'#pragma loop count min(4) max(20) avg(10)\n')
+                source_file.write(cind+3*ctab+'#pragma unroll\n')
+	        source_file.write(cind+3*ctab+'#pragma vector always\n')
                 source_file.write(cind+3*ctab+'for( j'+d+' = 0; j'+d+'<dim'+d+'mod; j'+d+'+='+str(unrolling)+') {\n')
 	        for offset in range(0,unrolling):
 		        source_file.write(cind+4*ctab+'sorted['+str(offset)+'+j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*j'+A+'))] = unsorted['+str(offset)+'+j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;\n')
 
                 source_file.write(cind+3*ctab+'}\n')
+                source_file.write(cind+3*ctab+'#pragma loop count min(0) max(8) avg(2)\n')
+                source_file.write(cind+3*ctab+'#pragma unroll\n')
+	        source_file.write(cind+3*ctab+'#pragma vector always\n')
                 source_file.write(cind+3*ctab+'for( j'+d+' = dim'+d+'mod; j'+d+'<dim'+d+'; j'+d+'++) {\n')
 		source_file.write(cind+4*ctab+'sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*j'+A+'))] = unsorted[j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;\n')
                 source_file.write(cind+3*ctab+'}\n')
 
         if d is not '4' or D is not '4':
+                source_file.write(cind+3*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
+                source_file.write(cind+3*ctab+'#pragma unroll\n')
+	        source_file.write(cind+3*ctab+'#pragma vector always\n')
                 source_file.write(cind+3*ctab+'for( j'+d+' = 0; j'+d+'<dim'+d+'; j'+d+'++) {\n')
 		source_file.write(cind+4*ctab+'sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*j'+A+'))] = unsorted[j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;\n')
                 source_file.write(cind+3*ctab+'}\n')
