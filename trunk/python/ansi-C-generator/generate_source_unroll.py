@@ -13,7 +13,8 @@ src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 obj_dir = '/home/jeff/code/spaghetty/trunk/object/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 
-modlabel = 'new'
+modlabel = 'unroll'
+unrolling = 4
 
 lib_name = 'tce_sort_'+modlabel+'.a'
 
@@ -25,13 +26,14 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-#indices = ['1','2','3','4']
+indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
 all_permutations = perm(['1','2','3','4'])
 
 #transpose_list = [indices]
 #transpose_list = perm(indices)
-transpose_list = [['2','1','3','4'],['1','2','4','3']]
+transpose_list = all_permutations
+#transpose_list = [['2','1','3','4'],['1','2','4','3']]
 
 #loop_list = [indices]
 #loop_list = perm(indices)
@@ -50,9 +52,12 @@ for transpose_order in transpose_list:
         subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
         source_name = subroutine_name+'.c'
         source_file = open(source_name,'w')
+        source_file.write(cind+'#include <math.h>\n\n')
         source_file.write(cind+'void '+subroutine_name+'( double *unsorted, double *sorted,\n')
         source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {\n\n')
         source_file.write(cind+'int dim1,dim2,dim3,dim4;\n')
+        source_file.write(cind+'int dim1mod,dim2mod,dim3mod,dim4mod;\n')
+        #source_file.write(cind+'int dim1rem,dim2rem,dim3rem,dim4rem;\n')
         source_file.write(cind+'unsigned int old_offset,new_offset;\n')
         source_file.write(cind+'unsigned int j1,j2,j3,j4;\n')
         source_file.write(cind+'double factor;\n')
@@ -61,6 +66,14 @@ for transpose_order in transpose_list:
         source_file.write(cind+'dim2 = *p_dim2;\n')
         source_file.write(cind+'dim3 = *p_dim3;\n')
         source_file.write(cind+'dim4 = *p_dim4;\n\n')
+        source_file.write(cind+'dim1mod = (int) floor( (float)dim1 / (float) '+str(unrolling)+');\n')
+        source_file.write(cind+'dim2mod = (int) floor( (float)dim2 / (float) '+str(unrolling)+');\n')
+        source_file.write(cind+'dim3mod = (int) floor( (float)dim3 / (float) '+str(unrolling)+');\n')
+        source_file.write(cind+'dim4mod = (int) floor( (float)dim4 / (float) '+str(unrolling)+');\n\n')
+        #source_file.write(cind+'dim1rem = dim1 - dim1mod;\n')
+        #source_file.write(cind+'dim2rem = dim2 - dim2mod;\n')
+        #source_file.write(cind+'dim3rem = dim3 - dim3mod;\n')
+        #source_file.write(cind+'dim4rem = dim4 - dim4mod;\n\n')
         source_file.write(cind+'/* pluto start (dim1,dim2,dim3,dim4) */\n')
         source_file.write(cind+0*ctab+'#pragma ivdep\n')
         source_file.write(cind+0*ctab+'#pragma parallel\n')
@@ -77,11 +90,21 @@ for transpose_order in transpose_list:
         source_file.write(cind+3*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
         source_file.write(cind+3*ctab+'#pragma unroll\n')
         source_file.write(cind+3*ctab+'#pragma vector always\n')
-        source_file.write(cind+3*ctab+'for( j'+d+' = 0; j'+d+'<dim'+d+'; j'+d+'++) {\n')
-        source_file.write(cind+4*ctab+'old_offset = j4+dim4*(j3+dim3*(j2+dim2*(j1)));\n')
-        source_file.write(cind+4*ctab+'new_offset = j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*(j'+A+')));\n')
-        source_file.write(cind+4*ctab+'sorted[new_offset] = unsorted[old_offset] * factor;\n')
-        source_file.write(cind+3*ctab+'}\n')
+        if d is '4' and D is '4':
+                source_file.write(cind+3*ctab+'for( j'+d+' = 0; j'+d+'<dim'+d+'mod; j'+d+'+='+str(unrolling)+') {\n')
+	        for offset in range(0,unrolling):
+		        source_file.write(cind+4*ctab+'sorted['+str(offset)+'+j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*j'+A+'))] = unsorted['+str(offset)+'+j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;\n')
+
+                source_file.write(cind+3*ctab+'}\n')
+                source_file.write(cind+3*ctab+'for( j'+d+' = dim'+d+'mod; j'+d+'<dim'+d+'; j'+d+'++) {\n')
+		source_file.write(cind+4*ctab+'sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*j'+A+'))] = unsorted[j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;\n')
+                source_file.write(cind+3*ctab+'}\n')
+
+        if d is not '4' or D is not '4':
+                source_file.write(cind+3*ctab+'for( j'+d+' = 0; j'+d+'<dim'+d+'; j'+d+'++) {\n')
+		source_file.write(cind+4*ctab+'sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*j'+A+'))] = unsorted[j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;\n')
+                source_file.write(cind+3*ctab+'}\n')
+
         source_file.write(cind+2*ctab+'}\n')
         source_file.write(cind+1*ctab+'}\n')
         source_file.write(cind+'}\n')

@@ -12,7 +12,8 @@ fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align'
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 
-modlabel = 'new'
+#modlabel = 'new'
+modlabel = 'unroll'
 #modlabel = 'opt'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
