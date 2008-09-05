@@ -12,11 +12,11 @@ fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -c '
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 
-#modlabel = 'new'
-#plutomod = ''
+modlabel = 'new'
+plutomod = ''
 
-modlabel = 'opt'
-plutomod = '.opt'
+#modlabel = 'opt'
+#plutomod = '.opt'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
 
@@ -29,10 +29,10 @@ def perm(l):
 indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
 
-#transpose_list = [indices]
-transpose_list = perm(indices)
-#loop_list = [indices]
-loop_list = perm(indices)
+transpose_list = [indices]
+#transpose_list = perm(indices)
+loop_list = [indices]
+#oop_list = perm(indices)
 
 for transpose_order in transpose_list:
 	A = transpose_order[0]

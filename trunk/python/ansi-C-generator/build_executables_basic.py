@@ -7,19 +7,19 @@ c_compiler = 'icc'
 c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align -strict-ansi'
 c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align -strict-ansi'
 fortran_compiler = 'ifort'
-fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align '
-fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align -c '
+fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
+fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align'
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 
-#modlabel = 'new'
-
-modlabel = 'opt'
+modlabel = 'new'
+#modlabel = 'opt'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
 
-count = '20'
-rank  = '32'
+count = '10'
+rank  = '50'
+#rank  = '5'
 ranks = [rank,rank,rank,rank]
 #ranks = ['41','17','24','39']
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])
@@ -31,23 +31,26 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['1','2','3','4']
+#indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
-
-#all_permutations = perm(indices)
-#all_permutations = [indices]
+all_permutations = perm(['1','2','3','4'])
 
 #transpose_list = [indices]
-transpose_list = perm(indices)
+#transpose_list = perm(indices)
+#transpose_list = [['2','1','3','4'],['1','2','4','3']]
+transpose_list = all_permutations
+
 #loop_list = [indices]
-loop_list = perm(indices)
+#loop_list = perm(indices)
+loop_list = all_permutations
 
-#loop_list = ['2431','3241','3142','2341','3214','3124','2314'] 
-#loop_list = ['2314'] 
-
-print fortran_compiler+' '+fortran_opt_flags+'-c tce_sort_hirata.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+'-c tce_sort_hirata.F')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
 os.system('ar -r '+lib_name+' tce_sort_hirata.o')
+
+print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c'
+os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c')
+os.system('ar -r '+lib_name+' tce_sort_4kg.o')
 
 for transpose_order in transpose_list:
     dummy = 0
@@ -63,8 +66,10 @@ for transpose_order in transpose_list:
     source_file.write('        REAL*8 before('+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+')\n')
     source_file.write('        REAL*8 after_jeff('+sizechar+')\n')
     source_file.write('        REAL*8 after_hirata('+sizechar+')\n')
+    source_file.write('        REAL*8 after_dummy('+sizechar+')\n')
+    source_file.write('        REAL*8 after_glass('+sizechar+')\n')
     source_file.write('        REAL*8 factor\n')
-    source_file.write('        REAL*8 Tstart,Tfinish,Thirata,Tjeff\n')
+    source_file.write('        REAL*8 Tstart,Tfinish,Thirata,Tglass,Tjeff\n')
     source_file.write('        REAL*8 Tspeedup,Tbest\n')
     source_file.write('        INTEGER*4 i,j,k,l\n')
     source_file.write('        INTEGER*4 aSize(4)\n')
@@ -89,6 +94,9 @@ for transpose_order in transpose_list:
     source_file.write('70      CONTINUE\n')
     source_file.write('        factor = 1.0\n')
     source_file.write('        Tbest=999999.0\n')
+    source_file.write('          CALL tce_sort_4(before, after_dummy,\n')
+    source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
+    source_file.write('     &                    1,2,3,4, 1.0d0)\n')
     source_file.write('        Tstart=0.0\n')
     source_file.write('        Tfinish=0.0\n')
     source_file.write('        CALL CPU_TIME(Tstart)\n')
@@ -99,6 +107,23 @@ for transpose_order in transpose_list:
     source_file.write('30      CONTINUE\n')
     source_file.write('        CALL CPU_TIME(Tfinish)\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
+    #source_file.write('        Tstart=0.0\n')
+    #source_file.write('        Tfinish=0.0\n')
+    #source_file.write('        CALL CPU_TIME(Tstart)\n')
+    #source_file.write('        DO 31 i = 1, '+count+'\n')
+    #source_file.write('          CALL tce_sort_4kg_(before, after_glass,\n')
+    #source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
+    #source_file.write('     &                    perm(1), perm(2), perm(3), perm(4), factor)\n')
+    #source_file.write('31      CONTINUE\n')
+    #source_file.write('        CALL CPU_TIME(Tfinish)\n')
+    #source_file.write('        Tglass=(Tfinish-Tstart)\n')
+    #source_file.write('        DO 32 i = 1, '+sizechar+'\n')
+    #source_file.write('          IF (after_glass(i).ne.after_hirata(i)) THEN\n')
+    #source_file.write('          IF (after_glass(i).ne.after_dummy(i)) THEN\n')
+    #source_file.write('            PRINT*,"glass error ",i,after_glass(i),after_hirata(i)\n')
+    #source_file.write('            PRINT*,"glass error ",i,after_glass(i),after_dummy(i)\n')
+    #source_file.write('          ENDIF\n')
+    #source_file.write('32      CONTINUE\n')
     source_file.write('        write(6,*) "TESTING TRANPOSE TYPE '+A+B+C+D+'"\n')
     source_file.write('        write(6,*) "==================="\n')
     source_file.write('        write(6,*) "The compilation flags were:"\n')
@@ -107,6 +132,7 @@ for transpose_order in transpose_list:
         
     source_file.write('        write(6,*) "==================="\n')
     source_file.write('        write(6,*) "Hirata Reference = ",Thirata,"seconds"\n')
+    #source_file.write('        write(6,*) "Glass Reference = ",Tglass,"seconds"\n')
     source_file.write('        write(6,1001) "Algorithm","Jeff","Speedup","Best","Best Speedup"\n')
     for loop_order in loop_list:
         dummy = dummy+1
@@ -161,11 +187,16 @@ for transpose_order in transpose_list:
     source_file.write('     &             fastest(1),fastest(2),fastest(3),fastest(4)\n')
     source_file.write('        write(6,1030) "The best time is:",Tbest\n')
     source_file.write('        write(6,1030) "The best speedup is:",Thirata/Tbest\n')
+    #source_file.write('        DO 33 i = 1, '+sizechar+'\n')
+    #source_file.write('          write(6,1200) "d/h/g/j ",after_dummy(i),after_hirata(i),\n')
+    #source_file.write('     &                        after_glass(i),after_jeff(i)\n')
+    #source_file.write('33      CONTINUE\n')
     source_file.write('        STOP\n')
     source_file.write(' 1001 format(1x,a13,a12,a15,a9,a18)\n')
     source_file.write(' 1020 format(1x,a30,8x,4i1)\n')
     source_file.write(' 1030 format(1x,a30,1f12.5)\n')
     source_file.write(' 1100 format(1x,a16,4f12.5)\n')
+    source_file.write(' 1200 format(1x,a8,4f12.5)\n')
     source_file.write('      END\n')
     source_file.close()
     print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x'
