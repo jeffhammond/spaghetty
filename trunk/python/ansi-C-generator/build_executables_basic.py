@@ -4,22 +4,32 @@ import sys
 import os
 
 c_compiler = 'icc'
-c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align -strict-ansi'
-c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align -strict-ansi'
+c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
+c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -funroll-loops -prefetch -ssp'
+#c_compiler = 'gcc'
+#c_link_flags = '-O1 -march=pentium4 -mtune=pentium4 '
+#c_opt_flags = '-O3 -march=pentium4 -mtune=pentium4 -funroll-loops '
 fortran_compiler = 'ifort'
 fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
 fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align'
+#fortran_compiler = 'gfortran'
+#fortran_link_flags = '-O1 -march=pentium4 -mtune=pentium4 '
+#fortran_opt_flags = '-O3 -march=pentium4 -mtune=pentium4 -funroll-loops '
 src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 
+#modlabel = 'gcc'
 #modlabel = 'new'
-modlabel = 'unroll'
+modlabel = 'realA'
+#modlabel = 'unroll'
 #modlabel = 'opt'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
 
-count = '10'
-rank  = '50'
+num = ''
+
+count = '20'
+rank  = '40'
 #rank  = '5'
 ranks = [rank,rank,rank,rank]
 #ranks = ['41','17','24','39']
@@ -39,10 +49,12 @@ all_permutations = perm(['1','2','3','4'])
 #transpose_list = [indices]
 #transpose_list = perm(indices)
 #transpose_list = [['2','1','3','4'],['1','2','4','3']]
+#transpose_list = ['1243','1432','2143','2413','2431','3124','3214','3241','4123','4132','4231','4321']
 transpose_list = all_permutations
 
 #loop_list = [indices]
 #loop_list = perm(indices)
+#loop_list = ['2134','2143','3124','3142','2314','2413','3214','3412','2341','2431','3241','3421']
 loop_list = all_permutations
 
 print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
@@ -53,13 +65,21 @@ print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c'
 os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c')
 os.system('ar -r '+lib_name+' tce_sort_4kg.o')
 
+#print c_compiler+' '+c_opt_flags+' -c tce_sort_saday.c'
+#os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_saday.c')
+#os.system('ar -r '+lib_name+' tce_sort_saday.o')
+
+print c_compiler+' '+c_opt_flags+' -c tce_sort_4_saday.c'
+os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4_saday.c')
+os.system('ar -r '+lib_name+' tce_sort_4_saday.o')
+
 for transpose_order in transpose_list:
     dummy = 0
     A = transpose_order[0]
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
-    driver_name = 'transpose_'+A+B+C+D+'_'+modlabel
+    driver_name = 'transpose_'+A+B+C+D+'_'+modlabel+num
     print driver_name
     source_name = driver_name+'_driver.F'
     source_file = open(source_name,'w')
@@ -69,9 +89,10 @@ for transpose_order in transpose_list:
     source_file.write('        REAL*8 after_hirata('+sizechar+')\n')
     source_file.write('        REAL*8 after_dummy('+sizechar+')\n')
     source_file.write('        REAL*8 after_glass('+sizechar+')\n')
+    source_file.write('        REAL*8 after_saday('+sizechar+')\n')
     source_file.write('        REAL*8 factor\n')
-    source_file.write('        REAL*8 Tstart,Tfinish,Thirata,Tglass,Tjeff\n')
-    source_file.write('        REAL*8 Tspeedup,Tbest\n')
+    source_file.write('        REAL*8 Tstart,Tfinish,Tspeedup,Tbest\n')
+    source_file.write('        REAL*8 Thirata,Tglass,Tsaday,Tjeff\n')
     source_file.write('        INTEGER*4 i,j,k,l\n')
     source_file.write('        INTEGER*4 aSize(4)\n')
     source_file.write('        INTEGER*4 perm(4)\n')
@@ -108,6 +129,21 @@ for transpose_order in transpose_list:
     source_file.write('30      CONTINUE\n')
     source_file.write('        CALL CPU_TIME(Tfinish)\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
+    source_file.write('        Tstart=0.0\n')
+    source_file.write('        Tfinish=0.0\n')
+    source_file.write('        CALL CPU_TIME(Tstart)\n')
+    source_file.write('        DO 37 i = 1, '+count+'\n')
+    source_file.write('          CALL saday_sort_4(before, after_saday,\n')
+    source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
+    source_file.write('     &                    perm(1), perm(2), perm(3), perm(4), factor)\n')
+    source_file.write('37      CONTINUE\n')
+    source_file.write('        CALL CPU_TIME(Tfinish)\n')
+    source_file.write('        Tsaday=(Tfinish-Tstart)\n')
+    source_file.write('        DO 38 i = 1, '+sizechar+'\n')
+    source_file.write('          IF (after_saday(i).ne.after_hirata(i)) THEN\n')
+    source_file.write('            PRINT*,"saday error ",i,after_saday(i),after_hirata(i)\n')
+    source_file.write('          ENDIF\n')
+    source_file.write('38      CONTINUE\n')
     #source_file.write('        Tstart=0.0\n')
     #source_file.write('        Tfinish=0.0\n')
     #source_file.write('        CALL CPU_TIME(Tstart)\n')
@@ -133,8 +169,11 @@ for transpose_order in transpose_list:
         
     source_file.write('        write(6,*) "==================="\n')
     source_file.write('        write(6,*) "Hirata Reference = ",Thirata,"seconds"\n')
+    source_file.write('        write(6,*) "Saday Reference = ",Tsaday,"seconds"\n')
     #source_file.write('        write(6,*) "Glass Reference = ",Tglass,"seconds"\n')
-    source_file.write('        write(6,1001) "Algorithm","Jeff","Speedup","Best","Best Speedup"\n')
+    source_file.write('        write(6,1001) "Algorithm","Jeff","Speedup","Best",\n')
+    source_file.write('     &                    "Best Speedup","Best Speedup"\n')
+    source_file.write('        write(6,1001) " "," "," "," "," vs. Hirata "," vs. Saday  "\n')
     for loop_order in loop_list:
         dummy = dummy+1
         a = loop_order[0]
@@ -171,7 +210,7 @@ for transpose_order in transpose_list:
             
         #source_file.write('        PRINT*,"Loop '+a+b+c+d+'     ",Tjeff,Tspeedup\n')
         source_file.write('        write(6,1100) "'+nice_dummy+' Loop '+a+b+c+d+' ",\n')
-        source_file.write('     &                 Tjeff,Tspeedup,Tbest,Thirata/Tbest\n')
+        source_file.write('     &        Tjeff,Tspeedup,Tbest,Thirata/Tbest,Tsaday/Tbest\n')
         #source_file.write('        DO '+str(500+dummy)+' i = 1, '+sizechar+'\n')
         #source_file.write('          IF (after_jeff(i).ne.after_hirata(i)) THEN\n')
         #source_file.write('            write(6,*),"transpose is wrong for element = ",i\n')
@@ -193,10 +232,10 @@ for transpose_order in transpose_list:
     #source_file.write('     &                        after_glass(i),after_jeff(i)\n')
     #source_file.write('33      CONTINUE\n')
     source_file.write('        STOP\n')
-    source_file.write(' 1001 format(1x,a13,a12,a15,a9,a18)\n')
+    source_file.write(' 1001 format(1x,a13,a12,a15,a9,a18,a18)\n')
     source_file.write(' 1020 format(1x,a30,8x,4i1)\n')
     source_file.write(' 1030 format(1x,a30,1f12.5)\n')
-    source_file.write(' 1100 format(1x,a16,4f12.5)\n')
+    source_file.write(' 1100 format(1x,a16,5f12.5)\n')
     source_file.write(' 1200 format(1x,a8,4f12.5)\n')
     source_file.write('      END\n')
     source_file.close()

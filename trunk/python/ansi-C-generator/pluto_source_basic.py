@@ -4,7 +4,7 @@ import sys
 import os
 
 pluto_compiler = '/home/jeff/code/PLuTo/pluto-0.3.0/polycc'
-pluto_flags = '--unroll --ufactor=4'
+pluto_flags = '--unroll --ufactor=4 -parallel --multipipe --smartfuse --tile --l2tile'
 c_compiler = 'icc'
 c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align -strict-ansi'
 c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align -strict-ansi'
@@ -20,13 +20,18 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['1','2','3','4']
+#indices = ['1','2','3','4']
 #indices = ['4','3','2','1']
+all_permutations = perm(['1','2','3','4'])
 
-transpose_list = [indices]
-transpose_list = perm(indices)
-loop_list = [indices]
-loop_list = perm(indices)
+#transpose_list = [indices]
+#transpose_list = perm(indices)
+#transpose_list = [['2','1','3','4'],['1','2','4','3']]
+transpose_list = all_permutations
+
+#loop_list = [indices]
+#loop_list = perm(indices)
+loop_list = all_permutations
 
 for transpose_order in transpose_list:
 	A = transpose_order[0]
