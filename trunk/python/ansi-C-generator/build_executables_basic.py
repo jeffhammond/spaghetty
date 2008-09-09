@@ -24,9 +24,17 @@ modlabel = 'realA'
 #modlabel = 'unroll'
 #modlabel = 'opt'
 
+#factor_version = '_plus'
+#factor_version = '_minus'
+#factor_version = '_phalf'
+#factor_version = '_mhalf'
+#factor_version = '_pqtr'
+#factor_version = '_mqtr'
+factor_version = '_frac'
+
 lib_name = 'tce_sort_'+modlabel+'.a'
 
-num = ''
+num = factor_version
 
 count = '20'
 rank  = '40'
@@ -114,7 +122,20 @@ for transpose_order in transpose_list:
     source_file.write('50          CONTINUE\n')
     source_file.write('60        CONTINUE\n')
     source_file.write('70      CONTINUE\n')
-    source_file.write('        factor = 1.0\n')
+    if (factor_version == '_plus'):
+        source_file.write('        factor = 1.0\n')
+    elif (factor_version == '_minus'):
+        source_file.write('        factor = -1.0\n')
+    elif (factor_version == '_phalf'):
+        source_file.write('        factor = 0.5\n')
+    elif (factor_version == '_mhalf'):
+        source_file.write('        factor = -0.5\n')
+    elif (factor_version == '_pqtr'):
+        source_file.write('        factor = 0.25\n')
+    elif (factor_version == '_mqtr'):
+        source_file.write('        factor = -0.25\n')
+    elif (factor_version == '_frac'):
+        source_file.write('        factor = 0.166666666\n')
     source_file.write('        Tbest=999999.0\n')
     source_file.write('          CALL tce_sort_4(before, after_dummy,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
@@ -180,14 +201,18 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d
+        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+factor_version
         source_file.write('        Tstart=0.0\n')
         source_file.write('        Tfinish=0.0\n')
         source_file.write('        CALL CPU_TIME(Tstart)\n')
         source_file.write('        DO '+str(100+dummy)+' i = 1, '+count+'\n')
         source_file.write('          CALL '+subroutine_name+'(before, after_jeff,\n')
         source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
-        source_file.write('     &                    factor)\n')
+        if (factor_version == '_frac'):
+            source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
+            source_file.write('     &                    factor)\n')
+        else:
+            source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4))\n')
         source_file.write(str(100+dummy)+'     CONTINUE\n')
         source_file.write('        CALL CPU_TIME(Tfinish)\n')
         source_file.write('        Tjeff=(Tfinish-Tstart)\n')

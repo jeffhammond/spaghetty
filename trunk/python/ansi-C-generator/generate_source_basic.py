@@ -23,7 +23,13 @@ exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 modlabel = 'realA'
 #modlabel = 'gcc'
 
-factor_version = '_plus'
+#factor_version = '_plus'
+#factor_version = '_minus'
+#factor_version = '_phalf'
+#factor_version = '_mhalf'
+#factor_version = '_pqtr'
+#factor_version = '_mqtr'
+factor_version = '_frac'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
 
@@ -105,13 +111,13 @@ for transpose_order in transpose_list:
         elif (factor_version == '_minus'):
             source_file.write(cind+4*ctab+'sorted[new_offset] = -unsorted[old_offset];\n')
         elif (factor_version == '_phalf'):
-            source_file.write(cind+4*ctab+'sorted[new_offset] = (0.5d0)*unsorted[old_offset];\n')
+            source_file.write(cind+4*ctab+'sorted[new_offset] = 0.5*unsorted[old_offset];\n')
         elif (factor_version == '_mhalf'):
-            source_file.write(cind+4*ctab+'sorted[new_offset] = -(0.5d0)*unsorted[old_offset];\n')
+            source_file.write(cind+4*ctab+'sorted[new_offset] = -0.5*unsorted[old_offset];\n')
         elif (factor_version == '_phalf'):
-            source_file.write(cind+4*ctab+'sorted[new_offset] = (0.25d0)*unsorted[old_offset];\n')
+            source_file.write(cind+4*ctab+'sorted[new_offset] = 0.25*unsorted[old_offset];\n')
         elif (factor_version == '_mhalf'):
-            source_file.write(cind+4*ctab+'sorted[new_offset] = -(0.25d0)*unsorted[old_offset];\n')
+            source_file.write(cind+4*ctab+'sorted[new_offset] = -0.25*unsorted[old_offset];\n')
         elif (factor_version == '_frac'):
             source_file.write(cind+4*ctab+'sorted[new_offset] = factor*unsorted[old_offset];\n')
         source_file.write(cind+3*ctab+'}\n')
@@ -122,9 +128,9 @@ for transpose_order in transpose_list:
         source_file.write(cind+'return;\n')
         source_file.write(cind+'}\n\n')
         source_file.close()
-        #print c_compiler+' '+c_opt_flags+' -c '+source_name
+        print c_compiler+' '+c_opt_flags+' -c '+source_name
         os.system(c_compiler+' '+c_opt_flags+' -c '+source_name)
-        os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
+        #os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
         os.system('mv '+subroutine_name+'.o '+obj_dir)
         os.system('mv '+subroutine_name+'.c '+src_dir)
 
