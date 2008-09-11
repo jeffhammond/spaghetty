@@ -27,8 +27,6 @@ modlabel = 'realA'
 #factor_version = '_minus'
 #factor_version = '_phalf'
 #factor_version = '_mhalf'
-#factor_version = '_pqtr'
-#factor_version = '_mqtr'
 factor_version = '_frac'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
@@ -72,16 +70,12 @@ for transpose_order in transpose_list:
             source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4 ) {\n\n')
         elif (factor_version == '_phalf') or (factor_version == '_mhalf'):
             source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4 ) {\n\n')
-        elif (factor_version == '_pqtr') or (factor_version == '_mqtr'):
-            source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4 ) {\n\n')
-        elif (factor_version == '_frac'):
+        else:
             source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {\n\n')
+            source_file.write(cind+'double factor = *p_factor;\n\n')
         source_file.write(cind+'int dim1,dim2,dim3,dim4;\n')
         source_file.write(cind+'unsigned int old_offset,new_offset;\n')
         source_file.write(cind+'unsigned int j1,j2,j3,j4;\n')
-        if (factor_version == '_frac'):
-            source_file.write(cind+'double factor;\n')
-            source_file.write(cind+'factor = *p_factor;\n\n')
         source_file.write(cind+'dim1 = *p_dim1;\n')
         source_file.write(cind+'dim2 = *p_dim2;\n')
         source_file.write(cind+'dim3 = *p_dim3;\n')
@@ -114,11 +108,7 @@ for transpose_order in transpose_list:
             source_file.write(cind+4*ctab+'sorted[new_offset] = 0.5*unsorted[old_offset];\n')
         elif (factor_version == '_mhalf'):
             source_file.write(cind+4*ctab+'sorted[new_offset] = -0.5*unsorted[old_offset];\n')
-        elif (factor_version == '_phalf'):
-            source_file.write(cind+4*ctab+'sorted[new_offset] = 0.25*unsorted[old_offset];\n')
-        elif (factor_version == '_mhalf'):
-            source_file.write(cind+4*ctab+'sorted[new_offset] = -0.25*unsorted[old_offset];\n')
-        elif (factor_version == '_frac'):
+        else:
             source_file.write(cind+4*ctab+'sorted[new_offset] = factor*unsorted[old_offset];\n')
         source_file.write(cind+3*ctab+'}\n')
         source_file.write(cind+2*ctab+'}\n')

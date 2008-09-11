@@ -10,12 +10,12 @@ import os
 #exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
 
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -xT -mtune=core2 -msse3 -align -pad -unroll-aggressive -parallel -vec-guard-write -opt-streaming-stores=always -c'
-fortran_link_flags = '-O0'
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_new/'
+fortran_opt_flags = '-O3 -xT -mtune=core2 -march=core2 -align -unroll-aggressive '
+fortran_link_flags = '-O0 -align' #1 -xT -mtune=core2 -march=core2 -align '
+src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
+exe_dir = '/home/jeff/code/spaghetty/trunk/binary/fortran77/'
 
-count = '20'
+count = '10'
 rank = '16'
 ranks = [rank,rank,rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])*int(ranks[4])*int(ranks[5])
@@ -55,21 +55,21 @@ indices = ['3','2','6','1','5','4']
 #indices = ['6','3','2','5','1','4']
 #indices = ['6','3','2','5','4','1']
 
-indices_ccsd_t = [['3','2','6','1','5','4'],['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4'],['6','3','2','5','4','1']]
-
+#indices_ccsd_t = [['3','2','6','1','5','4'],['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4'],['6','3','2','5','4','1']]
+indices_ccsd_t = [['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4']]
 indices_basic  = ['1','2','3','4','5','6']
 
-#all_permutations = perm(indices)
-#all_permutations = [indices]
+all_permutations = perm(['1','2','3','4','5','6'])
 
-#transpose_list = perm(indices)
-transpose_list = indices_ccsd_t
-#transpose_list = [indices]
-loop_list = perm(indices_basic)
+#transpose_list = indices_ccsd_t
+
+transpose_list = [['4','6','3','5','2','1'],['6','3','5','2','1','4']]
+
 #loop_list = [indices]
+loop_list = all_permutations
 
-print fortran_compiler+' '+fortran_opt_flags+' tce_sortacc_hirata.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' tce_sortacc_hirata.F')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sortacc_hirata.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sortacc_hirata.F')
 #os.system('ar -r tce_sortacc_jeff.a tce_sortacc_hirata.o')
 
 for transpose_order in transpose_list:
@@ -142,7 +142,8 @@ for transpose_order in transpose_list:
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     source_file.write('        PRINT*,"TESTING TRANSACCU TYPE '+A+B+C+D+E+F+'"\n')
     source_file.write('        PRINT*,"Hirata Reference = ",Thirata,"seconds"\n')
-    source_file.write('        PRINT*,"Algorithm         Jeff           Speedup          Best"\n')
+    source_file.write('        write(6,2)    "Algorithm","Jeff","Speedup","Best",\n')
+    source_file.write('     &                    "Best Speedup","Best Speedup"\n')
     for loop_order in loop_list:
         dummy = dummy+1
         a = loop_order[0]
@@ -190,10 +191,11 @@ for transpose_order in transpose_list:
     source_file.write('        PRINT*,"The speedup is:   ",Thirata/Tbest\n')
     source_file.write('        STOP\n')
     source_file.write('    1     format(1x,1a20,4f12.5)\n')
+    source_file.write('    2     format(1x,a13,a12,a15,a9,a18,a18)\n')
     source_file.write('      END\n')
     source_file.close()
-    print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sortacc_jeff.a tce_sortacc_hirata.o '+' -o '+exe_dir+driver_name+'.x'
-    os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sortacc_jeff.a tce_sortacc_hirata.o '+' -o '+exe_dir+driver_name+'.x')
+    print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sortacc_6_new.a tce_sortacc_hirata.o '+' -o '+exe_dir+driver_name+'.x'
+    os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' tce_sortacc_6_new.a tce_sortacc_hirata.o '+' -o '+exe_dir+driver_name+'.x')
     os.system('mv '+source_name+' '+src_dir)
 
 

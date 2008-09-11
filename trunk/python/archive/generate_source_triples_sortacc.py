@@ -10,8 +10,9 @@ import os
 #lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -xT -mtune=core2 -msse3 -align -pad -unroll-aggressive -parallel -vec-guard-write -opt-streaming-stores=always -c'
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
+fortran_opt_flags = '-O3 -xT -mtune=core2 -march=core2 -align'
+src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
+obj_dir = '/home/jeff/code/spaghetty/trunk/object/fortran77/'
 
 def perm(l):
     sz = len(l)
@@ -51,13 +52,12 @@ def perm(l):
 indices_ccsd_t = [['3','2','6','5','1','4'],['3','2','6','5','4','1'],['3','6','2','1','5','4'],['3','6','2','5','1','4'],['3','6','2','5','4','1'],['3','6','5','2','4','1'],['3','6','5','2','1','4'],['3','6','5','4','2','1'],['4','3','6','2','1','5'],['4','3','6','2','5','1'],['4','3','6','5','2','1'],['4','6','3','2','1','5'],['4','6','3','2','5','1'],['4','6','3','5','2','1'],['6','4','3','2','1','5'],['6','4','3','2','5','1'],['6','4','3','5','2','1'],['6','5','3','2','1','4'],['6','5','3','2','4','1'],['6','5','3','4','2','1'],['6','3','5','2','1','4'],['6','3','5','2','4','1'],['6','3','5','4','2','1'],['6','3','2','1','5','4'],['6','3','2','5','1','4']]
 indices_basic  = ['1','2','3','4','5','6']
 
-#all_permutations = perm(indices)
-#all_permutations = [indices]
+all_permutations = perm(['1','2','3','4','5','6'])
 
-#transpose_list = perm(indices)
 transpose_list = indices_ccsd_t
-loop_list = perm(indices_basic)
+
 #loop_list = [indices]
+loop_list = all_permutations
 
 for transpose_order in transpose_list:
     A = transpose_order[0]
@@ -86,12 +86,25 @@ for transpose_order in transpose_list:
         source_file.write('        double precision sorted(dim1*dim2*dim3*dim4*dim5*dim6)\n')
         source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4*dim5*dim6)\n')
         source_file.write('        double precision factor\n')
-        #source_file.write('cdir$ ivdep\n') 
+        source_file.write('!DEC$ prefetch sorted\n') 
+        source_file.write('!DEC$ prefetch unsorted\n') 
+        source_file.write('!DEC$ ivdep\n') 
+        source_file.write('!DEC$ parallel\n') 
+        source_file.write('!DEC$ loop count min(6), max(30), avg(10)\n') 
         source_file.write('        do j'+a+' = 1,dim'+a+'\n')
+        source_file.write('!DEC$ loop count min(6), max(30), avg(10)\n') 
         source_file.write('         do j'+b+' = 1,dim'+b+'\n')
+        source_file.write('!DEC$ loop count min(6), max(30), avg(10)\n') 
         source_file.write('          do j'+c+' = 1,dim'+c+'\n')
+        source_file.write('!DEC$ loop count min(6), max(30), avg(10)\n') 
+        source_file.write('!DEC$ unroll(4)\n') 
         source_file.write('           do j'+d+' = 1,dim'+d+'\n')
+        source_file.write('!DEC$ loop count min(6), max(30), avg(10)\n') 
+        source_file.write('!DEC$ unroll(4)\n') 
         source_file.write('            do j'+e+' = 1,dim'+e+'\n')
+        source_file.write('!DEC$ loop count min(6), max(30), avg(10)\n') 
+        source_file.write('!DEC$ unroll(4)\n') 
+        source_file.write('!DEC$ vector always\n') 
         source_file.write('             do j'+f+' = 1,dim'+f+'\n')
         source_file.write('              old_offset = j6+dim6*(j5-1+dim5*(j4-1+dim4*\n')
         source_file.write('     &                    (j3-1+dim3*(j2-1+dim2*(j1-1)))))\n')
@@ -108,11 +121,10 @@ for transpose_order in transpose_list:
         source_file.write('        return\n')
         source_file.write('        end\n')
         source_file.close()
-        os.system(fortran_compiler+' '+fortran_opt_flags+' '+source_name)
-        #os.system('ar -r tce_sortacc_jeff.a '+subroutine_name+'.o')
-        #os.system('rm '+subroutine_name+'.o')
+        os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name)
         os.system('mv '+subroutine_name+'.F '+src_dir)
-        #os.system('mv '+subroutine_name+'.lst '+lst_dir)
+        os.system('mv '+subroutine_name+'.o '+obj_dir)
         
-    os.system('ar -r tce_sortacc_jeff.a transaccu_'+A+B+C+D+E+F+'_loop*.o')
-    os.system('rm transaccu_'+A+B+C+D+E+F+'_loop_*.o')
+    os.system('ar -r tce_sortacc_6_new.a '+obj_dir+'transaccu_'+A+B+C+D+E+F+'_loop*.o')
+
+
