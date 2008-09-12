@@ -1,167 +1,140 @@
-#define RANKA 3
-#define RANKB 4
-#define RANKC 5
-#define RANKD 4
-#define RANKI 4
-#define RANKJ 4
+#define RANKA 2
+#define RANKB 3
+#define RANKC 4
+#define RANKD 5
+#define RANKI 6
+#define RANKJ 7
 c
       program run_ccsd_t2_8
 c
       implicit none
       integer dim1,dim2,dim3,dim4,dim5,dim6
       integer size_t,size_v,size_r
+
       integer size_a,size_b,size_c
-      integer row_a,col_a,row_b,col_b,row_c,col_c
+      integer dim_common,dima_sort,dima,dimb_sort,dimb,dimc
+
+      double precision a_raw(RANKA*RANKB*RANKI*RANKJ)
+      double precision a_sort(RANKA*RANKB*RANKI*RANKJ)
+      double precision b_raw(RANKA*RANKB*RANKC*RANKD)
+      double precision b_sort(RANKA*RANKB*RANKC*RANKD)
+      double precision c_sort(RANKC*RANKD*RANKI*RANKJ)
+      double precision c_done(RANKC*RANKD*RANKI*RANKJ)
+
       double precision t_raw(RANKA*RANKB*RANKI*RANKJ)
+      double precision t_sort(RANKA*RANKB*RANKI*RANKJ)
       double precision v_raw(RANKA*RANKB*RANKC*RANKD)
-      double precision r_dgemm(RANKC*RANKD*RANKI*RANKJ)
-      double precision r_loops(RANKC*RANKD*RANKI*RANKJ)
-      double precision a_raw(RANKA*RANKC)
-      double precision b_raw(RANKC*RANKB)
-      double precision c_dgemm(RANKA*RANKB)
-      double precision c_loops(RANKA*RANKB)
+      double precision v_sort(RANKA*RANKB*RANKC*RANKD)
+      double precision r_sort(RANKC*RANKD*RANKI*RANKJ)
+      double precision r_done(RANKC*RANKD*RANKI*RANKJ)
+!       double precision r_loops(RANKC*RANKD*RANKI*RANKJ)
 c
-      size_a = RANKA * RANKC
-      size_b = RANKC * RANKB
-      size_c = RANKA * RANKB
+      dim1=RANKI
+      dim2=RANKJ
+      dim3=RANKA
+      dim4=RANKB
+      dim5=RANKC ! common index
+      dim6=RANKD ! common index
 c
-      row_a=RANKA
-      col_a=RANKC
-      row_b=RANKC
-      col_b=RANKB
-      row_c=RANKA
-      col_c=RANKB
+!       write(6,1) 'dim1 = ',dim1
+!       write(6,1) 'dim2 = ',dim2
+!       write(6,1) 'dim3 = ',dim3
+!       write(6,1) 'dim4 = ',dim4
+!       write(6,1) 'dim5 = ',dim5
+!       write(6,1) 'dim6 = ',dim6
 c
-      call number_array(a_raw,size_a)
+      size_t = dim1 * dim2 * dim3 * dim4
+      size_a = size_t
+      size_v = dim3 * dim4 * dim5 * dim6
+      size_b = size_v
+      size_r = dim1 * dim2 * dim5 * dim6
+      size_c = size_r
+c
+!       write(6,1) 'size_t = ',size_t
+!       write(6,1) 'size_v = ',size_v
+!       write(6,1) 'size_r = ',size_r
+c
+      dima_sort = dim1*dim2
+      dimb_sort = dim3*dim4
+      dim_common = dim5*dim6
+c
       call number_array(b_raw,size_b)
-c      call print_matrix(a_raw,row_a,col_a)
-c      call print_matrix(b_raw,row_b,col_b)
-c
-      call zero_array(c_dgemm,size_c)
-      call zero_array(c_loops,size_c)
-c
-c     Test case=1 - works
-c      write(6,2) "CASE 1"
-c
-c      call dgemm('N','N',row_a,col_b,col_a,1.0d0,
-c     &           a_raw,row_a,b_raw,row_b,0.0d0,c_dgemm,row_c)
-c
-      call simple_dgemm(a_raw,b_raw,c_dgemm,
-     &                  row_a,col_a,row_b,col_b,row_c,col_c,1)
-c
-      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
-     &                row_a,col_a,row_b,col_b,row_c,col_c,1)
-c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
-c
-      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
-c
-c     Test case=2 - works
-c      write(6,2) "CASE 2"
-c
-c      call dgemm('N','T',row_a,col_b,col_a,1.0d0,
-c     &           a_raw,row_a,b_raw,col_b,0.0d0,c_dgemm,row_c)
-c
-      call simple_dgemm(a_raw,b_raw,c_dgemm,
-     &                  row_a,col_a,col_b,row_b,row_c,col_c,2)
-c
-      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
-     &                row_a,col_a,col_b,row_b,row_c,col_c,2)
-c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
-c
-      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
-c
-c     Test case=3 - works
-c      write(6,2) "CASE 3"
-c
+      call number_array(v_raw,size_v)
+
+      call tce_sort_4(b_raw,b_sort,dim3,dim4,dim5,dim6,4,3,2,1,1.0d0)
+
+      call transpose_4321_loop_1234(v_raw,v_sort,
+     &                              dim3,dim4,dim5,dim6,1.0d0)
+
+      call compare_arrays(b_sort,v_sort,size_v,.false.)
+
+      call number_array(a_raw,size_a)
+      call number_array(t_raw,size_t)
+
+      call tce_sort_4(a_raw,a_sort,dim3,dim4,dim1,dim2,2,1,4,3,1.0d0)
+
+      call transpose_2143_loop_1234(t_raw,t_sort,
+     &                              dim3,dim4,dim1,dim2,1.0d0)
+
+      call compare_arrays(a_sort,t_sort,size_t,.false.)
+
+      call zero_array(c_sort,size_c)
+      call zero_array(r_sort,size_r)
+
 c      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
 c     &           a_raw,col_a,b_raw,col_a,0.0d0,c_dgemm,row_c)
+c      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
+c     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
+
+
+      call compare_arrays(c_sort,r_sort,size_r,.false.)
+
+#ifdef BANANA
+      call number_array(t_raw,size_t)
+!       call fill_array(t_raw,size_t,1.0d0)
+!       call print_array(t_raw,size_t)
+      call number_array(v_raw,size_v)
+!       call fill_array(v_raw,size_v,1.0d0)
+!       call print_array(v_raw,size_v)
+      call zero_array(r_dgemm,size_r)
+
+      call ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_dgemm,size_r,
+     &               dim1,dim2,dim3,dim4,dim5,dim6)
+
+!       call print_array(r_dgemm,size_r)
+
+      call number_array(t_raw,size_t)
+!       call fill_array(t_raw,size_t,1.0d0)
+!       call print_array(t_raw,size_t)
+      call number_array(v_raw,size_v)
+!       call fill_array(v_raw,size_v,1.0d0)
+!       call print_array(v_raw,size_v)
+      call zero_array(r_loops,size_r)
+
+c      call tce_sort_4(a_raw,a_sort,dim5,dim6,dim1,dim2,4,3,2,1,1.0d0)
+      call transpose_4321_loop_1234(t_raw,t_sort,
+     &                              dim5,dim6,dim1,dim2,1.0d0)
+
+c      call tce_sort_4(b_raw,b_sort,dim3,dim4,dim5,dim6,2,1,4,3,1.0d0)
+      call transpose_2134_loop_1234(v_raw,v_sort,
+     &                              dim3,dim4,dim5,dim6,1.0d0)
 c
-      call simple_dgemm(a_raw,b_raw,c_dgemm,
-     &                  col_a,row_a,row_b,col_b,row_c,col_c,3)
-c
-      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
-     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
-c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
-c
-      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
-c
-c      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
-c
-c     Test case=4 - works
-c      write(6,2) "CASE 4"
-c
-c      call dgemm('T','T',row_a,col_b,col_a,1.0d0,
-c     &           a_raw,col_a,b_raw,col_b,0.0d0,c_dgemm,row_a)
-c
-      call simple_dgemm(a_raw,b_raw,c_dgemm,
-     &                  col_a,row_a,col_b,row_b,row_c,col_c,4)
-c
-      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
-     &                col_a,row_a,col_b,row_b,row_c,col_c,4)
-c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
-c
-c      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
-c
-c      dim1=RANKI
-c      dim2=RANKJ
-c      dim3=RANKA
-c      dim4=RANKB
-c      dim5=RANKC ! common index
-c      dim6=RANKD ! common index
-c
-c      write(6,1) 'dim1 = ',dim1
-c      write(6,1) 'dim2 = ',dim2
-c      write(6,1) 'dim3 = ',dim3
-c      write(6,1) 'dim4 = ',dim4
-c      write(6,1) 'dim5 = ',dim5
-c      write(6,1) 'dim6 = ',dim6
-c
-c      size_t = RANKI * RANKJ * RANKA * RANKB
-c      size_v = RANKA * RANKB * RANKC * RANKD
-c      size_r = RANKI * RANKJ * RANKC * RANKD
-c
-c      write(6,1) 'size_t = ',size_t
-c      write(6,1) 'size_v = ',size_v
-c      write(6,1) 'size_r = ',size_r
-c
-c      call number_array(t_raw,size_t)
-c      call fill_array(t_raw,size_t,1.0d0)
-c      call print_array(t_raw,size_t)
-c      call number_array(v_raw,size_v)
-c      call fill_array(v_raw,size_v,1.0d0)
-c      call print_array(v_raw,size_v)
-c
-c      call zero_array(r_dgemm,size_r)
-c
-c      call ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_dgemm,size_r,
-c     &               dim1,dim2,dim3,dim4,dim5,dim6)
-c
-c      call print_array(r_dgemm,size_r)
-c
-c      call number_array(t_raw,size_t)
-c      call fill_array(t_raw,size_t,1.0d0)
-c      call print_array(t_raw,size_t)
-c      call number_array(v_raw,size_v)
-c      call fill_array(v_raw,size_v,1.0d0)
-c      call print_array(v_raw,size_v)
-c
-c      call zero_array(r_loops,size_r)
-c
-c      call loop_ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_loops,size_r,
-c     &                    dim1,dim2,dim3,dim4,dim5,dim6)
-c
-c      call print_array(r_loops,size_r)
-c
-c      call compare_arrays(r_dgemm,r_loops,size_r)
-c
+c      call dgemm('T','N',dim1*dim2,dim3*dim4,dim5*dim6,1.0d0,a_sort,
+c     &           dim5*dim6,b_sort,dim5*dim6,1.0d0,c_sort,dim1*dim2)
+      call loop_dgemm(1.0d0,1.0d0,
+     &                t_sort,size_t,v_sort,size_v,r_sort,size_r,
+     &                dim1*dim2,dim5*dim6,
+     &                dim5*dim6,dim3*dim4,
+     &                dim3*dim4,dim1*dim2,3)
+
+c      call tce_sort_4(c_sort,c_done,dim4,dim3,dim2,dim1,2,1,4,3,1.0d0)
+      call transpose_4321_loop_1234(r_sort,r_loops,
+     &                              dim4,dim3,dim2,dim1,1.0d0)
+
+!       call print_array(r_dgemm,size_r)
+
+      call compare_arrays(r_dgemm,r_loops,size_r,.false.)
+#endif
    1  format(1x,a8,i8)
    2  format(1x,a60)
       end
@@ -249,7 +222,8 @@ c
       return
       end
 
-      subroutine loop_dgemm(a_in,size_a,b_in,size_b,c_out,size_c,
+      subroutine loop_dgemm(alpha,beta,
+     &                      a_in,size_a,b_in,size_b,c_out,size_c,
      &                      row_a,col_a,row_b,col_b,row_c,col_c,case)
       implicit none
       integer i,j,k
@@ -259,6 +233,7 @@ c
       double precision a_in(size_a)
       double precision b_in(size_b)
       double precision c_out(size_c)
+      double precision alpha,beta,temp
       integer case
 c
 c     case = 1 C += A*B   ---- 'N','N'
@@ -347,7 +322,7 @@ c
       return
       end
 
-      subroutine simple_dgemm(a_in,b_in,c_out,
+      subroutine simple_dgemm(alpha,beta,a_in,b_in,c_out,
      &                        row_a,col_a,row_b,col_b,row_c,col_c,case)
       implicit none
       integer i,j,k
@@ -355,6 +330,7 @@ c
       double precision a_in(row_a,col_a)
       double precision b_in(row_b,col_b)
       double precision c_out(row_c,col_c)
+      double precision alpha,beta,temp
       integer case
 c
 c     case = 1 C += A*B   ---- 'N','N'
@@ -368,10 +344,11 @@ c     C(i,j) = A(i,k) * B(k,j)
 c
         do i = 1, row_c      ! row_a
           do j = 1, col_c    ! col_b
-            c_out(i,j) = 0.0d0
+            temp = beta*c_out(i,j)
             do k = 1,col_a   ! row_b
-              c_out(i,j) = c_out(i,j) + a_in(i,k) * b_in(k,j)
+              temp = temp + a_in(i,k) * b_in(k,j)
             enddo
+            c_out(i,j) = temp
           enddo
         enddo
       elseif (case.eq.2) then
@@ -380,10 +357,11 @@ c     C(i,j) = A(i,k) * B(j,k)
 c
         do i = 1, row_c      ! row_a
           do j = 1, col_c    ! row_b
-            c_out(i,j) = 0.0d0
+            temp = beta*c_out(i,j)
             do k = 1,col_a   ! col_b
-              c_out(i,j) = c_out(i,j) + a_in(i,k) * b_in(j,k)
+              temp = temp + a_in(i,k) * b_in(j,k)
             enddo
+            c_out(i,j) = temp
           enddo
         enddo
       elseif (case.eq.3) then
@@ -392,10 +370,11 @@ c     C(i,j) = A(k,i) * B(k,j)
 c
         do i = 1, row_c      ! row_a
           do j = 1, col_c    ! col_b
-            c_out(i,j) = 0.0d0
+            temp = beta*c_out(i,j)
             do k = 1,row_a   ! row_b
-              c_out(i,j) = c_out(i,j) + a_in(k,i) * b_in(k,j)
+              temp = temp + a_in(k,i) * b_in(k,j)
             enddo
+            c_out(i,j) = temp
           enddo
         enddo
       elseif (case.eq.4) then
@@ -404,10 +383,11 @@ c     C(i,j) = A(k,i) * B(j,k)
 c
         do i = 1, row_c      ! row_a
           do j = 1, col_c    ! col_b
-            c_out(i,j) = 0.0d0
+            temp = beta*c_out(i,j)
             do k = 1,row_a   ! col_b
-              c_out(i,j) = c_out(i,j) + a_in(k,i) * b_in(j,k)
+              temp = temp + a_in(k,i) * b_in(j,k)
             enddo
+            c_out(i,j) = temp
           enddo
         enddo
       endif
@@ -507,3 +487,49 @@ c
    2  format(1x,'the matrix has ',i3,' rows and ',i3,' columns')
    3  format(1x,'===================================')
       end
+
+        subroutine transpose_2143_loop_1234(unsorted,sorted,
+     &                           dim1,dim2,dim3,dim4,factor)
+        implicit none
+        integer dim1,dim2,dim3,dim4
+        integer old_offset,new_offset
+        integer j1,j2,j3,j4
+        double precision sorted(dim1*dim2*dim3*dim4)
+        double precision unsorted(dim1*dim2*dim3*dim4)
+        double precision factor
+        do j1 = 1,dim1
+         do j2 = 1,dim2
+          do j3 = 1,dim3
+           do j4 = 1,dim4
+            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))
+            new_offset = j3+dim3*(j4-1+dim4*(j1-1+dim1*(j2-1)))
+            sorted(new_offset) = unsorted(old_offset) * factor
+           enddo
+          enddo
+         enddo
+        enddo
+        return
+        end
+
+        subroutine transpose_4321_loop_1234(unsorted,sorted,
+     &                           dim1,dim2,dim3,dim4,factor)
+        implicit none
+        integer dim1,dim2,dim3,dim4
+        integer old_offset,new_offset
+        integer j1,j2,j3,j4
+        double precision sorted(dim1*dim2*dim3*dim4)
+        double precision unsorted(dim1*dim2*dim3*dim4)
+        double precision factor
+        do j1 = 1,dim1
+         do j2 = 1,dim2
+          do j3 = 1,dim3
+           do j4 = 1,dim4
+            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))
+            new_offset = j1+dim1*(j2-1+dim2*(j3-1+dim3*(j4-1)))
+            sorted(new_offset) = unsorted(old_offset) * factor
+           enddo
+          enddo
+         enddo
+        enddo
+        return
+        end
