@@ -1,0 +1,2 @@
+icc -c linux_random.c
+ifort ccsd_t2_8_skeleton.F dgemm.F dfill.f tce_sort_hirata.F xerbla.F lsame.f linux_random.o -o ccsd_t2_8_skeleton.x
