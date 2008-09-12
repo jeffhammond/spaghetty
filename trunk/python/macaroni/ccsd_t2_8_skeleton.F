@@ -40,10 +40,8 @@ c
       call zero_array(c_dgemm,size_c)
       call zero_array(c_loops,size_c)
 c
-      write(6,2) "c_dgemm             c_loops  "
-c
 c     Test case=1 - works
-      write(6,2) "CASE 1"
+c      write(6,2) "CASE 1"
 c
 c      call dgemm('N','N',row_a,col_b,col_a,1.0d0,
 c     &           a_raw,row_a,b_raw,row_b,0.0d0,c_dgemm,row_c)
@@ -54,13 +52,13 @@ c
       call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
      &                row_a,col_a,row_b,col_b,row_c,col_c,1)
 c
-      call print_matrix(c_dgemm,row_c,col_c)
-      call print_matrix(c_loops,row_c,col_c)
+c      call print_matrix(c_dgemm,row_c,col_c)
+c      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
-c     Test case=2 - okay
-      write(6,2) "CASE 2"
+c     Test case=2 - works
+c      write(6,2) "CASE 2"
 c
 c      call dgemm('N','T',row_a,col_b,col_a,1.0d0,
 c     &           a_raw,row_a,b_raw,col_b,0.0d0,c_dgemm,row_c)
@@ -71,13 +69,13 @@ c
       call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
      &                row_a,col_a,col_b,row_b,row_c,col_c,2)
 c
-      call print_matrix(c_dgemm,row_c,col_c)
-      call print_matrix(c_loops,row_c,col_c)
+c      call print_matrix(c_dgemm,row_c,col_c)
+c      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
-c     Test case=3
-      write(6,2) "CASE 3"
+c     Test case=3 - works
+c      write(6,2) "CASE 3"
 c
 c      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
 c     &           a_raw,col_a,b_raw,col_a,0.0d0,c_dgemm,row_c)
@@ -88,15 +86,15 @@ c
       call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
      &                col_a,row_a,row_b,col_b,row_c,col_c,3)
 c
-      call print_matrix(c_dgemm,row_c,col_c)
-      call print_matrix(c_loops,row_c,col_c)
+c      call print_matrix(c_dgemm,row_c,col_c)
+c      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
 c      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
-c     Test case=4
-      write(6,2) "CASE 4"
+c     Test case=4 - works
+c      write(6,2) "CASE 4"
 c
 c      call dgemm('T','T',row_a,col_b,col_a,1.0d0,
 c     &           a_raw,col_a,b_raw,col_b,0.0d0,c_dgemm,row_a)
@@ -107,10 +105,10 @@ c
       call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
      &                col_a,row_a,col_b,row_b,row_c,col_c,4)
 c
-      call print_matrix(c_dgemm,row_c,col_c)
-      call print_matrix(c_loops,row_c,col_c)
+c      call print_matrix(c_dgemm,row_c,col_c)
+c      call print_matrix(c_loops,row_c,col_c)
 c
-      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
+c      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
 c      dim1=RANKI
 c      dim2=RANKJ
