@@ -2,10 +2,6 @@
  * My heavily modified version of the NVIDIA transpose code.
  */
 
-/*
- * CPU Code
- */
-
 ////////////////////////////////////////////////////////////////////////////////
 // export C interface
 extern "C"

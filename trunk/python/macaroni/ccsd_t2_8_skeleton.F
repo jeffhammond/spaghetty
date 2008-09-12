@@ -1,9 +1,9 @@
-#define RANKA 2
-#define RANKB 3
+#define RANKA 4
+#define RANKB 4
 #define RANKC 4
-#define RANKD 5
-#define RANKI 6
-#define RANKJ 7
+#define RANKD 4
+#define RANKI 4
+#define RANKJ 4
 c
       program run_ccsd_t2_8
 c
@@ -21,13 +21,15 @@ c
       double precision c_sort(RANKC*RANKD*RANKI*RANKJ)
       double precision c_done(RANKC*RANKD*RANKI*RANKJ)
 
+      integer row_a,col_a,row_b,col_b,row_c,col_c
+
       double precision t_raw(RANKA*RANKB*RANKI*RANKJ)
       double precision t_sort(RANKA*RANKB*RANKI*RANKJ)
       double precision v_raw(RANKA*RANKB*RANKC*RANKD)
       double precision v_sort(RANKA*RANKB*RANKC*RANKD)
       double precision r_sort(RANKC*RANKD*RANKI*RANKJ)
       double precision r_done(RANKC*RANKD*RANKI*RANKJ)
-!       double precision r_loops(RANKC*RANKD*RANKI*RANKJ)
+      double precision r_tce(RANKC*RANKD*RANKI*RANKJ)
 c
       dim1=RANKI
       dim2=RANKJ
@@ -59,9 +61,18 @@ c
       dim_common = dim5*dim6
 c
       call number_array(b_raw,size_b)
-      call number_array(v_raw,size_v)
+
+c      call print_4array(b_raw,dim3,dim4,dim5,dim6)
+c      call print_matrix(b_raw,dim3*dim4,dim5*dim6)
+c      call print_array(b_raw,size_b)
 
       call tce_sort_4(b_raw,b_sort,dim3,dim4,dim5,dim6,4,3,2,1,1.0d0)
+
+c      call print_4array(b_sort,dim6,dim5,dim4,dim3)
+c      call print_matrix(b_sort,dim5*dim6,dim3*dim4)
+c      call print_array(b_sort,size_b)
+
+      call number_array(v_raw,size_v)
 
       call transpose_4321_loop_1234(v_raw,v_sort,
      &                              dim3,dim4,dim5,dim6,1.0d0)
@@ -83,58 +94,36 @@ c
 
 c      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
 c     &           a_raw,col_a,b_raw,col_a,0.0d0,c_dgemm,row_c)
-c      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
+c      call loop_dgemm(1.0d0,1.0d0,
+c     &                a_raw,size_a,b_raw,size_b,c_loops,size_c,
 c     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
 
+      row_a = dim1*dim2
+      col_a = dim3*dim4
+      row_b = dim3*dim4
+      col_b = dim5*dim6
+      row_c = dim1*dim2
+      col_c = dim5*dim6
+
+      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
+     &           a_sort,col_a,b_sort,col_a,0.0d0,c_sort,row_c)
+      call loop_dgemm(1.0d0,1.0d0,
+     &                t_sort,size_t,v_sort,size_v,r_sort,size_r,
+     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
 
       call compare_arrays(c_sort,r_sort,size_r,.false.)
 
-#ifdef BANANA
-      call number_array(t_raw,size_t)
-!       call fill_array(t_raw,size_t,1.0d0)
-!       call print_array(t_raw,size_t)
-      call number_array(v_raw,size_v)
-!       call fill_array(v_raw,size_v,1.0d0)
-!       call print_array(v_raw,size_v)
-      call zero_array(r_dgemm,size_r)
-
-      call ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_dgemm,size_r,
-     &               dim1,dim2,dim3,dim4,dim5,dim6)
-
-!       call print_array(r_dgemm,size_r)
-
-      call number_array(t_raw,size_t)
-!       call fill_array(t_raw,size_t,1.0d0)
-!       call print_array(t_raw,size_t)
-      call number_array(v_raw,size_v)
-!       call fill_array(v_raw,size_v,1.0d0)
-!       call print_array(v_raw,size_v)
-      call zero_array(r_loops,size_r)
-
-c      call tce_sort_4(a_raw,a_sort,dim5,dim6,dim1,dim2,4,3,2,1,1.0d0)
-      call transpose_4321_loop_1234(t_raw,t_sort,
-     &                              dim5,dim6,dim1,dim2,1.0d0)
-
-c      call tce_sort_4(b_raw,b_sort,dim3,dim4,dim5,dim6,2,1,4,3,1.0d0)
-      call transpose_2134_loop_1234(v_raw,v_sort,
-     &                              dim3,dim4,dim5,dim6,1.0d0)
-c
-c      call dgemm('T','N',dim1*dim2,dim3*dim4,dim5*dim6,1.0d0,a_sort,
-c     &           dim5*dim6,b_sort,dim5*dim6,1.0d0,c_sort,dim1*dim2)
-      call loop_dgemm(1.0d0,1.0d0,
-     &                t_sort,size_t,v_sort,size_v,r_sort,size_r,
-     &                dim1*dim2,dim5*dim6,
-     &                dim5*dim6,dim3*dim4,
-     &                dim3*dim4,dim1*dim2,3)
-
-c      call tce_sort_4(c_sort,c_done,dim4,dim3,dim2,dim1,2,1,4,3,1.0d0)
-      call transpose_4321_loop_1234(r_sort,r_loops,
+      call tce_sort_4(c_sort,c_done,dim4,dim3,dim2,dim1,2,1,4,3,1.0d0)
+      call transpose_2143_loop_1234(r_sort,r_done,
      &                              dim4,dim3,dim2,dim1,1.0d0)
 
-!       call print_array(r_dgemm,size_r)
+      call compare_arrays(c_done,r_done,size_r,.false.)
 
-      call compare_arrays(r_dgemm,r_loops,size_r,.false.)
-#endif
+      call ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_tce,size_r,
+     &               dim1,dim2,dim3,dim4,dim5,dim6)
+
+      call compare_arrays(r_tce,c_done,size_r,.false.)
+
    1  format(1x,a8,i8)
    2  format(1x,a60)
       end
@@ -167,58 +156,35 @@ c
       return
       end
 
-      subroutine loop_ccsd_t2_8(a_raw,size_a,b_raw,size_b,c_done,size_c,
+      subroutine test_ccsd_t2_8(a_raw,size_a,b_raw,size_b,c_done,size_c,
      &                          dim1,dim2,dim3,dim4,dim5,dim6)
 c
-c     c(p3,p4,h1,h2) = Sum(p5,p6)  a(p5,p6,h1,h2) * b(p3,p4,p5,p6)
+c     i0(p3,p4,h1,h2) = Sum(p5,p6) v(p3,p4,p5,p6) * t(p5,p6,h1,h2)
 c
       implicit none
       integer dim1,dim2,dim3,dim4,dim5,dim6
-      integer i1,i2,i3,i4,i5,i6
-      integer a_o1,a_o2,a_o3,a_o4,a_o5,a_o6
-      integer b_o1,b_o2,b_o3,b_o4,b_o5,b_o6
-      integer c_o1,c_o2,c_o3,c_o4,c_o5,c_o6
-      integer a_offset,b_offset,c_offset
-      integer old_offset,new_offset
       integer size_a,size_b,size_c
       double precision a_raw(size_a),b_raw(size_b),c_done(size_c)
       double precision a_sort(size_a),b_sort(size_b),c_sort(size_c)
       integer dim_common,dima_sort,dima,dimb_sort,dimb,dimc
-
-
-#ifdef AAA
-      do i1 = 1, dim1
-       do i2 = 1, dim2
-        do i3 = 1, dim3
-         do i4 = 1, dim4
-          c_o1 = (i1-1)*dim2*dim3*dim4
-          c_o2 = (i2-1)*dim3*dim4
-          c_o3 = (i3-1)*dim4
-          c_o4 = (i4-1)
-          c_offset = c_o1+c_o2+c_o3+c_o4+1
-          c_done(c_offset) = 0.0d0
-          do i5 = 1, dim5
-           do i6 = 1, dim6
-            a_o5 = (i5-1)
-            a_o6 = (i6-1)*dim5
-            a_o1 = (i1-1)*dim5*dim6
-            a_o2 = (i2-1)*dim5*dim6*dim1
-            a_offset = a_o5+a_o6+a_o1+a_o2+1
-            b_o3 = (i3-1)
-            b_o4 = (i4-1)*dim3
-            b_o5 = (i5-1)*dim3*dim4
-            b_o6 = (i6-1)*dim3*dim4*dim5
-            b_offset = b_o3+b_o4+b_o5+b_o6+1
-            c_done(c_offset) = c_done(c_offset) +
-     &                          a_raw(a_offset) * b_raw(b_offset)
-           enddo
-          enddo
-         enddo
-        enddo
-       enddo
-      enddo
-#endif
 c
+      dima_sort = dim1*dim2
+      dimb_sort = dim3*dim4
+      dim_common = dim5*dim6
+      dima = dim1*dim2*dim5*dim6
+      dimb = dim3*dim4*dim5*dim6
+      dimc = dim1*dim2*dim3*dim4
+c
+      call dfill(dimc,0.0d0,c_sort,1)
+!       call tce_sort_4(a_raw,a_sort,dim5,dim6,dim1,dim2,4,3,2,1,1.0d0)
+
+!       call tce_sort_4(b_raw,b_sort,dim3,dim4,dim5,dim6,2,1,4,3,1.0d0)
+
+!       call dgemm('T','N',dima_sort,dimb_sort,dim_common,1.0d0,a_sort,
+!      &           dim_common,b_sort,dim_common,1.0d0,c_sort,dima_sort)
+
+!       call tce_sort_4(c_sort,c_done,dim4,dim3,dim2,dim1,2,1,4,3,1.0d0)
+
       return
       end
 
@@ -419,7 +385,7 @@ c
       do i = 1, size
         write(6,1) i,array(i)
       enddo
-   1  format(1x,'element ',i8,' is ',f20.8)
+   1  format(1x,'array ',i8,' is ',f20.8)
       end
 
       subroutine zero_array(array,size)
@@ -483,53 +449,77 @@ c
         enddo
       enddo
       write(6,3)
-   1  format(1x,'element (',i4,',',i4,') is ',f20.8)
+   1  format(1x,'matrix (',i4,',',i4,') is ',f20.8)
    2  format(1x,'the matrix has ',i3,' rows and ',i3,' columns')
    3  format(1x,'===================================')
       end
 
-        subroutine transpose_2143_loop_1234(unsorted,sorted,
-     &                           dim1,dim2,dim3,dim4,factor)
-        implicit none
-        integer dim1,dim2,dim3,dim4
-        integer old_offset,new_offset
-        integer j1,j2,j3,j4
-        double precision sorted(dim1*dim2*dim3*dim4)
-        double precision unsorted(dim1*dim2*dim3*dim4)
-        double precision factor
-        do j1 = 1,dim1
-         do j2 = 1,dim2
-          do j3 = 1,dim3
-           do j4 = 1,dim4
-            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))
-            new_offset = j3+dim3*(j4-1+dim4*(j1-1+dim1*(j2-1)))
-            sorted(new_offset) = unsorted(old_offset) * factor
-           enddo
-          enddo
-         enddo
-        enddo
-        return
-        end
+      subroutine print_4array(array,d1,d2,d3,d4)
+      implicit none
+      integer i1,i2,i3,i4
+      integer d1,d2,d3,d4
+      double precision array(d1,d2,d3,d4)
+c
+      write(6,2) d1,d2,d3,d4
+      write(6,3)
 
-        subroutine transpose_4321_loop_1234(unsorted,sorted,
-     &                           dim1,dim2,dim3,dim4,factor)
-        implicit none
-        integer dim1,dim2,dim3,dim4
-        integer old_offset,new_offset
-        integer j1,j2,j3,j4
-        double precision sorted(dim1*dim2*dim3*dim4)
-        double precision unsorted(dim1*dim2*dim3*dim4)
-        double precision factor
-        do j1 = 1,dim1
-         do j2 = 1,dim2
-          do j3 = 1,dim3
-           do j4 = 1,dim4
-            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))
-            new_offset = j1+dim1*(j2-1+dim2*(j3-1+dim3*(j4-1)))
-            sorted(new_offset) = unsorted(old_offset) * factor
-           enddo
+      do i4 = 1, d4
+        do i3 = 1, d3
+          do i2 = 1, d2
+            do i1 = 1, d1
+              write(6,1) i1,i2,i3,i4,array(i1,i2,i3,i4)
+            enddo
           enddo
+        enddo
+      enddo
+      write(6,3)
+   1  format(1x,'array (',i4,',',i4,',',i4,',',i4,') is ',f20.8)
+   2  format(1x,'dimensions = ',4i4)
+   3  format(1x,'===================================')
+      end
+
+      subroutine transpose_2143_loop_1234(unsorted,sorted,
+     &                                    dim1,dim2,dim3,dim4,factor)
+      implicit none
+      integer dim1,dim2,dim3,dim4
+      integer old_offset,new_offset
+      integer j1,j2,j3,j4
+      double precision sorted(dim1*dim2*dim3*dim4)
+      double precision unsorted(dim1*dim2*dim3*dim4)
+      double precision factor
+      do j1 = 1,dim1
+       do j2 = 1,dim2
+        do j3 = 1,dim3
+         do j4 = 1,dim4
+          old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))
+          new_offset = j3+dim3*(j4-1+dim4*(j1-1+dim1*(j2-1)))
+          sorted(new_offset) = unsorted(old_offset) * factor
          enddo
         enddo
-        return
-        end
+       enddo
+      enddo
+      return
+      end
+
+      subroutine transpose_4321_loop_1234(unsorted,sorted,
+     &                                    dim1,dim2,dim3,dim4,factor)
+      implicit none
+      integer dim1,dim2,dim3,dim4
+      integer old_offset,new_offset
+      integer j1,j2,j3,j4
+      double precision sorted(dim1*dim2*dim3*dim4)
+      double precision unsorted(dim1*dim2*dim3*dim4)
+      double precision factor
+      do j1 = 1,dim1
+       do j2 = 1,dim2
+        do j3 = 1,dim3
+         do j4 = 1,dim4
+          old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))
+          new_offset = j1+dim1*(j2-1+dim2*(j3-1+dim3*(j4-1)))
+          sorted(new_offset) = unsorted(old_offset) * factor
+         enddo
+        enddo
+       enddo
+      enddo
+      return
+      end

@@ -16,12 +16,12 @@
 #include <transpose_kernel_jeff.cu>
 
 // Thread block size
-#define BLOCK_SIZE 4
+//#define BLOCK_SIZE 4
 
 ////////////////////////////////////////////////////////////////////////////////
 // declaration, forward
 void runTest( int argc, char** argv);
-extern "C" void computeGold( float* reference, float* idata, 
+extern "C" void computeGold( float* refdata, float* idata, 
                          const unsigned int size_a, const unsigned int size_b,
                          const unsigned int size_c, const unsigned int size_d );
 
@@ -134,14 +134,14 @@ runTest( int argc, char** argv)
     CUDA_SAFE_CALL( cudaMemcpy( h_odata, d_odata, mem_size,
                                 cudaMemcpyDeviceToHost) );
 
-    // compute reference solution
-    float* reference = (float*) malloc( mem_size);
+    // compute refdata solution
+    float* refdata = (float*) malloc( mem_size);
 
     // execute the kernel
     cutResetTimer(timer);
     cutStartTimer(timer);
     for (int i = 0; i < numIterations; ++i){
-         computeGold( reference, h_idata, size_a, size_b, size_c, size_d);
+         computeGold( refdata, h_idata, size_a, size_b, size_c, size_d);
     }
     cutStopTimer(timer);
     float cpuTime = cutGetTimerValue(timer);
@@ -150,7 +150,8 @@ runTest( int argc, char** argv)
 
     // check result
 
-    if((size_a * size_b * size_c * size_d)<10001){
+    if((size_a * size_b * size_c * size_d)<100000){
+    unsigned int offset;
     printf("==================================================================\n");
     printf("                    Initial      Reference     OutputData\n");
     printf("==================================================================\n");
@@ -158,16 +159,21 @@ runTest( int argc, char** argv)
       for( unsigned int j = 0; j < (size_b); ++j){
         for( unsigned int k = 0; k < (size_c); ++k){
           for( unsigned int l = 0; l < (size_d); ++l){
-            printf("%3d %3d %3d %3d", i, j, k, l);
-            printf("%14.7f",h_idata[i+size_b*(j+size_c*(k+size_d*l))]);
-            printf("%14.7f",reference[i+size_b*(j+size_c*(k+size_d*l))]);
-            printf("%14.7f\n",h_odata[i+size_b*(j+size_c*(k+size_d*l))]);
+            offset = i+size_b*(j+size_c*(k+size_d*l));
+            if (h_odata[offset] != refdata[offset]){
+              printf("%3d %3d %3d %3d", i, j, k, l);
+              printf("%14.7f",h_idata[offset]);
+              printf("%14.7f",refdata[offset]);
+              printf("%14.7f",h_odata[offset]);
+              //printf("%7d",(int)(h_odata[offset] == refdata[offset]));
+              printf("\n");
+            }
           }
         }
       }
     }
     }
-    CUTBoolean res = cutComparef( reference, h_odata, size_a * size_b * size_c * size_d);
+    CUTBoolean res = cutComparef( refdata, h_odata, size_a * size_b * size_c * size_d);
     printf("==================================================================\n");
     printf(    "Test %s\n", (1    == res)    ? "PASSED" : "FAILED");
     printf("==================================================================\n");
@@ -179,7 +185,7 @@ runTest( int argc, char** argv)
     // cleanup memory
     free(h_idata);
     free(h_odata);
-    free( reference);
+    free( refdata);
     CUDA_SAFE_CALL(cudaFree(d_idata));
     CUDA_SAFE_CALL(cudaFree(d_odata));
     CUT_SAFE_CALL(cutDeleteTimer(timer));
