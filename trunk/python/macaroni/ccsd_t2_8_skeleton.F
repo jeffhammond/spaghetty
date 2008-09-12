@@ -43,54 +43,72 @@ c
       write(6,2) "c_dgemm             c_loops  "
 c
 c     Test case=1 - works
+      write(6,2) "CASE 1"
 c
-      call dgemm('N','N',row_a,col_b,col_a,1.0d0,
-     &           a_raw,row_a,b_raw,row_b,0.0d0,c_dgemm,row_c)
+c      call dgemm('N','N',row_a,col_b,col_a,1.0d0,
+c     &           a_raw,row_a,b_raw,row_b,0.0d0,c_dgemm,row_c)
 c
-      call simple_dgemm(a_raw,b_raw,c_loops,
+      call simple_dgemm(a_raw,b_raw,c_dgemm,
      &                  row_a,col_a,row_b,col_b,row_c,col_c,1)
 c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
+      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
+     &                row_a,col_a,row_b,col_b,row_c,col_c,1)
+c
+      call print_matrix(c_dgemm,row_c,col_c)
+      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
 c     Test case=2 - okay
+      write(6,2) "CASE 2"
 c
-      call dgemm('N','T',row_a,col_b,col_a,1.0d0,
-     &           a_raw,row_a,b_raw,col_b,0.0d0,c_dgemm,row_c)
+c      call dgemm('N','T',row_a,col_b,col_a,1.0d0,
+c     &           a_raw,row_a,b_raw,col_b,0.0d0,c_dgemm,row_c)
 c
-      call simple_dgemm(a_raw,b_raw,c_loops,
+      call simple_dgemm(a_raw,b_raw,c_dgemm,
      &                  row_a,col_a,col_b,row_b,row_c,col_c,2)
 c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
+      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
+     &                row_a,col_a,col_b,row_b,row_c,col_c,2)
+c
+      call print_matrix(c_dgemm,row_c,col_c)
+      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
 c     Test case=3
+      write(6,2) "CASE 3"
 c
-      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
-     &           a_raw,col_a,b_raw,col_a,0.0d0,c_dgemm,row_c)
+c      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
+c     &           a_raw,col_a,b_raw,col_a,0.0d0,c_dgemm,row_c)
 c
-      call simple_dgemm(a_raw,b_raw,c_loops,
+      call simple_dgemm(a_raw,b_raw,c_dgemm,
      &                  col_a,row_a,row_b,col_b,row_c,col_c,3)
 c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
+      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
+     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
+c
+      call print_matrix(c_dgemm,row_c,col_c)
+      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
+c      call compare_arrays(c_dgemm,c_loops,size_c,.false.)
+c
 c     Test case=4
+      write(6,2) "CASE 4"
 c
-      call dgemm('T','T',row_a,col_b,col_a,1.0d0,
-     &           a_raw,col_a,b_raw,col_b,0.0d0,c_dgemm,row_a)
+c      call dgemm('T','T',row_a,col_b,col_a,1.0d0,
+c     &           a_raw,col_a,b_raw,col_b,0.0d0,c_dgemm,row_a)
 c
-      call simple_dgemm(a_raw,b_raw,c_loops,
+      call simple_dgemm(a_raw,b_raw,c_dgemm,
      &                  col_a,row_a,col_b,row_b,row_c,col_c,4)
 c
-c      call print_matrix(c_dgemm,row_c,col_c)
-c      call print_matrix(c_loops,row_c,col_c)
+      call loop_dgemm(a_raw,size_a,b_raw,size_b,c_loops,size_c,
+     &                col_a,row_a,col_b,row_b,row_c,col_c,4)
+c
+      call print_matrix(c_dgemm,row_c,col_c)
+      call print_matrix(c_loops,row_c,col_c)
 c
       call compare_arrays(c_dgemm,c_loops,size_c,.false.)
 c
@@ -311,8 +329,8 @@ c
 c
 c     C(i,j) = A(k,i) * B(j,k)
 c
-        if (col_a.ne.col_c) print*,'moron'
-        if (row_b.ne.col_c) print*,'moron'
+        if (row_c.ne.col_a) print*,'moron'
+        if (col_c.ne.row_b) print*,'moron'
         if (row_a.ne.col_b) print*,'moron'
         do i = 1, row_c
           do j = 1, col_c
@@ -320,7 +338,7 @@ c
             c_out(c_offset) = 0.0d0
             do k = 1, row_a
               a_offset = k+(i-1)*row_a
-              b_offset = k+(j-1)*row_b
+              b_offset = j+(k-1)*row_b
               c_out(c_offset) = c_out(c_offset) +
      &                          a_in(a_offset) * b_in(b_offset)
             enddo
