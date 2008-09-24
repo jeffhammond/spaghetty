@@ -11,10 +11,10 @@ import os
 
 # Goldstone old
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -c'
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
+fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align -pad -unroll-aggressive'
+src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
 
-lib_name = 'tce_sort_new.a'
+lib_name = 'tce_sort_f77.a'
 
 def perm(l):
     sz = len(l)
@@ -32,9 +32,6 @@ transpose_list = perm(indices)
 #transpose_list = [indices]
 loop_list = perm(indices)
 
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_new/'
-lib_name = 'tce_sort_new.a'
 for transpose_order in transpose_list:
     A = transpose_order[0]
     B = transpose_order[1]
@@ -58,10 +55,19 @@ for transpose_order in transpose_list:
         source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
         source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
         source_file.write('        double precision factor\n')
-        #source_file.write('cdir$ ivdep\n') 
+        source_file.write('!DEC$ prefetch sorted\n')
+        source_file.write('!DEC$ prefetch unsorted\n')
+        source_file.write('!DEC$ ivdep\n')
+        source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
         source_file.write('        do j'+a+' = 1,dim'+a+'\n')
+        source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
         source_file.write('         do j'+b+' = 1,dim'+b+'\n')
+        source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
+        source_file.write('!DEC$ unroll(8)\n') 
         source_file.write('          do j'+c+' = 1,dim'+c+'\n')
+        source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
+        source_file.write('!DEC$ unroll(8)\n') 
+        source_file.write('!DEC$ vector always\n') 
         source_file.write('           do j'+d+' = 1,dim'+d+'\n')
         source_file.write('            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))\n')
         source_file.write('            new_offset = j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))\n')

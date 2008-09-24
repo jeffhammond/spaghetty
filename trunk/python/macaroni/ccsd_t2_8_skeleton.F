@@ -46,11 +46,11 @@ c
 !       write(6,1) 'dim6 = ',dim6
 c
       size_t = dim1 * dim2 * dim3 * dim4
-      size_a = size_t
+      size_a = size_t ! dima_sort*dimb_sort
       size_v = dim3 * dim4 * dim5 * dim6
-      size_b = size_v
+      size_b = size_v ! dimb_sort*dim_common
       size_r = dim1 * dim2 * dim5 * dim6
-      size_c = size_r
+      size_c = size_r ! dima_sort*dim_common
 c
 !       write(6,1) 'size_t = ',size_t
 !       write(6,1) 'size_v = ',size_v

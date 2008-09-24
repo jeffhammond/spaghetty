@@ -11,23 +11,17 @@ def perm(l):
 
 indices = ['1','2','3','4']
 
-#all_permutations = perm(indices)
-#all_permutations = [indices]
-
 transpose_list = perm(indices)
-loop_list = perm(indices)
 
-for opt_set_num in range(0,9):
-    print 'opt_set_num = '+str(opt_set_num)
-    exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_optset'+str(opt_set_num)+'/'
-    for transpose_order in transpose_list:
-        A = transpose_order[0]
-        B = transpose_order[1]
-        C = transpose_order[2]
-        D = transpose_order[3]
-        driver_name = 'transpose_'+A+B+C+D
-        print driver_name
-        os.system(exe_dir+driver_name+'.x > '+exe_dir+driver_name+'.log')
+exe_dir = '/home/jeff/code/spaghetty/trunk/binary/fortran77/'
+for transpose_order in transpose_list:
+    A = transpose_order[0]
+    B = transpose_order[1]
+    C = transpose_order[2]
+    D = transpose_order[3]
+    driver_name = 'transpose_'+A+B+C+D
+    print driver_name
+    os.system(exe_dir+driver_name+'.x > '+exe_dir+driver_name+'.log')
     
     
     

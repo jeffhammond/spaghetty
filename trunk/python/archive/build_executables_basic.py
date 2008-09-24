@@ -5,13 +5,13 @@ import os
 
 # Goldstone old
 c_compiler = 'icc'
-c_opt_flags = '-O3 -mtune=core2 -msse3 -c '
+c_opt_flags = '-O3 -mtune=core2 -march=core2 -align -unroll-aggressive'
 fortran_compiler = 'ifort'
-fortran_link_flags = '-O1 -mtune=core2 -msse3 -align '
-fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -DBIGBLOCK=8 -c '
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_new/'
-lib_name = 'tce_sort_new.a'
+fortran_link_flags = '-O1 -mtune=core2 -march=core2 -align -pad'
+fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align -pad -unroll-aggressive'
+src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
+exe_dir = '/home/jeff/code/spaghetty/trunk/binary/fortran77/'
+lib_name = 'tce_sort_f77.a'
 
 count = '100'
 rank  = '32'
@@ -26,8 +26,8 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-#indices = ['1','2','3','4']
-indices = ['4','3','2','1']
+indices = ['1','2','3','4']
+#indices = ['4','3','2','1']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
@@ -40,20 +40,20 @@ loop_list = perm(indices)
 #loop_list = ['2431','3241','3142','2341','3214','3124','2314'] 
 #loop_list = ['2314'] 
 
-print fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' tce_sort_hirata.F')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
 os.system('ar -r '+lib_name+' tce_sort_hirata.o')
 
-print fortran_compiler+' '+fortran_opt_flags+' glass_correct.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' glass_correct.F')
+print fortran_compiler+' '+fortran_opt_flags+' -c glass_correct.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c glass_correct.F')
 os.system('ar -r '+lib_name+' glass_correct.o')
 
-print c_compiler+' '+c_opt_flags+' tce_sort_4kg.c'
-os.system(c_compiler+' '+c_opt_flags+' tce_sort_4kg.c')
+print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c'
+os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c')
 os.system('ar -r '+lib_name+' tce_sort_4kg.o')
 
-print c_compiler+' '+c_opt_flags+' tce_sort_4kg_4321.c'
-os.system(c_compiler+' '+c_opt_flags+' tce_sort_4kg_4321.c')
+print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg_4321.c'
+os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg_4321.c')
 os.system('ar -r '+lib_name+' tce_sort_4kg_4321.o')
 
 for transpose_order in transpose_list:
