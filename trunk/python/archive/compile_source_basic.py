@@ -5,13 +5,12 @@ import os
 
 # Goldstone old
 fortran_compiler = 'ifort'
-fortran_link_flags = '-O1 -mtune=core2 -msse3 -align '
-fortran_opt_flags = '-O3 -mtune=core2 -msse3 -align -DBIGBLOCK=8 -c '
-src_dir = '/home/jeff/code/spaghetty/trunk/python/archive/src_new/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/python/archive/exe_new/'
-lib_name = 'tce_sort_new.a'
+fortran_link_flags = '-O1 -mtune=core2 -march=core2 -align'
+fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align'
+src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
+lib_name = 'tce_sort_f77.a'
 
-modlabel = ''
+modlabel = '_tuned'
 
 def perm(l):
     sz = len(l)
@@ -25,9 +24,10 @@ indices = ['4','3','2','1']
 #all_permutations = [indices]
 
 transpose_list = [indices]
-#loop_list = perm(indices)
 #transpose_list = perm(indices)
-loop_list = perm(indices)
+#loop_list = [indices]
+#loop_list = perm(indices)
+loop_list = [['3','2','4','1']]
 
 for transpose_order in transpose_list:
 	A = transpose_order[0]
@@ -41,8 +41,8 @@ for transpose_order in transpose_list:
 		d = loop_order[3]
 		subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+modlabel
 		source_name = subroutine_name+'.F'
-		print fortran_compiler+' '+fortran_opt_flags+' '+src_dir+source_name
-		os.system(fortran_compiler+' '+fortran_opt_flags+' '+src_dir+source_name)
+		print fortran_compiler+' '+fortran_opt_flags+' -c '+src_dir+source_name
+		os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+src_dir+source_name)
 		os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
 		os.system('rm '+subroutine_name+'.o')
 		#os.system('mv '+subroutine_name+'.F '+src_dir)

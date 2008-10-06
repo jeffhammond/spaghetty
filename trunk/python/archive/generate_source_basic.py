@@ -11,7 +11,7 @@ import os
 
 # Goldstone old
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align -pad -unroll-aggressive'
+fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align'# -pad -unroll-aggressive'
 src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
 
 lib_name = 'tce_sort_f77.a'
@@ -24,13 +24,14 @@ def perm(l):
 
 indices = ['4','3','2','1']
 
-#all_permutations = perm(indices)
+all_permutations = perm(indices)
 #all_permutations = [indices]
 
-transpose_list = perm(indices)
+transpose_list = [indices]
+#transpose_list = perm(indices)
+#loop_list = [indices]
 #loop_list = perm(indices)
-#transpose_list = [indices]
-loop_list = perm(indices)
+loop_list = [['3','2','4','1'],['3','2','1','4'],['2','3','4','1'],['2','3','1','4'],['3','4','2','1'],['3','4','2','1'],['2','3','4','1']]
 
 for transpose_order in transpose_list:
     A = transpose_order[0]
@@ -59,14 +60,16 @@ for transpose_order in transpose_list:
         source_file.write('!DEC$ prefetch unsorted\n')
         source_file.write('!DEC$ ivdep\n')
         source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
+        source_file.write('!DEC$ unroll(1)\n') 
         source_file.write('        do j'+a+' = 1,dim'+a+'\n')
         source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
+        source_file.write('!DEC$ unroll(1)\n') 
         source_file.write('         do j'+b+' = 1,dim'+b+'\n')
         source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
-        source_file.write('!DEC$ unroll(8)\n') 
+        source_file.write('!DEC$ unroll(4)\n') 
         source_file.write('          do j'+c+' = 1,dim'+c+'\n')
         source_file.write('!DEC$ loop count min(24), max(40), avg(32)\n')
-        source_file.write('!DEC$ unroll(8)\n') 
+        source_file.write('!DEC$ unroll(4)\n') 
         source_file.write('!DEC$ vector always\n') 
         source_file.write('           do j'+d+' = 1,dim'+d+'\n')
         source_file.write('            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))\n')

@@ -7,16 +7,16 @@ import os
 c_compiler = 'icc'
 c_opt_flags = '-O3 -mtune=core2 -march=core2 -align -unroll-aggressive'
 fortran_compiler = 'ifort'
-fortran_link_flags = '-O1 -mtune=core2 -march=core2 -align -pad'
-fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align -pad -unroll-aggressive'
+fortran_link_flags = '-O1 -mtune=core2 -march=core2 -align'
+fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align'# -pad -unroll-aggressive'
 src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
 exe_dir = '/home/jeff/code/spaghetty/trunk/binary/fortran77/'
 lib_name = 'tce_sort_f77.a'
 
 count = '100'
-rank  = '32'
+rank  = '20'
 ranks = [rank,rank,rank,rank]
-#ranks = ['7','2','2','7']
+#ranks = ['7','1','1','7']
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])
 sizechar = str(size)
 
@@ -26,16 +26,17 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['1','2','3','4']
-#indices = ['4','3','2','1']
+#indices = ['1','2','3','4']
+indices = ['4','3','2','1']
 
 #all_permutations = perm(indices)
 #all_permutations = [indices]
 
-#transpose_list = [indices]
-transpose_list = perm(indices)
+transpose_list = [indices]
+#transpose_list = perm(indices)
 #loop_list = [indices]
-loop_list = perm(indices)
+#loop_list = perm(indices)
+loop_list = [['3','2','4','1'],['3','2','1','4'],['2','3','4','1'],['2','3','1','4'],['3','4','2','1'],['3','4','2','1'],['2','3','4','1']]
 
 #loop_list = ['2431','3241','3142','2341','3214','3124','2314'] 
 #loop_list = ['2314'] 
@@ -182,6 +183,7 @@ for transpose_order in transpose_list:
         source_file.write('          fastest(3)='+c+'\n')
         source_file.write('          fastest(4)='+d+'\n')
         source_file.write('        endif\n')
+#        source_file.write('        goto 911\n') ########################
         if 0 < dummy < 10:
             nice_dummy='  '+str(dummy)
         
@@ -215,6 +217,7 @@ for transpose_order in transpose_list:
     source_file.write(' 1020 format(1x,a30,8x,4i1)\n')
     source_file.write(' 1030 format(1x,a30,1f12.5)\n')
     source_file.write(' 1100 format(1x,a16,4f12.5)\n')
+    source_file.write('  911 continue\n')
     source_file.write('      END\n')
     source_file.close()
     print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x'
