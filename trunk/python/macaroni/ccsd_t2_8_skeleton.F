@@ -1,9 +1,9 @@
 #define RANKA 4
-#define RANKB 4
-#define RANKC 4
-#define RANKD 4
-#define RANKI 4
-#define RANKJ 4
+#define RANKB 5 
+#define RANKC 6
+#define RANKD 7
+#define RANKI 8
+#define RANKJ 9
 c
       program run_ccsd_t2_8
 c
@@ -99,17 +99,40 @@ c     &                a_raw,size_a,b_raw,size_b,c_loops,size_c,
 c     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
 
       row_a = dim1*dim2
+      row_c = dim1*dim2
+
       col_a = dim3*dim4
       row_b = dim3*dim4
+
       col_b = dim5*dim6
-      row_c = dim1*dim2
       col_c = dim5*dim6
 
-      call dgemm('T','N',row_a,col_b,col_a,1.0d0,
-     &           a_sort,col_a,b_sort,col_a,0.0d0,c_sort,row_c)
-      call loop_dgemm(1.0d0,1.0d0,
-     &                t_sort,size_t,v_sort,size_v,r_sort,size_r,
-     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
+      call dgemm('T','N',
+     &           row_a,
+     &           col_b,
+     &           col_a,
+     &           1.0d0,
+     &           a_sort,
+     &           col_a,
+     &           b_sort,
+     &           col_a,
+     &           0.0d0,
+     &           c_sort,
+     &           row_c)
+      call loop_dgemm(1.0d0,0.0d0,
+     &                t_sort,
+!     &                size_t, ! dim1*dim2*dim3*dim4 = row_a*col_a
+     &                v_sort,
+!     &                size_v, ! dim3*dim4*dim5*dim6 = row_b*col_b
+     &                r_sort,
+!     &                size_r, ! dim1*dim2*dim5*dim6 = row_c*col_c
+     &                col_a,
+     &                row_a,
+     &                col_a, ! row_b = col_a
+     &                col_b,
+     &                row_c,
+     &                col_b, ! col_c = col_b
+     &                3)
 
       call compare_arrays(c_sort,r_sort,size_r,.false.)
 
@@ -119,10 +142,10 @@ c     &                col_a,row_a,row_b,col_b,row_c,col_c,3)
 
       call compare_arrays(c_done,r_done,size_r,.false.)
 
-      call ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_tce,size_r,
-     &               dim1,dim2,dim3,dim4,dim5,dim6)
+c      call ccsd_t2_8(t_raw,size_t,v_raw,size_v,r_tce,size_r,
+c     &               dim1,dim2,dim3,dim4,dim5,dim6)
 
-      call compare_arrays(r_tce,c_done,size_r,.false.)
+c      call compare_arrays(r_tce,c_done,size_r,.false.)
 
    1  format(1x,a8,i8)
    2  format(1x,a60)
@@ -189,16 +212,20 @@ c
       end
 
       subroutine loop_dgemm(alpha,beta,
-     &                      a_in,size_a,b_in,size_b,c_out,size_c,
+!     &                      a_in,size_a,b_in,size_b,c_out,size_c,
+     &                      a_in,b_in,c_out,
      &                      row_a,col_a,row_b,col_b,row_c,col_c,case)
       implicit none
       integer i,j,k
       integer a_offset,b_offset,c_offset
       integer size_a,size_b,size_c
       integer row_a,col_a,row_b,col_b,row_c,col_c
-      double precision a_in(size_a)
-      double precision b_in(size_b)
-      double precision c_out(size_c)
+!      double precision a_in(size_a)
+!      double precision b_in(size_b)
+!      double precision c_out(size_c)
+      double precision a_in(row_a*col_a)
+      double precision b_in(row_b*col_b)
+      double precision c_out(row_c*col_c)
       double precision alpha,beta,temp
       integer case
 c
@@ -217,12 +244,12 @@ c
         do i = 1, row_c      ! row_a
           do j = 1, col_c    ! col_b
             c_offset = i+(j-1)*row_c
-            c_out(c_offset) = 0.0d0
+            c_out(c_offset) = beta * c_out(c_offset)
             do k = 1, col_a  ! row_b
               a_offset = i+(k-1)*row_a
               b_offset = k+(j-1)*row_b
               c_out(c_offset) = c_out(c_offset) +
-     &                          a_in(a_offset) * b_in(b_offset)
+     &                          alpha* a_in(a_offset) * b_in(b_offset)
             enddo
           enddo
         enddo
@@ -236,12 +263,12 @@ c
         do i = 1, row_c
           do j = 1, col_c
             c_offset = i+(j-1)*row_c
-            c_out(c_offset) = 0.0d0
+            c_out(c_offset) = beta * c_out(c_offset)
             do k = 1, col_a
               a_offset = i+(k-1)*row_a
               b_offset = j+(k-1)*row_b
               c_out(c_offset) = c_out(c_offset) +
-     &                          a_in(a_offset) * b_in(b_offset)
+     &                          alpha* a_in(a_offset) * b_in(b_offset)
             enddo
           enddo
         enddo
@@ -255,12 +282,12 @@ c
         do i = 1, row_c
           do j = 1, col_c
             c_offset = i+(j-1)*row_c
-            c_out(c_offset) = 0.0d0
+            c_out(c_offset) = beta * c_out(c_offset)
             do k = 1, row_a
               a_offset = k+(i-1)*row_a
               b_offset = k+(j-1)*row_b
               c_out(c_offset) = c_out(c_offset) +
-     &                          a_in(a_offset) * b_in(b_offset)
+     &                          alpha* a_in(a_offset) * b_in(b_offset)
             enddo
           enddo
         enddo
@@ -274,12 +301,12 @@ c
         do i = 1, row_c
           do j = 1, col_c
             c_offset = i+(j-1)*row_c
-            c_out(c_offset) = 0.0d0
+            c_out(c_offset) = beta * c_out(c_offset)
             do k = 1, row_a
               a_offset = k+(i-1)*row_a
               b_offset = j+(k-1)*row_b
               c_out(c_offset) = c_out(c_offset) +
-     &                          a_in(a_offset) * b_in(b_offset)
+     &                          alpha* a_in(a_offset) * b_in(b_offset)
             enddo
           enddo
         enddo
