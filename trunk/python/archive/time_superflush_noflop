@@ -1,0 +1,17 @@
+#!/bin/bash
+
+topdir=/gpfs/home/jhammond/spaghetty/python/archive
+
+for transpose in 4321 4312 4231 4132 4213 4123 3421 3412 2431 1432 2413 1423 3241 3142 ; do
+#for transpose in 2413 1423 3241 3142 2341 1342 2143 1243 3214 3124 2314 1324 2134 1234 ; do
+    driver="transpose_${transpose}superflush_noflop.x"
+    if [ -f ${driver} ]
+    then
+        rundir="${topdir}/flushruns/transpose_${transpose}superflush_noflop_`date +%d%b%Y_%Hh%Mm`"
+        mkdir -p ${rundir}
+        cd ${rundir}
+        echo "submitting ${topdir}/exe/${driver}"
+        qsub -n 1 -t 60 --mode smp "${topdir}/exe/${driver}"
+    fi
+done
+

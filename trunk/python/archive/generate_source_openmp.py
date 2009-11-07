@@ -8,11 +8,11 @@ import os
 # BGP
 #fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
 fortran_compiler = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
-fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
 src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
 lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 
-lib_name = 'tce_sort_f77_basic.a'
+lib_name = 'tce_sort_f77_omp.a'
 
 def perm(l):
     sz = len(l)
@@ -40,30 +40,35 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
+        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp_'
         source_name = subroutine_name+'.F'
         #print source_name
         source_file = open(source_name,'w')
         source_file.write('        subroutine '+subroutine_name+'(unsorted,sorted,\n')
-        source_file.write('     &                           dim1,dim2,dim3,dim4,factor)\n')
+        source_file.write('     &                           dim1,dim2,dim3,dim4)\n')
         source_file.write('        implicit none\n')
         source_file.write('        integer dim1,dim2,dim3,dim4\n')
-        source_file.write('        integer old_offset,new_offset\n')
+        source_file.write('!        integer old_offset,new_offset\n')
         source_file.write('        integer j1,j2,j3,j4\n')
         source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
         source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
-        source_file.write('        double precision factor\n')
+        source_file.write('!$omp parallel do\n')
+        source_file.write('!$omp& private(j1,j2,j3,j4)\n')
+        source_file.write('!$omp& shared(sorted,unsorted)\n')
+        source_file.write('!$omp& schedule(static)\n')
         source_file.write('        do j'+a+' = 1,dim'+a+'\n')
         source_file.write('         do j'+b+' = 1,dim'+b+'\n')
         source_file.write('          do j'+c+' = 1,dim'+c+'\n')
         source_file.write('           do j'+d+' = 1,dim'+d+'\n')
-        source_file.write('            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))\n')
-        source_file.write('            new_offset = j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))\n')
-        source_file.write('            sorted(new_offset) = unsorted(old_offset) * factor\n')
+        source_file.write('!            old_offset = j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))\n')
+        source_file.write('!            new_offset = j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))\n')
+        source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        source_file.write('     &      unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
         source_file.write('           enddo\n')
         source_file.write('          enddo\n')
         source_file.write('         enddo\n')
         source_file.write('        enddo\n')
+        source_file.write('!$omp end parallel do\n')
         source_file.write('        return\n')
         source_file.write('        end\n')
         source_file.close()
