@@ -188,7 +188,7 @@ for transpose_order in transpose_list:
         source_file.write('        write(6,*) "'+fortran_opt_flags.split()[option]+'"\n')
         
     source_file.write('        write(6,*) "==================="\n')
-    source_file.write('        write(6,*) "Hirata Reference #1 = ",Thirata,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata noflop Reference #1 = ",Thirata,"seconds"\n')
     source_file.write('        write(6,1001) "Algorithm","Jeff","Speedup","Best","Best Speedup"\n')
     for loop_order in loop_list:
         dummy = dummy+1
@@ -312,7 +312,7 @@ for transpose_order in transpose_list:
     source_file.write('        call hpm_stop("tce_sort_4 #2")\n')
     source_file.write('        Thirata2=Thirata2+(Tfinish-Tstart)\n')
     source_file.write('34      CONTINUE\n')
-    source_file.write('        write(6,*) "Hirata Reference #2 = ",Thirata2,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata noflop Reference #2 = ",Thirata2,"seconds"\n')
     source_file.write('        write(6,1020) "The best loop order is:",\n')
     source_file.write('     &             fastest(1),fastest(2),fastest(3),fastest(4)\n')
     #source_file.write('        write(6,1030) "The best time is:",Tbest\n')

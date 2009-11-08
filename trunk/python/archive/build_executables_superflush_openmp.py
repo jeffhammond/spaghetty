@@ -191,7 +191,7 @@ for transpose_order in transpose_list:
         source_file.write('        write(6,*) "'+fortran_opt_flags.split()[option]+'"\n')
         
     source_file.write('        write(6,*) "==================="\n')
-    source_file.write('        write(6,*) "Hirata Reference #1 = ",Thirata,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata noflop Reference #1 = ",Thirata,"seconds"\n')
     source_file.write('        IF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
     source_file.write('          write(6,*) "KGlass Reference = ",Tglass,"seconds"\n')
     source_file.write('        ENDIF\n')
@@ -318,7 +318,7 @@ for transpose_order in transpose_list:
     source_file.write('        call hpm_stop("tce_sort_4_noflop #2")\n')
     source_file.write('        Thirata2=Thirata2+(Tfinish-Tstart)\n')
     source_file.write('34      CONTINUE\n')
-    source_file.write('        write(6,*) "Hirata Reference #2 = ",Thirata2,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata noflop Reference #2 = ",Thirata2,"seconds"\n')
     source_file.write('        write(6,1020) "The best loop order is:",\n')
     source_file.write('     &             fastest(1),fastest(2),fastest(3),fastest(4)\n')
     #source_file.write('        write(6,1030) "The best time is:",Tbest\n')
