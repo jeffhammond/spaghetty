@@ -56,9 +56,9 @@ indices = ['4','3','2','1']
 transpose_list = perm(indices)
 loop_list = perm(indices)
 
-print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_noflop.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_noflop.F')
-os.system('ar -r '+lib_name+' tce_sort_hirata_noflop.o')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_openmp.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_openmp.F')
+os.system('ar -r '+lib_name+' tce_sort_hirata_openmp.o')
 
 timer = ''
 
@@ -157,15 +157,15 @@ for transpose_order in transpose_list:
         source_file.write('        Tstart=0.0d0\n')
         source_file.write('        Tfinish=0.0d0\n')
 
-    source_file.write('        call hpm_start("tce_sort_4_noflop #1")\n')
+    source_file.write('        call hpm_start("tce_sort_4_omp #1")\n')
     source_file.write('        Tstart='+timer_call+'\n')
     source_file.write('        DO 30 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('30      CONTINUE\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4_noflop #1")\n')
+    source_file.write('        call hpm_stop("tce_sort_4_omp #1")\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
@@ -191,7 +191,7 @@ for transpose_order in transpose_list:
         source_file.write('        write(6,*) "'+fortran_opt_flags.split()[option]+'"\n')
         
     source_file.write('        write(6,*) "==================="\n')
-    source_file.write('        write(6,*) "Hirata noflop Reference #1 = ",Thirata,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata OpenMP Reference #1 = ",Thirata,"seconds"\n')
     source_file.write('        IF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
     source_file.write('          write(6,*) "KGlass Reference = ",Tglass,"seconds"\n')
     source_file.write('        ENDIF\n')
@@ -309,16 +309,16 @@ for transpose_order in transpose_list:
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
-    source_file.write('        call hpm_start("tce_sort_4_noflop #2")\n')
+    source_file.write('        call hpm_start("tce_sort_4_omp #2")\n')
     source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4_noflop #2")\n')
+    source_file.write('        call hpm_stop("tce_sort_4_omp #2")\n')
     source_file.write('        Thirata2=Thirata2+(Tfinish-Tstart)\n')
     source_file.write('34      CONTINUE\n')
-    source_file.write('        write(6,*) "Hirata noflop Reference #2 = ",Thirata2,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata OpenMP Reference #2 = ",Thirata2,"seconds"\n')
     source_file.write('        write(6,1020) "The best loop order is:",\n')
     source_file.write('     &             fastest(1),fastest(2),fastest(3),fastest(4)\n')
     #source_file.write('        write(6,1030) "The best time is:",Tbest\n')

@@ -2,8 +2,11 @@
 
 topdir=/gpfs/home/jhammond/spaghetty/python/archive
 
-#for transpose in 4321 4312 4231 4132 4213 4123 3421 3412 2431 1432 2413 1423 3241 3142 ; do
-for transpose in 2413 1423 3241 3142 2341 1342 2143 1243 3214 3124 2314 1324 2134 1234 ; do
+#for transpose in 4321 4312 4231 4213 4132 4123 ; do
+#for transpose in 3421 3412 3241 3214 3142 3124 ; do
+#for transpose in 2431 2413 2341 2314 2143 2134 ; do
+#for transpose in 1423 1432 1342 1324 1243 1234 ; do
+for transpose in 3421 ; do
     driver="transpose_${transpose}superflush_noflop.x"
     if [ -f "${topdir}/exe/${driver}" ]
     then
