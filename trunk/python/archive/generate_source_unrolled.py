@@ -119,5 +119,17 @@ def generate_subroutine(inVec,outVec,blkVec):
 
 # TESTER
 
-generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,1,1])
+#generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,1,1])
+#generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,1,2])
+#generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,2,1])
+#generate_subroutine([0,1,2,3],[0,1,2,3],[1,1,2,2])
+
+inVec = [2,3,0,1]
+for permVec in perm(inVec):
+	for block3 in range(1,2,2):
+		for block4 in range(2,17,2):
+                	print 'blocking = '+str(block3)+' '+str(block4)
+			generate_subroutine(inVec,permVec,[1,1,block3,block4])
+
+
 

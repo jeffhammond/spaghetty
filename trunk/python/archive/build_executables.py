@@ -77,6 +77,7 @@ for opt_set_num in range(0,1):
         source_name = driver_name+'_driver.F'
         source_file = open(source_name,'w')
         source_file.write('        PROGRAM ARRAYTEST\n')
+        source_file.write('#include "mpi.h"\n')
         source_file.write('        REAL*8 before('+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+')\n')
         source_file.write('        REAL*8 after_jeff('+sizechar+')\n')
         source_file.write('        REAL*8 after_hirata('+sizechar+')\n')

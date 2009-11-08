@@ -11,10 +11,12 @@ if ( mpi ):
 else:
     print 'Not using MPI'
 
-
 # BGP
+
+ar='/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-ar'
+
 fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=hotlist'
 
 if ( mpi ):
     fortran_linker = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
@@ -34,7 +36,7 @@ exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
 
 lib_name = 'tce_sort_f77_basic.a'
 
-flush_rank='2000'
+flush_rank='1000'
 
 count = '100'
 rank  = '40'
@@ -58,23 +60,23 @@ loop_list = perm(indices)
 
 print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
 os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
-os.system('ar -r '+lib_name+' tce_sort_hirata.o')
+os.system(ar+' -r '+lib_name+' tce_sort_hirata.o')
 
 print fortran_compiler+' '+fortran_opt_flags+' -c glass_correct.F'
 os.system(fortran_compiler+' '+fortran_opt_flags+' -c glass_correct.F')
-os.system('ar -r '+lib_name+' glass_correct.o')
+os.system(ar+' -r '+lib_name+' glass_correct.o')
 
 print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c'
 os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c')
-os.system('ar -r '+lib_name+' tce_sort_4kg.o')
+os.system(ar+' -r '+lib_name+' tce_sort_4kg.o')
 
 print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg_4321.c'
 os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg_4321.c')
-os.system('ar -r '+lib_name+' tce_sort_4kg_4321.o')
+os.system(ar+' -r '+lib_name+' tce_sort_4kg_4321.o')
 
 print c_compiler+' '+c_opt_flags+' -c getticks_bgp.c'
 os.system(c_compiler+' '+c_opt_flags+' -c getticks_bgp.c')
-os.system('ar -r '+lib_name+' getticks_bgp.o')
+os.system(ar+' -r '+lib_name+' getticks_bgp.o')
 
 timer = ''
 
@@ -149,17 +151,17 @@ for transpose_order in transpose_list:
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 1d0/(i+j)\n')
+    source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+    source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+    source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
@@ -185,17 +187,17 @@ for transpose_order in transpose_list:
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 1d0/(i+j)\n')
+    source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+    source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+    source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
@@ -257,21 +259,21 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d
+        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d
         # THIS PART FLUSHES THE CACHE
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
-        source_file.write('            X(j,i) = 1d0/(i+j)\n')
+        source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('          enddo \n')
         source_file.write('        enddo \n')
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
-        source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+        source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('          enddo \n')
         source_file.write('        enddo \n')
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
-        source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+        source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
         source_file.write('          enddo \n')
         source_file.write('        enddo \n')
         # END CACHE FLUSH
@@ -288,17 +290,17 @@ for transpose_order in transpose_list:
         # THIS PART FLUSHES THE CACHE
         source_file.write('          do ii=1,'+flush_rank+'\n')
         source_file.write('            do jj=1,'+flush_rank+'\n')
-        source_file.write('              X(j,i) = 1d0/(i+j)\n')
+        source_file.write('              X(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         source_file.write('          do ii=1,'+flush_rank+'\n')
         source_file.write('            do jj=1,'+flush_rank+'\n')
-        source_file.write('              Y(j,i) = 1d0/(i+j)\n')
+        source_file.write('              Y(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         source_file.write('          do ii=1,'+flush_rank+'\n')
         source_file.write('            do jj=1,'+flush_rank+'\n')
-        source_file.write('              X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+        source_file.write('              X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         # END CACHE FLUSH
@@ -351,17 +353,17 @@ for transpose_order in transpose_list:
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 1d0/(i+j)\n')
+    source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+    source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+    source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH

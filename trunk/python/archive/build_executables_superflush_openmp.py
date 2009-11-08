@@ -21,7 +21,7 @@ if ( mpi ):
 else:
     fortran_linker = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
 
-fortran_link_flags = '-O3 -g-qsmp=omp -lxlsmp -qnoipa -qarch=450d -qtune=450 -qmaxmem=-1 -qextname -qreport=hotlist'
+fortran_link_flags = '-O3 -g -qsmp=omp -lxlsmp -qnoipa -qarch=450d -qtune=450 -qmaxmem=-1 -qextname -qreport=hotlist'
 
 c_compiler = '/opt/ibmcmp/vacpp/bg/9.0/bin/bgxlc_r'
 c_opt_flags = '-O5 -g -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -c'
@@ -34,7 +34,7 @@ exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
 
 lib_name = 'tce_sort_f77_omp.a'
 
-flush_rank='2000'
+flush_rank='1000'
 
 count = '100'
 rank  = '40'
@@ -56,30 +56,17 @@ indices = ['4','3','2','1']
 transpose_list = perm(indices)
 loop_list = perm(indices)
 
-print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
-os.system('ar -r '+lib_name+' tce_sort_hirata.o')
-
-print fortran_compiler+' '+fortran_opt_flags+' -c glass_correct.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' -c glass_correct.F')
-os.system('ar -r '+lib_name+' glass_correct.o')
-
-print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c'
-os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg.c')
-os.system('ar -r '+lib_name+' tce_sort_4kg.o')
-
-print c_compiler+' '+c_opt_flags+' -c tce_sort_4kg_4321.c'
-os.system(c_compiler+' '+c_opt_flags+' -c tce_sort_4kg_4321.c')
-os.system('ar -r '+lib_name+' tce_sort_4kg_4321.o')
-
-print c_compiler+' '+c_opt_flags+' -c getticks_bgp.c'
-os.system(c_compiler+' '+c_opt_flags+' -c getticks_bgp.c')
-os.system('ar -r '+lib_name+' getticks_bgp.o')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_noflop.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_noflop.F')
+os.system('ar -r '+lib_name+' tce_sort_hirata_noflop.o')
 
 timer = ''
 
 if ( timer == "ticks" ):
     timer_call = "getticks()"
+    print c_compiler+' '+c_opt_flags+' -c getticks_bgp.c'
+    os.system(c_compiler+' '+c_opt_flags+' -c getticks_bgp.c')
+    os.system('ar -r '+lib_name+' getticks_bgp.o')
 else:
     timer_call = "rtc()"
 
@@ -103,7 +90,6 @@ for transpose_order in transpose_list:
     source_file.write('        REAL*8 after_hirata('+sizechar+')\n')
     source_file.write('        REAL*8 after_glass('+sizechar+')\n')
     source_file.write('        REAL*8 X('+flush_rank+','+flush_rank+'),Y('+flush_rank+','+flush_rank+')\n')
-    source_file.write('        REAL*8 factor\n')
     if ( timer == "ticks" ):
         source_file.write('        INTEGER*8 Tstart,Tfinish\n')
         source_file.write('        INTEGER*8 Thirata,Thirata2,Tglass,Tjeff\n')
@@ -145,21 +131,20 @@ for transpose_order in transpose_list:
     source_file.write('50          CONTINUE\n')
     source_file.write('60        CONTINUE\n')
     source_file.write('70      CONTINUE\n')
-    source_file.write('        factor = 1.0\n')
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 1d0/(i+j)\n')
+    source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+    source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+    source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
@@ -172,73 +157,33 @@ for transpose_order in transpose_list:
         source_file.write('        Tstart=0.0d0\n')
         source_file.write('        Tfinish=0.0d0\n')
 
-    source_file.write('        call hpm_start("tce_sort_4 #1")\n')
+    source_file.write('        call hpm_start("tce_sort_4_noflop #1")\n')
     source_file.write('        Tstart='+timer_call+'\n')
     source_file.write('        DO 30 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
-    source_file.write('     &                    perm(1), perm(2), perm(3), perm(4), factor)\n')
+    source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('30      CONTINUE\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4 #1")\n')
+    source_file.write('        call hpm_stop("tce_sort_4_noflop #1")\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 1d0/(i+j)\n')
+    source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+    source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+    source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
-    if ( timer == "ticks" ):
-        source_file.write('        Tstart=0\n')
-        source_file.write('        Tfinish=0\n')
-    else:
-        source_file.write('        Tstart=0.0d0\n')
-        source_file.write('        Tfinish=0.0d0\n')
-
-    source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('        IF( ((perm(1).eq.4).and.(perm(2).eq.3)).and.\n')
-    source_file.write('     &      ((perm(3).eq.2).and.(perm(4).eq.1)) ) THEN\n')
-    source_file.write('        call hpm_start("tce_sort_4kg_4321_")\n')
-    source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('        DO 31 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4kg_4321_(before, after_glass,\n')
-    source_file.write('     &                       aSize(1), aSize(2), aSize(3), aSize(4),\n')
-    source_file.write('     &                       factor)\n')
-    source_file.write('31      CONTINUE\n')
-    source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4kg_4321_")\n')
-    source_file.write('        ELSEIF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
-    source_file.write('        call hpm_start("tce_sort_4kg_")\n')
-    source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('        DO 32 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4kg_(before, after_glass,\n')
-    source_file.write('     &                       aSize(1), aSize(2), aSize(3), aSize(4),\n')
-    source_file.write('     &                       perm(1), perm(2), perm(3), perm(4), factor)\n')
-    source_file.write('32      CONTINUE\n')
-    source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4kg_")\n')
-    source_file.write('        ENDIF\n')
-    source_file.write('        Tglass=(Tfinish-Tstart)\n')
-    source_file.write('        IF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
-    source_file.write('        PRINT*,"                       i    after_glass(i)\n')
-    source_file.write('     &          after_hirata(i)"\n')
-    source_file.write('        DO 33 i = 1, '+sizechar+'\n')
-    source_file.write('          IF (after_glass(i).ne.after_hirata(i)) THEN\n')
-    source_file.write('            PRINT*,"glass error ",i,after_glass(i),after_hirata(i)\n')
-    source_file.write('          ENDIF\n')
-    source_file.write('33      CONTINUE\n')
-    source_file.write('        ENDIF\n')
     source_file.write('        write(6,*) "TESTING TRANPOSE TYPE '+A+B+C+D+'"\n')
     source_file.write('        write(6,*) "==================="\n')
     source_file.write('        write(6,*) "The compilation flags were:"\n')
@@ -257,21 +202,21 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp'
+        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp'
         # THIS PART FLUSHES THE CACHE
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
-        source_file.write('            X(j,i) = 1d0/(i+j)\n')
+        source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('          enddo \n')
         source_file.write('        enddo \n')
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
-        source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+        source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('          enddo \n')
         source_file.write('        enddo \n')
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
-        source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+        source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
         source_file.write('          enddo \n')
         source_file.write('        enddo \n')
         # END CACHE FLUSH
@@ -288,17 +233,17 @@ for transpose_order in transpose_list:
         # THIS PART FLUSHES THE CACHE
         source_file.write('          do ii=1,'+flush_rank+'\n')
         source_file.write('            do jj=1,'+flush_rank+'\n')
-        source_file.write('              X(j,i) = 1d0/(i+j)\n')
+        source_file.write('              X(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         source_file.write('          do ii=1,'+flush_rank+'\n')
         source_file.write('            do jj=1,'+flush_rank+'\n')
-        source_file.write('              Y(j,i) = 1d0/(i+j)\n')
+        source_file.write('              Y(jj,ii) = 1d0/(ii+jj)\n')
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         source_file.write('          do ii=1,'+flush_rank+'\n')
         source_file.write('            do jj=1,'+flush_rank+'\n')
-        source_file.write('              X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+        source_file.write('              X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         # END CACHE FLUSH
@@ -350,27 +295,27 @@ for transpose_order in transpose_list:
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 1d0/(i+j)\n')
+    source_file.write('            X(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            Y(j,i) = 1d0/(i+j)\n')
+    source_file.write('            Y(jj,ii) = 1d0/(ii+jj)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     source_file.write('        do ii=1,'+flush_rank+'\n')
     source_file.write('          do jj=1,'+flush_rank+'\n')
-    source_file.write('            X(j,i) = 7d0*X(i,j)+X(j,i)-3d0*Y(i,j)+2d0*Y(j,i)\n')
+    source_file.write('            X(jj,ii) = 7d0*X(ii,jj)+X(jj,ii)-3d0*Y(ii,jj)+2d0*Y(jj,ii)\n')
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
-    source_file.write('        call hpm_start("tce_sort_4 #2")\n')
+    source_file.write('        call hpm_start("tce_sort_4_noflop #2")\n')
     source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
-    source_file.write('     &                    perm(1), perm(2), perm(3), perm(4), factor)\n')
+    source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4 #2")\n')
+    source_file.write('        call hpm_stop("tce_sort_4_noflop #2")\n')
     source_file.write('        Thirata2=Thirata2+(Tfinish-Tstart)\n')
     source_file.write('34      CONTINUE\n')
     source_file.write('        write(6,*) "Hirata Reference #2 = ",Thirata2,"seconds"\n')

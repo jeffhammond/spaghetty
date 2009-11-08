@@ -6,10 +6,14 @@ import sys
 import os
 
 # BGP
-#fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_compiler = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
+
+ar='/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-ar'
+
+fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
 fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+
 src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
+obj_dir = '/gpfs/home/jhammond/spaghetty/python/archive/obj/'
 lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 
 lib_name = 'tce_sort_f77_basic.a'
@@ -40,7 +44,7 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
+        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
         source_name = subroutine_name+'.F'
         #print source_name
         source_file = open(source_name,'w')
@@ -67,10 +71,10 @@ for transpose_order in transpose_list:
         source_file.write('        return\n')
         source_file.write('        end\n')
         source_file.close()
-        print fortran_compiler+' '+fortran_opt_flags+' -c '+source_name
+        #print fortran_compiler+' '+fortran_opt_flags+' -c '+source_name
         os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name)
-        os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
-        os.system('rm '+subroutine_name+'.o')
+        os.system(ar+' -r '+lib_name+' '+subroutine_name+'.o')
+        os.system('mv '+subroutine_name+'.o '+obj_dir)
         os.system('mv '+subroutine_name+'.F '+src_dir)
         os.system('mv '+subroutine_name+'.lst '+lst_dir)
 

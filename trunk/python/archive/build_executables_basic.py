@@ -1,22 +1,28 @@
+#!/usr/bin/python
+
 import fileinput
 import string
 import sys
 import os
 
-# Goldstone old
-c_compiler = 'icc'
-c_opt_flags = '-O3 -mtune=core2 -march=core2 -align -unroll-aggressive'
-fortran_compiler = 'ifort'
-fortran_link_flags = '-O1 -mtune=core2 -march=core2 -align'
-fortran_opt_flags = '-O3 -mtune=core2 -march=core2 -align'# -pad -unroll-aggressive'
-src_dir = '/home/jeff/code/spaghetty/trunk/source/fortran77/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/binary/fortran77/'
+# BGP
+fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
+c_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlc_r'
+fortran_opt_flags = '-O3 -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+c_opt_flags = '-O3 -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -c'
+fortran_link_flags = '-O3 -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=hotlist'
+
+hpm_lib = '-L/soft/apps/UPC/lib -lhpm'
+
+src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
+lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
+exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
+
 lib_name = 'tce_sort_f77.a'
 
 count = '100'
 rank  = '20'
 ranks = [rank,rank,rank,rank]
-#ranks = ['7','1','1','7']
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])
 sizechar = str(size)
 
@@ -26,20 +32,15 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-#indices = ['1','2','3','4']
 indices = ['4','3','2','1']
 
-#all_permutations = perm(indices)
 #all_permutations = [indices]
-
-transpose_list = [indices]
-#transpose_list = perm(indices)
+#transpose_list = [indices]
 #loop_list = [indices]
-#loop_list = perm(indices)
-loop_list = [['3','2','4','1'],['3','2','1','4'],['2','3','4','1'],['2','3','1','4'],['3','4','2','1'],['3','4','2','1'],['2','3','4','1']]
 
-#loop_list = ['2431','3241','3142','2341','3214','3124','2314'] 
-#loop_list = ['2314'] 
+all_permutations = perm(indices)
+transpose_list = perm(indices)
+loop_list = perm(indices)
 
 print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
 os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
@@ -66,8 +67,10 @@ for transpose_order in transpose_list:
     driver_name = 'transpose_'+A+B+C+D
     print driver_name
     source_name = driver_name+'_driver.F'
+    lst_name = driver_name+'_driver.lst'
     source_file = open(source_name,'w')
     source_file.write('        PROGRAM ARRAYTEST\n')
+    source_file.write('#include "mpif.h"\n')
     source_file.write('        REAL*8 before('+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+')\n')
     source_file.write('        REAL*8 after_jeff('+sizechar+')\n')
     source_file.write('        REAL*8 after_hirata('+sizechar+')\n')
@@ -79,8 +82,11 @@ for transpose_order in transpose_list:
     source_file.write('        INTEGER*4 aSize(4)\n')
     source_file.write('        INTEGER*4 perm(4)\n')
     source_file.write('        INTEGER*4 fastest(4)\n')
+    source_file.write('        INTEGER ierror\n')
     source_file.write('        LOGICAL glass_correct\n')
     source_file.write('        EXTERNAL glass_correct\n')
+    source_file.write('        call mpi_init(ierror)\n')
+    source_file.write('        call hpm_init()\n')
     source_file.write('        aSize(1) = '+ranks[0]+'\n')
     source_file.write('        aSize(2) = '+ranks[1]+'\n')
     source_file.write('        aSize(3) = '+ranks[2]+'\n')
@@ -103,13 +109,13 @@ for transpose_order in transpose_list:
     source_file.write('        Tstart=0.0\n')
     source_file.write('        Tfinish=0.0\n')
     source_file.write('        CALL CPU_TIME(Tstart)\n')
-    #source_file.write('        Tstart=rtc()\n')
+    source_file.write('        call hpm_start("tce_sort_4")\n')
     source_file.write('        DO 30 i = 1, '+count+'\n')
     source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4), factor)\n')
     source_file.write('30      CONTINUE\n')
-    #source_file.write('        Tfinish=rtc()\n')
+    source_file.write('        call hpm_stop("tce_sort_4")\n')
     source_file.write('        CALL CPU_TIME(Tfinish)\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     source_file.write('        Tstart=0.0\n')
@@ -118,19 +124,23 @@ for transpose_order in transpose_list:
     source_file.write('        IF( ((perm(1).eq.4).and.(perm(2).eq.3)).and.\n')
     source_file.write('     &      ((perm(3).eq.2).and.(perm(4).eq.1)) ) THEN\n')
     source_file.write('        CALL CPU_TIME(Tstart)\n')
+    source_file.write('        call hpm_start("tce_sort_4kg_4321_")\n')
     source_file.write('        DO 31 i = 1, '+count+'\n')
     source_file.write('          CALL tce_sort_4kg_4321_(before, after_glass,\n')
     source_file.write('     &                       aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                       factor)\n')
     source_file.write('31      CONTINUE\n')
+    source_file.write('        call hpm_stop("tce_sort_4kg_4321_")\n')
     source_file.write('        CALL CPU_TIME(Tfinish)\n')
     source_file.write('        ELSEIF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
     source_file.write('        CALL CPU_TIME(Tstart)\n')
+    source_file.write('        call hpm_start("tce_sort_4kg_")\n')
     source_file.write('        DO 32 i = 1, '+count+'\n')
     source_file.write('          CALL tce_sort_4kg_(before, after_glass,\n')
     source_file.write('     &                       aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                       perm(1), perm(2), perm(3), perm(4), factor)\n')
     source_file.write('32      CONTINUE\n')
+    source_file.write('        call hpm_stop("tce_sort_4kg_")\n')
     source_file.write('        CALL CPU_TIME(Tfinish)\n')
     source_file.write('        ENDIF\n')
     #source_file.write('        Tfinish=rtc()\n')
@@ -166,14 +176,14 @@ for transpose_order in transpose_list:
         source_file.write('        Tstart=0.0\n')
         source_file.write('        Tfinish=0.0\n')
         source_file.write('        CALL CPU_TIME(Tstart)\n')
-        #source_file.write('        Tstart=rtc()\n')
+        source_file.write('        call hpm_start("'+subroutine_name+'")\n')
         source_file.write('        DO '+str(100+dummy)+' i = 1, '+count+'\n')
         source_file.write('          CALL '+subroutine_name+'(before, after_jeff,\n')
         source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
         source_file.write('     &                    factor)\n')
         source_file.write(str(100+dummy)+'     CONTINUE\n')
         source_file.write('        CALL CPU_TIME(Tfinish)\n')
-        #source_file.write('        Tfinish=rtc()\n')
+        source_file.write('        call hpm_stop("'+subroutine_name+'")\n')
         source_file.write('        Tjeff=(Tfinish-Tstart)\n')
         source_file.write('        Tspeedup=Thirata/Tjeff\n')
         source_file.write('        Tbest=min(Tjeff,Tbest)\n')
@@ -212,6 +222,10 @@ for transpose_order in transpose_list:
     source_file.write('     &             fastest(1),fastest(2),fastest(3),fastest(4)\n')
     source_file.write('        write(6,1030) "The best time is:",Tbest\n')
     source_file.write('        write(6,1030) "The best speedup is:",Thirata/Tbest\n')
+    source_file.write('        call hpm_print()\n')
+    source_file.write('        call hpm_print_flops()\n')
+    source_file.write('        call hpm_print_flops_agg()\n')
+    source_file.write('        call mpi_finalize(ierror)\n')
     source_file.write('        STOP\n')
     source_file.write(' 1001 format(1x,a13,a12,a15,a9,a18)\n')
     source_file.write(' 1020 format(1x,a30,8x,4i1)\n')
@@ -221,8 +235,9 @@ for transpose_order in transpose_list:
     source_file.write('      END\n')
     source_file.close()
     print fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x'
-    os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x')
+    os.system(fortran_compiler+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+hpm_lib+' -o '+exe_dir+driver_name+'.x')
     os.system('mv '+source_name+' '+src_dir)
+    os.system('mv '+lst_name+' '+lst_dir)
 
 
 

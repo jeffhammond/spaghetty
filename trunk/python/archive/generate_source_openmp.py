@@ -40,7 +40,7 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp_'
+        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp_'
         source_name = subroutine_name+'.F'
         #print source_name
         source_file = open(source_name,'w')
@@ -72,7 +72,6 @@ for transpose_order in transpose_list:
         source_file.write('        return\n')
         source_file.write('        end\n')
         source_file.close()
-        print fortran_compiler+' '+fortran_opt_flags+' -c '+source_name
         os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name)
         os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
         os.system('rm '+subroutine_name+'.o')
