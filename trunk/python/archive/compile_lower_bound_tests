@@ -1,0 +1,4 @@
+#!/bin/bash
+mpixlf77_r -O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource lower_bound_test.F -L/soft/apps/UPC/lib -lhpm -lxlf90 -lxlsmp -lpthread -o lower_bound_test.x
+mpixlf77_r -O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource lower_bound_test_openmp.F -L/soft/apps/UPC/lib -lhpm -lxlf90 -lxlsmp -lpthread -o lower_bound_test_openmp.x
+
