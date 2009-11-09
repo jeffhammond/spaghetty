@@ -8,7 +8,7 @@ import os
 # BGP
 #fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
 fortran_compiler = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
-fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
 src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
 lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 

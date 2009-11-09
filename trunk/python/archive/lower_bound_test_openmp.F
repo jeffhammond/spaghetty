@@ -78,7 +78,7 @@
 !
 30      CONTINUE
 
-        write(6,*) "throughput timing = ",Timing,"seconds"
+        write(6,*) "throughput OpenMP timing = ",Timing,"seconds"
         call hpm_print()
         call hpm_print_flops()
         call mpi_finalize(ierror)

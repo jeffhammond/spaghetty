@@ -10,7 +10,7 @@ import os
 ar='/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-ar'
 
 fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
 
 src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
 obj_dir = '/gpfs/home/jhammond/spaghetty/python/archive/obj/'

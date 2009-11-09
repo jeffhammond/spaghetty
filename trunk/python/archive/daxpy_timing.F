@@ -1,4 +1,4 @@
-        PROGRAM THROUGHPUT
+        PROGRAM DAXPYTEST
 #include "mpif.h"
         REAL*8 before(40,40,40,40)
         REAL*8 after(40,40,40,40)
@@ -41,16 +41,16 @@
                   enddo 
                 enddo 
 ! time throughput
-        call hpm_start("f_memcpy")
+        call hpm_start("daxpy")
         Tstart=rtc()
-        call f_memcpy(after,before,40*40*40*40)
+        call daxpy(40*40*40*40,1d0,before,1,after,1)
         Tfinish=rtc()
-        call hpm_stop("f_memcpy")
+        call hpm_stop("daxpy")
         Timing=Timing+(Tfinish-Tstart)
 !
 30      CONTINUE
 
-        write(6,*) "f_memcpy timing = ",Timing,"seconds"
+        write(6,*) "daxpy timing = ",Timing,"seconds"
         call hpm_print()
         call hpm_print_flops()
         call mpi_finalize(ierror)

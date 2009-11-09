@@ -14,14 +14,14 @@ else:
 
 # BGP
 fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=hotlist -c'
+fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
 
 if ( mpi ):
     fortran_linker = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
 else:
     fortran_linker = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
 
-fortran_link_flags = '-O3 -g -qsmp=omp -lxlsmp -qnoipa -qarch=450d -qtune=450 -qmaxmem=-1 -qextname -qreport=hotlist'
+fortran_link_flags = '-O3 -g -qsmp=omp -lxlsmp -qnoipa -qarch=450d -qtune=450 -qmaxmem=-1 -qextname -qreport=smplist:hotlist -qsource'
 
 c_compiler = '/opt/ibmcmp/vacpp/bg/9.0/bin/bgxlc_r'
 c_opt_flags = '-O5 -g -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -c'
@@ -185,6 +185,7 @@ for transpose_order in transpose_list:
     source_file.write('        enddo \n')
     # END CACHE FLUSH
     source_file.write('        write(6,*) "TESTING TRANPOSE TYPE '+A+B+C+D+'"\n')
+    source_file.write('        write(6,*) "FOR 4D ARRAY OF RANK '+rank+'"\n')
     source_file.write('        write(6,*) "==================="\n')
     source_file.write('        write(6,*) "The compilation flags were:"\n')
     for option in range(0,len(fortran_opt_flags.split())):
