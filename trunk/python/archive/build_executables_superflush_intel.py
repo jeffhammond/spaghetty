@@ -11,17 +11,24 @@ if ( mpi ):
 else:
     print 'Not using MPI'
 
+OpenMP = False
+if ( OpenMP ):
+    print 'Using OpenMP'
+else:
+    print 'Not using OpenMP'
 
-# BGP
 fortran_compiler = 'ifort'
-fortran_opt_flags = '-g -i8 -O3 -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops'
+if (OpenMP):
+        fortran_opt_flags = '-g -i8 -O3 -openmp -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops'
+else:
+        fortran_opt_flags = '-g -i8 -O3 -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops'
 
 if ( mpi ):
     fortran_linker = 'mpif77'
 else:
     fortran_linker = 'ifort'
 
-fortran_link_flags = '-g -i8 -O3 -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops'
+fortran_link_flags = fortran_opt_flags
 
 src_dir = '/fusion/home/jhammond/spaghetty/python/archive/src/'
 exe_dir = '/fusion/home/jhammond/spaghetty/python/archive/exe/'
@@ -31,7 +38,7 @@ lib_name = 'tce_sort_intel.a'
 flush_rank='1000'
 
 count = '100'
-rank  = '20'
+rank  = '40'
 ranks = [rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])
 sizechar = str(size)
@@ -44,8 +51,8 @@ def perm(l):
 
 indices = ['4','3','2','1']
 
-transpose_list = [['1','3','2','4']]
-#transpose_list = perm(indices)
+#transpose_list = [['1','3','2','4']]
+transpose_list = perm(indices)
 loop_list = perm(indices)
 
 #print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
@@ -313,7 +320,7 @@ for transpose_order in transpose_list:
     if ( mpi ):
         source_file.write('        call mpi_finalize(ierror)\n')
 
-    source_file.write('        STOP\n')
+    #source_file.write('        STOP\n')
     source_file.write(' 1001 format(1x,a13,a12,a15,a9,a18)\n')
     source_file.write(' 1020 format(1x,a30,8x,4i1)\n')
     source_file.write(' 1030 format(1x,a30,f12.6)\n')
