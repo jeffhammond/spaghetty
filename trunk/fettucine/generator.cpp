@@ -43,15 +43,33 @@ privately owned rights.
 
 int main(int argc,char* argv[])
 {
-    std::cout << "===================================" << std::endl;
-    Transposer a(4,3,2,1,4,3,2,1);
-    std::cout << "===================================" << std::endl;
-    Transposer b(4,3,2,1,1,4,3,2);
-    std::cout << "===================================" << std::endl;
-    Transposer c(4,3,2,1,2,1,4,3);
-    std::cout << "===================================" << std::endl;
-    Transposer d(4,3,2,1,3,2,1,4);
-    std::cout << "===================================" << std::endl;
+
+    for (int a=1;a<=4;a++)
+        for (int b=1;b<=4;b++)
+            for (int c=1;c<=4;c++)
+                for (int d=1;d<=4;d++)
+                    if (a!=b && a!=c && a!=d && b!=c && b!=d && c!=d)
+                    {
+                        std::filebuf fb;
+                        std::stringstream filename;
+                        filename << "permute_" << a << b << c << d << ".c";
+                        fb.open (filename.str().c_str(),std::ios::out);
+                        std::ostream os(&fb);
+
+                        for (int i=1;i<=4;i++)
+                            for (int j=1;j<=4;j++)
+                                for (int k=1;k<=4;k++)
+                                    for (int l=1;l<=4;l++)
+                                        if (i!=j && i!=k && i!=l && j!=k && j!=l && k!=l)
+                                        {
+                                            std::stringstream function;
+                                            function << "permute_" << a << b << c << d << "_"<< i << j << k << l;
+                                            std::string fname = function.str();
+                                            std::cout << fname << std::endl;
+                                            Transposer tr(os,fname,a,b,c,d,i,j,k,l);
+                                        }
+                        fb.close();
+                    }
 
     return 0;
 }

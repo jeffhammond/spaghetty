@@ -41,54 +41,76 @@ privately owned rights.
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
+
+template <class T>
+inline std::string makeString(const T& in)
+{
+    std::stringstream out;
+    out << in;
+    return out.str();
+}
+
+template <class T>
+inline T max(const T& x, const T& y)
+{
+    if (x>y) return x;
+    else return y;
+}
+
 
 class Transposer
 {
-    private:
-        /* transpose order indices */
-        int a, b, c, d;
-        /* loop order indices */
-        int p, q, r, s;
+private:
+    /* transpose order indices */
+    int a, b, c, d;
+    /* loop order indices */
+    int p, q, r, s;
 
-        void printIndices()
-        {
-            std::cout << "Transposer("
-                      << a << "," << b << "," << c << "," << d << ","
-                      << p << "," << q << "," << r << "," << s << ")" << std::endl;
-        }
+    void printIndices(std::ostream& ofile)
+    {
+        ofile << "Transposer("
+                << a << "," << b << "," << c << "," << d << ","
+                << p << "," << q << "," << r << "," << s << ")" << std::endl;
+    }
 
-        void generateCode();
-        void generateUnrolled1(int unrolling);
+    void generateCode(std::ostream& ofile, std::string& function);
+    void generateUnrolled(std::ostream& ofile, std::string& function,int unrolling[]);
 
-        void generateFor(int unrolling);
+    void generateFor(std::ostream& ofile, std::string index, int begin, std::string bound, int jump);
 
-        Transposer();
+    Transposer(std::ostream& ofile);
 
-    public:
-        /* explicit constructor */
-        Transposer(int _a, int _b, int _c, int _d,
-                    int _p, int _q, int _r, int _s)
-        {
-            a = _a; b = _b; c = _c; d = _d;
-            p = _p; q = _q; r = _r; s = _s;
+public:
+    /* explicit constructor */
+    Transposer(std::ostream& ofile, std::string& function,
+                int _a, int _b, int _c, int _d,
+                int _p, int _q, int _r, int _s)
+    {
+        a = _a; b = _b; c = _c; d = _d;
+        p = _p; q = _q; r = _r; s = _s;
 
-            printIndices();
-            //generateCode();
-            generateUnrolled1(2);
-        }
+        //printIndices(std::cout);
+        //generateCode(ofile,function);
+        int u[4] = {1,1,1,1};
+        generateUnrolled(ofile,function,u);
+    }
 
-        /* constructor which assumes loop order (most likely bad) */
-        Transposer(int _a, int _b, int _c, int _d) :
-                    p(1), q(2), r(3), s(4)
-        {
-            a = _a; b = _b; c = _c; d = _d;
+    /* constructor which assumes loop order (most likely bad) */
+    Transposer(std::ostream ofile, std::string& function,
+                int _a, int _b, int _c, int _d) :
+                p(_a), q(_b), r(_c), s(_d)
+    {
+        a = _a; b = _b; c = _c; d = _d;
 
-            printIndices();
-            //generateCode();
-            generateUnrolled1(2);
-        }
+        //printIndices(std::cout);
+        //generateCode(ofile,function);
+        int u[4] = {1,1,1,1};
+        generateUnrolled(ofile,function,u);
+    }
 
-        /* default constructure is banned
+    /* default constructure is banned
         Transposer() : a(1), b(2), c(3), d(4),
                         p(1), q(2), r(3), s(4)
         {
@@ -97,148 +119,101 @@ class Transposer
 };
 
 
-void Transposer::generateCode()
+void Transposer::generateCode(std::ostream& ofile, std::string& function)
 {
-    std::cout << "generateCode()" << std::endl;
+    //std::cerr << "generateCode(ofile)" << std::endl;
 
-    std::cout << "void " << "foo" << "(int dim1, int dim2, int dim3, int dim4, "
-              << "double factor, double* in, double* out)" << "\n"
-              << "{" << "\n"
-              << "  unsigned int j1,j2,j3,j4;" << "\n"
-              << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "++)" << "\n"
-              << "    for( j" << q << " = 0; j" << q << "<dim" << q << "; j" << q << "++)" << "\n"
-              << "      for( j" << r << " = 0; j" << r << "<dim" << r << "; j" << r << "++)" << "\n"
-              << "        for( j" << s << " = 0; j" << s << "<dim" << s << "; j" << s << "++)" << "\n"
-              << "        {" << "\n"
-              << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(j" << a << ")))]"
-              <<         " = factor*in[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n"
-              << "        }" << "\n"
-              << "  return;" << "\n"
-              << "};" << std::endl;
+    ofile << "void " << "foo" << "(int dim1, int dim2, int dim3, int dim4, "
+          << "double factor, double* in, double* out)" << "\n"
+          << "{" << "\n"
+          << "  unsigned int j1,j2,j3,j4;" << "\n"
+          << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "++)" << "\n"
+          << "    for( j" << q << " = 0; j" << q << "<dim" << q << "; j" << q << "++)" << "\n"
+          << "      for( j" << r << " = 0; j" << r << "<dim" << r << "; j" << r << "++)" << "\n"
+          << "        for( j" << s << " = 0; j" << s << "<dim" << s << "; j" << s << "++)" << "\n"
+          << "        {" << "\n"
+          << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(j" << a << ")))]"
+          <<         " = factor*in[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n"
+          << "        }" << "\n"
+          << "  return;" << "\n"
+          << "};" << std::endl;
     return;
 }
 
-void Transposer::generateUnrolled1(int unrolling)
+void Transposer::generateUnrolled(std::ostream& ofile, std::string& function, int unrolling[])
 {
-    int u;
+    //std::cerr << "generateUnrolled(ofile,";
+    //for (int i=0; i<4;i++) std::cerr << unrolling[i];
+    //std::cerr  << ")" << std::endl;
 
-    std::cout << "generateUnrolled1(" << unrolling << ")" << std::endl;
+    ofile << "void " << function << "(int iMax, int jMax, int kMax, int lMax, "
+            << "double* in, double* out)" << "\n"
+            << "{" << "\n";
 
-        std::cout << "void " << "foo" << "(int dim1, int dim2, int dim3, int dim4, "
-                  << "double factor, double* in, double* out)" << "\n"
-                  << "{" << "\n"
-                  << "  unsigned int j1,j2,j3,j4;" << "\n";
+    std::string iInd[4], iMax[4];
+    std::string oInd[4], oMax[4];
+    std::string lInd[4], lMax[4];
 
-    if (p==1)
-        std::cout << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "+=" << unrolling << ")" << "\n";
-    else
-        std::cout << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "++)" << "\n";
+    iInd[0] = makeString("i");
+    iInd[1] = makeString("j");
+    iInd[2] = makeString("k");
+    iInd[3] = makeString("l");
 
-    if (q==1)
-        std::cout << "  for( j" << q << " = 0; j" << q << "<dim" << q << "; j" << q << "+=" << unrolling << ")" << "\n";
-    else
-        std::cout << "  for( j" << q << " = 0; j" << q << "<dim" << q << "; j" << q << "++)" << "\n";
+    iMax[0] = makeString("iMax");
+    iMax[1] = makeString("jMax");
+    iMax[2] = makeString("kMax");
+    iMax[3] = makeString("lMax");
 
-    if (r==1)
-        std::cout << "  for( j" << r << " = 0; j" << r << "<dim" << r << "; j" << r << "+=" << unrolling << ")" << "\n";
-    else
-        std::cout << "  for( j" << r << " = 0; j" << r << "<dim" << r << "; j" << r << "++)" << "\n";
+    oInd[0] = (a==0) ? iInd[3] : iInd[a-1];
+    oInd[1] = (b==0) ? iInd[3] : iInd[b-1];
+    oInd[2] = (c==0) ? iInd[3] : iInd[c-1];
+    oInd[3] = (d==0) ? iInd[3] : iInd[d-1];
 
-    if (s==1)
-        std::cout << "  for( j" << s << " = 0; j" << s << "<dim" << s << "; j" << s << "+=" << unrolling << ")" << "\n";
-    else
-        std::cout << "  for( j" << s << " = 0; j" << s << "<dim" << s << "; j" << s << "++)" << "\n";
+    oMax[0] = (a==0) ? iMax[3] : iMax[a-1];
+    oMax[1] = (b==0) ? iMax[3] : iMax[b-1];
+    oMax[2] = (c==0) ? iMax[3] : iMax[c-1];
+    oMax[3] = (d==0) ? iMax[3] : iMax[d-1];
 
-        std::cout << "  {" << "\n";
+    lInd[0] = (p==0) ? iInd[3] : iInd[p-1];
+    lInd[1] = (q==0) ? iInd[3] : iInd[q-1];
+    lInd[2] = (r==0) ? iInd[3] : iInd[r-1];
+    lInd[3] = (s==0) ? iInd[3] : iInd[s-1];
 
-    for (u=0; u<unrolling; u++)
-    {
-        if (a==1)
-            std::cout << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(" << u << "+j" << a << ")))]";
-        else if (b==1)
-            std::cout << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(" << u << "+j" << b << "+dim" << b << "*(j" << a << ")))]";
-        else if (c==1)
-            std::cout << "          out[j" << d << "+dim" << d << "*(" << u << "+j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(j" << a << ")))]";
-        else if (d==1)
-            std::cout << "          out[" << u << "+j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "+" << u << "*(j" << a << ")))]";
-        else
-            std::cout << "something is wrong" << std::endl;
+    lMax[0] = (p==0) ? iMax[3] : iMax[p-1];
+    lMax[1] = (q==0) ? iMax[3] : iMax[q-1];
+    lMax[2] = (r==0) ? iMax[3] : iMax[r-1];
+    lMax[3] = (s==0) ? iMax[3] : iMax[s-1];
 
-        std::cout <<         " = factor*in[j4+dim4*(j3+dim3*(j2+dim2*(j1+" << u << ")))];\n";
-    }
+    generateFor(ofile,lInd[0], 0, lMax[0], unrolling[0]);
+    generateFor(ofile,lInd[1], 0, lMax[1], unrolling[1]);
+    generateFor(ofile,lInd[2], 0, lMax[2], unrolling[2]);
+    generateFor(ofile,lInd[3], 0, lMax[3], unrolling[3]);
+    ofile << "  {" << "\n";
 
-        std::cout << "  }" << "\n"
-                  << "  return;" << "\n"
-                  << "};" << std::endl;
+    ofile << "       out[";
+    ofile << iInd[0] << "*" << iMax[1] << "*" << iMax[2] << "*" << iMax[3] << " + ";
+    ofile << iInd[1] << "*" << iMax[2] << "*" << iMax[3] << " + ";
+    ofile << iInd[2] << "*" << iMax[3] << " + ";
+    ofile << iInd[3] << "] = \n";
+
+    ofile << "        in[";
+    ofile << oInd[0] << "*" << oMax[1] << "*" << oMax[2] << "*" << oMax[3] << " + ";
+    ofile << oInd[1] << "*" << oMax[2] << "*" << oMax[3] << " + ";
+    ofile << oInd[2] << "*" << oMax[3] << " + ";
+    ofile << oInd[3] << "]\n";
+
+    ofile << "  }" << "\n";
+
+    ofile << "  return;" << "\n" << "};" << std::endl;
     return;
 }
 
-void Transposer::generateFor(int unrolling)
+void Transposer::generateFor(std::ostream& ofile, std::string index, int begin, std::string bound, int jump)
 {
-    int u;
+    //std::cerr << "generateFor(ofile," << jump << ")" << std::endl;
 
-    std::cout << "generateFor(" << unrolling << ")" << std::endl;
-
-    if (p==1)
-        std::cout << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "+=" << unrolling << ")" << "\n";
+    if (jump>0)
+        ofile << "  for(int " << index << "=" << begin << ";" << index << "<" << bound << ";" << index << "+=" << jump << ")" << "\n";
     else
-        std::cout << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "++)" << "\n";
+        ofile << "jump = " << jump << " does not make sense" << std::endl;
 }
-
-
-//        subroutine_name = 'transpose_'+A+B+C+D+'_loop_'+a+b+c+d+factor_version+'_'
-//        source_name = subroutine_name+'.c'
-//        source_file = open(source_name,'w')
-//        source_file.write(cind+'void '+subroutine_name+'( double *unsorted, double *sorted,\n')
-//        if (factor_version == '_plus') or (factor_version == '_minus'):
-//            source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4 ) {\n\n')
-//        elif (factor_version == '_phalf') or (factor_version == '_mhalf'):
-//            source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4 ) {\n\n')
-//        else:
-//            source_file.write(cind+8*ctab+'int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {\n\n')
-//            source_file.write(cind+'double factor = *p_factor;\n\n')
-//        source_file.write(cind+'int dim1,dim2,dim3,dim4;\n')
-//        source_file.write(cind+'unsigned int old_offset,new_offset;\n')
-//        source_file.write(cind+'unsigned int j1,j2,j3,j4;\n')
-//        source_file.write(cind+'dim1 = *p_dim1;\n')
-//        source_file.write(cind+'dim2 = *p_dim2;\n')
-//        source_file.write(cind+'dim3 = *p_dim3;\n')
-//        source_file.write(cind+'dim4 = *p_dim4;\n\n')
-//        #source_file.write(cind+'/* pluto start (dim1,dim2,dim3,dim4) */\n')
-//        source_file.write(cind+0*ctab+'#pragma ivdep\n')
-//        source_file.write(cind+0*ctab+'#pragma prefetch\n')
-//        source_file.write(cind+0*ctab+'#pragma parallel\n')
-//        source_file.write(cind+0*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
-//        source_file.write(cind+0*ctab+'#pragma unroll\n')
-//        source_file.write(cind+0*ctab+'for( j'+a+' = 0; j'+a+'<dim'+a+'; j'+a+'++) {\n')
-//        source_file.write(cind+1*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
-//        source_file.write(cind+1*ctab+'#pragma unroll\n')
-//        source_file.write(cind+1*ctab+'for( j'+b+' = 0; j'+b+'<dim'+b+'; j'+b+'++) {\n')
-//        source_file.write(cind+2*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
-//        source_file.write(cind+2*ctab+'#pragma unroll\n')
-//        source_file.write(cind+2*ctab+'#pragma vector always\n')
-//        source_file.write(cind+2*ctab+'for( j'+c+' = 0; j'+c+'<dim'+c+'; j'+c+'++) {\n')
-//        source_file.write(cind+3*ctab+'#pragma loop count min(10) max(80) avg(40)\n')
-//        source_file.write(cind+3*ctab+'#pragma unroll\n')
-//        source_file.write(cind+3*ctab+'#pragma vector always\n')
-//        source_file.write(cind+3*ctab+'for( j'+d+' = 0; j'+d+'<dim'+d+'; j'+d+'++) {\n')
-//        source_file.write(cind+4*ctab+'old_offset = j4+dim4*(j3+dim3*(j2+dim2*(j1)));\n')
-//        source_file.write(cind+4*ctab+'new_offset = j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*(j'+A+')));\n')
-//        if (factor_version == '_plus'):
-//            source_file.write(cind+4*ctab+'sorted[new_offset] = unsorted[old_offset];\n')
-//        elif (factor_version == '_minus'):
-//            source_file.write(cind+4*ctab+'sorted[new_offset] = -unsorted[old_offset];\n')
-//        elif (factor_version == '_phalf'):
-//            source_file.write(cind+4*ctab+'sorted[new_offset] = 0.5*unsorted[old_offset];\n')
-//        elif (factor_version == '_mhalf'):
-//            source_file.write(cind+4*ctab+'sorted[new_offset] = -0.5*unsorted[old_offset];\n')
-//        else:
-//            source_file.write(cind+4*ctab+'sorted[new_offset] = factor*unsorted[old_offset];\n')
-//        source_file.write(cind+3*ctab+'}\n')
-//        source_file.write(cind+2*ctab+'}\n')
-//        source_file.write(cind+1*ctab+'}\n')
-//        source_file.write(cind+'}\n')
-//        #source_file.write(cind+'/* pluto end */\n')
-//        source_file.write(cind+'return;\n')
-//        source_file.write(cind+'}\n\n')
-//        source_file.close()
