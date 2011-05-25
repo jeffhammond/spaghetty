@@ -1,8 +1,11 @@
+//#define INLINE __inline__
+#define INLINE 
+
 #ifdef HAVE_DCMF_TIMEBASE
 
 #include "dcmf.h"
 
-__inline__ unsigned long long getticks(void)
+INLINE unsigned long long getticks(void)
 {
     return DCMF_Timebase();
 }
@@ -17,7 +20,7 @@ __inline__ unsigned long long getticks(void)
 
 #if defined(__i386__)
 
-__inline__ unsigned long long getticks(void)
+INLINE unsigned long long getticks(void)
 {
     unsigned long long int x;
     __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
@@ -26,7 +29,7 @@ __inline__ unsigned long long getticks(void)
 
 #elif defined(__x86_64__)
 
-__inline__ unsigned long long getticks(void)
+INLINE unsigned long long getticks(void)
 {
     unsigned hi, lo;
     __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
@@ -35,7 +38,7 @@ __inline__ unsigned long long getticks(void)
 
 #elif defined(__powerpc__)
 
-__inline__ unsigned long long getticks(void)
+INLINE unsigned long long getticks(void)
 {
     unsigned long long int result=0;
     unsigned long int upper, lower,tmp;
@@ -57,13 +60,11 @@ __inline__ unsigned long long getticks(void)
 
 #else
 
-#error NO CYCLE-ACCURATE COUNTER AVAILABLE
+#warning NO CYCLE-ACCURATE COUNTER AVAILABLE
 
-//#include <time.h>
-////unsigned long long getticks(void) { return (unsigned long long) clock(); }
-//
-//#endif // targets
-//
-//#endif // HAVE_DCMF_TIMEBASE
-//
-//
+#include <time.h>
+unsigned long long getticks(void) { return (unsigned long long) clock(); }
+
+#endif // targets
+
+#endif // HAVE_DCMF_TIMEBASE
