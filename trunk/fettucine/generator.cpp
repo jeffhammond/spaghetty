@@ -65,7 +65,7 @@ int main(int argc,char* argv[])
                                             std::stringstream function;
                                             function << "permute_" << a << b << c << d << "_"<< i << j << k << l;
                                             std::string fname = function.str();
-                                            std::cout << fname << std::endl;
+                                            //std::cout << fname << std::endl;
                                             Transposer tr(os,fname,a,b,c,d,i,j,k,l);
                                         }
                         fb.close();

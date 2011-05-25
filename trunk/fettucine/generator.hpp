@@ -200,11 +200,11 @@ void Transposer::generateUnrolled(std::ostream& ofile, std::string& function, in
     ofile << oInd[0] << "*" << oMax[1] << "*" << oMax[2] << "*" << oMax[3] << " + ";
     ofile << oInd[1] << "*" << oMax[2] << "*" << oMax[3] << " + ";
     ofile << oInd[2] << "*" << oMax[3] << " + ";
-    ofile << oInd[3] << "]\n";
+    ofile << oInd[3] << "];\n";
 
     ofile << "  }" << "\n";
 
-    ofile << "  return;" << "\n" << "};" << std::endl;
+    ofile << "  return;" << "\n" << "} \n" << std::endl;
     return;
 }
 
