@@ -126,7 +126,6 @@ c
       double precision sorted(a*b*c*d*e*f)
       double precision unsorted(a*b*c*d*e*f)
       double precision factor
-      double precision cpu
 c
 c     Plain original algorithm
 c
