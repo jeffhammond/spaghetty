@@ -8,7 +8,7 @@ FC       = gfortran
 FFLAGS   = -g -O3 -Wall -pedantic
 
 LD       = $(CC)
-LDFLAGS  = -L. -lpermute -lm -fopenmp -std=c99
+LDFLAGS  = $(CFLAGS) -L. -lpermute -lm 
 
 OBJECTS := 	permute_1234.o permute_1243.o permute_1324.o permute_1342.o permute_1423.o permute_1432.o \
 			permute_2134.o permute_2143.o permute_2314.o permute_2341.o permute_2413.o permute_2431.o \

@@ -132,6 +132,7 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
                         os << "    for (int t=0;t<" << count << ";t++) tce_sort_4_" << "(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);\n";
                         os << "    t1 = getticks();\n";
                         os << "    thirata = (t1-t0)/" << count << ";";
+                        os << "    tbest = thirata;";
                         os << "    printf(\"hirata  " << a << b << c << d << "      took %12llu cycles\\n\",thirata);\n";
 
                         for (int i=1;i<=4;i++)
