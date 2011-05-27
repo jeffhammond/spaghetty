@@ -10,9 +10,9 @@ void zero4d(int dim1, int dim2, int dim3, int dim4, double * a)
 
 void rand4d(int dim1, int dim2, int dim3, int dim4, double * a)
 {
-    printf(\"begin rand4d\n");
+    printf("begin rand4d\n");
     for (int i=0;i<(dim1*dim2*dim3*dim4);i++) a[i] = (double) rand()/RAND_MAX;
-    printf(\" end  rand4d\n");
+    printf(" end  rand4d\n");
     fflush(stdout);
     return;
 }
