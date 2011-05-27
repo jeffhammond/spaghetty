@@ -86,64 +86,96 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
     os << "#include <stdlib.h>\n";
     os << "#include <math.h>\n";
     //os << "#include <omp.h>\n";
+    os << "#include \"util.h\"\n";
     os << "\n";
     os << "unsigned long long getticks(void);\n";
-    os << "void init4d(int dim1, int dim2, int dim3, int dim4, double * ptr);\n";
-    os << "void zero4d(int dim1, int dim2, int dim3, int dim4, double * ptr);\n";
-    os << "void rand4d(int dim1, int dim2, int dim3, int dim4, double * ptr);\n";
-    os << "double diff4d(int dim1, int dim2, int dim3, int dim4, double * a, double * b);\n";
-    os << "void print4d(int dim1, int dim2, int dim3, int dim4, double * ptr);\n";
-    os << "void print4d2(int dim1, int dim2, int dim3, int dim4, double * a, double * b);\n";
     os << "\n";
     os << "int main()\n{\n";
-    //os << "    double t0, t1;\n";
-    os << "    unsigned long long t0, t1;\n";
+    os << "    unsigned long long t0, t1, dt, thirata, tbest;\n";
+    os << "\n";
+    os << "    int best[4];";
+    os << "\n";
+    os << "    double error, one = 1.0;\n";
+    os << "\n";
+    os << "    int a,b,c,d,d1,d2,d3,d4;\n";
     os << "\n";
     os << "    double * iptr = (double*) malloc(" << dim1 << "*" << dim2 << "*" << dim3 << "*" << dim4 << "*sizeof(double));\n";
     os << "    double * optr = (double*) malloc(" << dim1 << "*" << dim2 << "*" << dim3 << "*" << dim4 << "*sizeof(double));\n";
+    os << "    double * hptr = (double*) malloc(" << dim1 << "*" << dim2 << "*" << dim3 << "*" << dim4 << "*sizeof(double));\n";
     os << "\n";
     os << "    rand4d(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",iptr);\n";
     os << "    zero4d(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",optr);\n";
+    os << "    zero4d(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",hptr);\n";
     os << "\n";
 
-    int a=4, b=3, c=2, d=1;
-    int i=2, j=3, k=4, l=1;
+//    int a=4, b=3, c=1, d=2;
+//    int i=2, j=3, k=4, l=1;
 
-    //    for (int a=1;a<=4;a++)
-//        for (int b=1;b<=4;b++)
-//            for (int c=1;c<=4;c++)
-//                for (int d=1;d<=4;d++)
+    os << "    d1=" << dim1 <<";\n";
+    os << "    d2=" << dim2 <<";\n";
+    os << "    d3=" << dim3 <<";\n";
+    os << "    d4=" << dim4 <<";\n";
+    os << "\n";
+
+    for (int a=1;a<=4;a++)
+        for (int b=1;b<=4;b++)
+            for (int c=1;c<=4;c++)
+                for (int d=1;d<=4;d++)
 
                     if (a!=b && a!=c && a!=d && b!=c && b!=d && c!=d)
                     {
                         os << "    printf(\"===========================================\\n\");\n";
 
-//                        for (int i=1;i<=4;i++)
-//                            for (int j=1;j<=4;j++)
-//                                for (int k=1;k<=4;k++)
-//                                    for (int l=1;l<=4;l++)
+                        os << "    a=" << a <<";" << " b=" << b <<";" << " c=" << c <<";" <<" d=" << d <<";\n";
+
+                        os << "    t0 = getticks();\n";
+                        os << "    for (int t=0;t<" << count << ";t++) tce_sort_4_" << "(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);\n";
+                        os << "    t1 = getticks();\n";
+                        os << "    thirata = (t1-t0)/" << count << ";";
+                        os << "    printf(\"hirata  " << a << b << c << d << "      took %12llu cycles\\n\",thirata);\n";
+
+                        for (int i=1;i<=4;i++)
+                            for (int j=1;j<=4;j++)
+                                for (int k=1;k<=4;k++)
+                                    for (int l=1;l<=4;l++)
 
                                         if (i!=j && i!=k && i!=l && j!=k && j!=l && k!=l)
                                         {
-                                            //os << "    t0 = omp_get_wtime();\n";
-                                            os << "    t0 = getticks();\n";
                                             std::stringstream function;
                                             function << "permute_" << a << b << c << d << "_"<< i << j << k << l;
                                             std::string fname = function.str();
-                                            os << "    for (int t=0;t<" << count << ";t++)" << fname << "(";
+
+                                            os << "    t0 = getticks();\n";
+                                            os << "    for (int t=0;t<" << count << ";t++) " << fname << "(";
                                             os << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",";
-                                            os << "iptr" << "," << "optr";
-                                            os << ");\n";
-                                            //os << "    t1 = omp_get_wtime();\n";
+                                            os << "iptr" << "," << "optr);\n";
                                             os << "    t1 = getticks();\n";
-                                            //os << "    printf(\"" << fname << " took %lf seconds\\n\",(t1-t0)/" << count << ");\n";
-                                            os << "    printf(\"" << fname << " took %12llu cycles\\n\",(t1-t0)/" << count << ");\n";
+                                            os << "    dt = (t1-t0)/" << count << ";";
+
+                                            os << "    error = diff4d(";
+                                            os << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",";
+                                            os << "optr" << "," << "hptr" << ");\n";
+
+                                            os << "    printf(\"" << fname << " took %12llu cycles (error = %lf)\\n\",dt,error);\n";
+
+                                            os << "    if (error<1e-13 && dt<tbest)\n";
+                                            os << "    {\n";
+                                            os << "       tbest = dt;\n";
+                                            os << "       best[0] = " << i << ";\n";
+                                            os << "       best[1] = " << j << ";\n";
+                                            os << "       best[2] = " << k << ";\n";
+                                            os << "       best[3] = " << l << ";\n";
+                                            os << "    }\n";
+
+                                            //os << "    print4d2(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",optr,hptr);\n";
+                                            //os << "    print4d3(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",iptr,optr,hptr);\n";
                                         }
+
+                        os << "    printf(\"BEST         %1d%1d%1d%1d took %12llu cycles (%lf faster than original)\\n\"," <<
+                                           "best[0],best[1],best[2],best[3],tbest,(double)thirata/(double)tbest);\n";
                     }
 
     os << "    printf(\"===========================================\\n\");\n";
-    os << "\n";
-    os << "    print4d2(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",iptr,optr);\n";
     os << "\n";
     os << "    free(iptr);\n";
     os << "    free(optr);\n";
@@ -156,8 +188,13 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
 
 int main(int argc,char* argv[])
 {
-    generateSource();
-    generateTest(3,3,3,3);
+    if (argc==1) std::cout << "generator.x <make test> <make source>" << std::endl;
+
+    int test   = ( argc>1 ? atoi(argv[1]) : 1 );
+    int source = ( argc>2 ? atoi(argv[2]) : 0 );
+
+    if (test)   generateTest(23,34,25,16);
+    if (source) generateSource();
 
     return 0;
 }

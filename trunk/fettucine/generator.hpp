@@ -39,6 +39,9 @@ privately owned rights.
 
  ***************************************************************************/
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -76,6 +79,7 @@ private:
     }
 
     void generateCode(std::ostream& ofile, std::string& function);
+    void generateCodeOMP(std::ostream& ofile, std::string& function);
     void generateUnrolled(std::ostream& ofile, std::string& function,int unrolling[]);
 
     void generateFor(std::ostream& ofile, std::string index, int begin, std::string bound, int jump);
@@ -93,8 +97,9 @@ public:
 
         //printIndices(std::cout);
         //generateCode(ofile,function);
-        int u[4] = {1,1,1,1};
-        generateUnrolled(ofile,function,u);
+        generateCodeOMP(ofile,function);
+        //int u[4] = {1,1,1,1};
+        //generateUnrolled(ofile,function,u);
     }
 
     /* constructor which assumes loop order (most likely bad) */
@@ -106,8 +111,9 @@ public:
 
         //printIndices(std::cout);
         //generateCode(ofile,function);
-        int u[4] = {1,1,1,1};
-        generateUnrolled(ofile,function,u);
+        generateCodeOMP(ofile,function);
+        //int u[4] = {1,1,1,1};
+        //generateUnrolled(ofile,function,u);
     }
 
     /* default constructure is banned
@@ -121,31 +127,51 @@ public:
 
 void Transposer::generateCode(std::ostream& ofile, std::string& function)
 {
-    //std::cerr << "generateCode(ofile)" << std::endl;
+    ofile << "void " << function << "(int dim1, int dim2, int dim3, int dim4, "
+            << "double* in, double* out)" << "\n"
+            << "{" << "\n";
 
-    ofile << "void " << "foo" << "(int dim1, int dim2, int dim3, int dim4, "
-          << "double factor, double* in, double* out)" << "\n"
-          << "{" << "\n"
-          << "  unsigned int j1,j2,j3,j4;" << "\n"
+    ofile << "  unsigned int j1,j2,j3,j4;" << "\n"
           << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "++)" << "\n"
           << "    for( j" << q << " = 0; j" << q << "<dim" << q << "; j" << q << "++)" << "\n"
           << "      for( j" << r << " = 0; j" << r << "<dim" << r << "; j" << r << "++)" << "\n"
           << "        for( j" << s << " = 0; j" << s << "<dim" << s << "; j" << s << "++)" << "\n"
           << "        {" << "\n"
-          << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(j" << a << ")))]"
-          <<         " = factor*in[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n"
+          << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(j" << a << ")))] = \n"
+          << "           in[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n"
           << "        }" << "\n"
           << "  return;" << "\n"
-          << "};" << std::endl;
+          << "}" << std::endl;
     return;
 }
 
+void Transposer::generateCodeOMP(std::ostream& ofile, std::string& function)
+{
+    ofile << "void " << function << "("
+          << "const unsigned int dim1,\n const unsigned int dim2,\n "
+          << "const unsigned int dim3,\n const unsigned int dim4,\n "
+          << "double * const in,\n double * restrict out" << ")\n{\n";
+
+    ofile << "  unsigned int j1,j2,j3,j4;" << "\n";
+
+    ofile << "  #pragma omp parallel for private(j1,j2,j3,j4) schedule(static)\n";
+
+    ofile << "  for( j" << p << " = 0; j" << p << "<dim" << p << "; j" << p << "++)" << "\n"
+          << "    for( j" << q << " = 0; j" << q << "<dim" << q << "; j" << q << "++)" << "\n"
+          << "      for( j" << r << " = 0; j" << r << "<dim" << r << "; j" << r << "++)" << "\n"
+          << "        for( j" << s << " = 0; j" << s << "<dim" << s << "; j" << s << "++)" << "\n"
+          << "        {" << "\n"
+          << "          out[j" << d << "+dim" << d << "*(j" << c << "+dim" << c << "*(j" << b << "+dim" << b << "*(j" << a << ")))] = \n"
+          << "           in[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n"
+          << "        }" << "\n"
+          << "  return;" << "\n"
+          << "}" << std::endl;
+    return;
+}
+
+
 void Transposer::generateUnrolled(std::ostream& ofile, std::string& function, int unrolling[])
 {
-    //std::cerr << "generateUnrolled(ofile,";
-    //for (int i=0; i<4;i++) std::cerr << unrolling[i];
-    //std::cerr  << ")" << std::endl;
-
     ofile << "void " << function << "(int iMax, int jMax, int kMax, int lMax, "
             << "double* in, double* out)" << "\n"
             << "{" << "\n";

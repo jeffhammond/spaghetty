@@ -1,8 +1,11 @@
 CXX      = g++
-CXXFLAGS = -g -O3 -Wall -pedantic
+CXXFLAGS = -g -O3 -Wall -pedantic -fopenmp
 
 CC       = gcc
-CFLAGS   = -g -O3 -Wall -pedantic -std=c99
+CFLAGS   = -g -O3 -Wall -pedantic -std=c99 -fopenmp
+
+FC       = gfortran
+FFLAGS   = -g -O3 -Wall -pedantic
 
 LD       = $(CC)
 LDFLAGS  = -L. -lpermute -lm -fopenmp -std=c99
@@ -11,6 +14,7 @@ OBJECTS := 	permute_1234.o permute_1243.o permute_1324.o permute_1342.o permute_
 			permute_2134.o permute_2143.o permute_2314.o permute_2341.o permute_2413.o permute_2431.o \
 			permute_3124.o permute_3142.o permute_3214.o permute_3241.o permute_3412.o permute_3421.o \
 			permute_4123.o permute_4132.o permute_4213.o permute_4231.o permute_4312.o permute_4321.o \
+			tce_sort_hirata.o tce_sort_hirata_noflop.o \
 			getticks.o util.o
 			
 SOURCES := 	permute_1234.c permute_1243.c permute_1324.c permute_1342.c permute_1423.c permute_1432.c \
@@ -25,12 +29,13 @@ help:
 
 generate: generator.x
 	@echo Generating source
-	./generator.x
+	./generator.x 0 1
 
 generator.x: generator.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 	
-test.x: test.c
+test.x: test.c generator.x
+	./generator.x 1 0
 	$(LD) $< $(LDFLAGS) -o $@
 
 libpermute.a: $(OBJECTS)
