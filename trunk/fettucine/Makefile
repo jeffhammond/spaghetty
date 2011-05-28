@@ -1,14 +1,22 @@
-CXX      = g++
-CXXFLAGS = -g -O3 -Wall -pedantic -fopenmp
+#WALL     = -Wall -pedantic
+WALL     = 
 
-CC       = gcc
-CFLAGS   = -g -O3 -Wall -pedantic -std=c99 -fopenmp
+#OMP      = -fopenmp
+OMP      = -qsmp=omp
 
-FC       = gfortran
-FFLAGS   = -g -O3 -Wall -pedantic
+OPT      = -g -O3 -qtune=pwr7 -qarch=pwr7
+
+CXX      = xlC_r
+CXXFLAGS = $(OPT) $(WALL)
+
+CC       = xlc_r -qlanglvl=stdc99
+CFLAGS   = $(OPT) $(WALL) $(OMP)
+
+FC       = xlf_r
+FFLAGS   = $(OPT) $(WALL) -qextname
 
 LD       = $(CC)
-LDFLAGS  = $(CFLAGS) -L. -lpermute -lm 
+LDFLAGS  = $(CFLAGS) -L. -lpermute
 
 OBJECTS := 	permute_1234.o permute_1243.o permute_1324.o permute_1342.o permute_1423.o permute_1432.o \
 			permute_2134.o permute_2143.o permute_2314.o permute_2341.o permute_2413.o permute_2431.o \
