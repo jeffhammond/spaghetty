@@ -93,11 +93,12 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
     os << "int main()\n{\n";
     os << "    unsigned long long t0, t1, dt, thirata, tbest;\n";
     os << "\n";
+    os << "    int count=" << count << ";";
     os << "    int best[4];";
     os << "\n";
-    os << "    double error, one = 1.0;\n";
-    os << "\n";
     os << "    int a,b,c,d,d1,d2,d3,d4;\n";
+    os << "\n";
+    os << "    double error, one = 1.0;\n";
     os << "\n";
     os << "    d1=" << dim1 <<";\n";
     os << "    d2=" << dim2 <<";\n";
@@ -124,13 +125,11 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
                     if (a!=b && a!=c && a!=d && b!=c && b!=d && c!=d)
                     {
                         os << "    printf(\"===========================================\\n\");\n";
-
                         os << "    a=" << a <<";" << " b=" << b <<";" << " c=" << c <<";" <<" d=" << d <<";\n";
-
                         os << "    t0 = getticks();\n";
                         os << "    for (int t=0;t<" << count << ";t++) tce_sort_4_" << "(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);\n";
                         os << "    t1 = getticks();\n";
-                        os << "    thirata = (t1-t0)/" << count << ";";
+                        os << "    thirata = (t1-t0)/count;";
                         os << "    tbest = thirata;";
                         os << "    printf(\"hirata  " << a << b << c << d << "      took %12llu cycles\\n\",thirata);\n";
 
@@ -146,14 +145,11 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
                                             std::string fname = function.str();
 
                                             os << "    t0 = getticks();\n";
-                                            os << "    for (int t=0;t<" << count << ";t++) " << fname << "(d1,d2,d3,d4,iptr,optr);\n";
+                                            os << "    for (int t=0;t<count;t++) " << fname << "(d1,d2,d3,d4,iptr,optr);\n";
                                             os << "    t1 = getticks();\n";
-                                            os << "    dt = (t1-t0)/" << count << ";";
-
+                                            os << "    dt = (t1-t0)/count;";
                                             os << "    error = diff4d(d1,d2,d3,d4,optr,hptr);\n";
-
                                             os << "    printf(\"" << fname << " took %12llu cycles (error = %lf)\\n\",dt,error);\n";
-
                                             os << "    if (error<1e-13 && dt<tbest)\n";
                                             os << "    {\n";
                                             os << "       tbest = dt;\n";
@@ -162,14 +158,12 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
                                             os << "       best[2] = " << k << ";\n";
                                             os << "       best[3] = " << l << ";\n";
                                             os << "    }\n";
-
                                             //os << "    print4d2(d1,d2,d3,d4,optr,hptr);\n";
                                             //os << "    print4d3(d1,d2,d3,d4,iptr,optr,hptr);\n";
                                         }
 
                         os << "    printf(\"BEST         %1d%1d%1d%1d took %12llu cycles (%lf faster than original)\\n\"," <<
                                            "best[0],best[1],best[2],best[3],tbest,(double)thirata/(double)tbest);\n";
-
                         os << "    fflush(stdout);\n";
                     }
 
