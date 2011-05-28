@@ -80,7 +80,7 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
     fb.open (filename.str().c_str(),std::ios::out);
     std::ostream os(&fb);
 
-    const int count = 100;
+    const int count = 20;
 
     os << "#include <stdio.h>\n";
     os << "#include <stdlib.h>\n";
@@ -187,7 +187,7 @@ int main(int argc,char* argv[])
     int test   = ( argc>1 ? atoi(argv[1]) : 1 );
     int source = ( argc>2 ? atoi(argv[2]) : 0 );
 
-    if (test)   generateTest(23,34,25,16);
+    if (test)   generateTest(40,40,40,40);
     if (source) generateSource();
 
     return 0;
