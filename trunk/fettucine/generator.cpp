@@ -109,9 +109,11 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
     os << "    double * optr = (double*) malloc(d1*d2*d3*d4*sizeof(double));\n";
     os << "    double * hptr = (double*) malloc(d1*d2*d3*d4*sizeof(double));\n";
     os << "\n";
-    os << "    rand4d(d1,d2,d3,d4,iptr);\n";
+    os << "    zero4d(d1,d2,d3,d4,iptr);\n";
     os << "    zero4d(d1,d2,d3,d4,optr);\n";
     os << "    zero4d(d1,d2,d3,d4,hptr);\n";
+    os << "\n";
+    os << "    rand4d(d1,d2,d3,d4,iptr);\n";
     os << "\n";
 
 //    int a=4, b=3, c=1, d=2;
