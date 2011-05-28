@@ -32,7 +32,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  1234      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  1234      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_1234_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -351,7 +351,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  1243      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  1243      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_1243_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -670,7 +670,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  1324      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  1324      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_1324_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -989,7 +989,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  1342      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  1342      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_1342_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -1308,7 +1308,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  1423      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  1423      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_1423_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -1627,7 +1627,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  1432      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  1432      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_1432_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -1946,7 +1946,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  2134      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  2134      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_2134_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -2265,7 +2265,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  2143      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  2143      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_2143_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -2584,7 +2584,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  2314      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  2314      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_2314_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -2903,7 +2903,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  2341      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  2341      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_2341_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -3222,7 +3222,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  2413      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  2413      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_2413_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -3541,7 +3541,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  2431      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  2431      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_2431_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -3860,7 +3860,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  3124      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  3124      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_3124_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -4179,7 +4179,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  3142      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  3142      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_3142_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -4498,7 +4498,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  3214      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  3214      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_3214_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -4817,7 +4817,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  3241      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  3241      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_3241_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -5136,7 +5136,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  3412      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  3412      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_3412_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -5455,7 +5455,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  3421      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  3421      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_3421_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -5774,7 +5774,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  4123      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  4123      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_4123_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -6093,7 +6093,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  4132      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  4132      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_4132_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -6412,7 +6412,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  4213      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  4213      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_4213_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -6731,7 +6731,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  4231      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  4231      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_4231_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -7050,7 +7050,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  4312      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  4312      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_4312_1234(23,34,25,16,iptr,optr);
     t1 = getticks();
@@ -7369,7 +7369,7 @@ int main()
     t0 = getticks();
     for (int t=0;t<100;t++) tce_sort_4_(iptr,hptr,&d1,&d2,&d3,&d4,&a,&b,&c,&d,&one);
     t1 = getticks();
-    thirata = (t1-t0)/100;    printf("hirata  4321      took %12llu cycles\n",thirata);
+    thirata = (t1-t0)/100;    tbest = thirata;    printf("hirata  4321      took %12llu cycles\n",thirata);
     t0 = getticks();
     for (int t=0;t<100;t++) permute_4321_1234(23,34,25,16,iptr,optr);
     t1 = getticks();

@@ -99,23 +99,22 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
     os << "\n";
     os << "    int a,b,c,d,d1,d2,d3,d4;\n";
     os << "\n";
-    os << "    double * iptr = (double*) malloc(" << dim1 << "*" << dim2 << "*" << dim3 << "*" << dim4 << "*sizeof(double));\n";
-    os << "    double * optr = (double*) malloc(" << dim1 << "*" << dim2 << "*" << dim3 << "*" << dim4 << "*sizeof(double));\n";
-    os << "    double * hptr = (double*) malloc(" << dim1 << "*" << dim2 << "*" << dim3 << "*" << dim4 << "*sizeof(double));\n";
-    os << "\n";
-    os << "    rand4d(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",iptr);\n";
-    os << "    zero4d(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",optr);\n";
-    os << "    zero4d(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",hptr);\n";
-    os << "\n";
-
-//    int a=4, b=3, c=1, d=2;
-//    int i=2, j=3, k=4, l=1;
-
     os << "    d1=" << dim1 <<";\n";
     os << "    d2=" << dim2 <<";\n";
     os << "    d3=" << dim3 <<";\n";
     os << "    d4=" << dim4 <<";\n";
     os << "\n";
+    os << "    double * iptr = (double*) malloc(d1*d2*d3*d4*sizeof(double));\n";
+    os << "    double * optr = (double*) malloc(d1*d2*d3*d4*sizeof(double));\n";
+    os << "    double * hptr = (double*) malloc(d1*d2*d3*d4*sizeof(double));\n";
+    os << "\n";
+    os << "    rand4d(d1,d2,d3,d4,iptr);\n";
+    os << "    zero4d(d1,d2,d3,d4,optr);\n";
+    os << "    zero4d(d1,d2,d3,d4,hptr);\n";
+    os << "\n";
+
+//    int a=4, b=3, c=1, d=2;
+//    int i=2, j=3, k=4, l=1;
 
     for (int a=1;a<=4;a++)
         for (int b=1;b<=4;b++)
@@ -147,15 +146,11 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
                                             std::string fname = function.str();
 
                                             os << "    t0 = getticks();\n";
-                                            os << "    for (int t=0;t<" << count << ";t++) " << fname << "(";
-                                            os << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",";
-                                            os << "iptr" << "," << "optr);\n";
+                                            os << "    for (int t=0;t<" << count << ";t++) " << fname << "(d1,d2,d3,d4,iptr,optr);\n";
                                             os << "    t1 = getticks();\n";
                                             os << "    dt = (t1-t0)/" << count << ";";
 
-                                            os << "    error = diff4d(";
-                                            os << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",";
-                                            os << "optr" << "," << "hptr" << ");\n";
+                                            os << "    error = diff4d(d1,d2,d3,d4,optr,hptr);\n";
 
                                             os << "    printf(\"" << fname << " took %12llu cycles (error = %lf)\\n\",dt,error);\n";
 
@@ -168,18 +163,22 @@ void generateTest(int dim1, int dim2, int dim3, int dim4)
                                             os << "       best[3] = " << l << ";\n";
                                             os << "    }\n";
 
-                                            //os << "    print4d2(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",optr,hptr);\n";
-                                            //os << "    print4d3(" << dim1 << "," << dim2 << "," << dim3 << "," << dim4 << ",iptr,optr,hptr);\n";
+                                            //os << "    print4d2(d1,d2,d3,d4,optr,hptr);\n";
+                                            //os << "    print4d3(d1,d2,d3,d4,iptr,optr,hptr);\n";
                                         }
 
                         os << "    printf(\"BEST         %1d%1d%1d%1d took %12llu cycles (%lf faster than original)\\n\"," <<
                                            "best[0],best[1],best[2],best[3],tbest,(double)thirata/(double)tbest);\n";
+
+                        os << "    fflush(stdout);\n";
                     }
 
     os << "    printf(\"===========================================\\n\");\n";
     os << "\n";
     os << "    free(iptr);\n";
     os << "    free(optr);\n";
+    os << "\n";
+    os << "    fflush(stdout);\n";
     os << "\n";
     os << "    return 0;\n}\n";
     fb.close();
