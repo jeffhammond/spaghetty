@@ -4,8 +4,9 @@
 
 void zero4d(int dim1, int dim2, int dim3, int dim4, double * a)
 {
+    int i;
 #pragma omp parallel for private(i) schedule(static)
-    for (int i=0;i<(dim1*dim2*dim3*dim4);i++) a[i] = 0.0;
+    for (i=0;i<(dim1*dim2*dim3*dim4);i++) a[i] = 0.0;
     return;
 }
 
