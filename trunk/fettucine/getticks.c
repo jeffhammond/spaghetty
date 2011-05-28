@@ -20,6 +20,8 @@ INLINE unsigned long long getticks(void)
 
 #if defined(__i386__)
 
+#warning x86 cycle-accurate counter detected
+
 INLINE unsigned long long getticks(void)
 {
     unsigned long long int x;
@@ -29,6 +31,8 @@ INLINE unsigned long long getticks(void)
 
 #elif defined(__x86_64__)
 
+#warning x86_64 cycle-accurate counter detected
+
 INLINE unsigned long long getticks(void)
 {
     unsigned hi, lo;
@@ -37,6 +41,8 @@ INLINE unsigned long long getticks(void)
 }
 
 #elif defined(__powerpc__)
+
+#warning PPC cycle-accurate counter detected
 
 INLINE unsigned long long getticks(void)
 {
