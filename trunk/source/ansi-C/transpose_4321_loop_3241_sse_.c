@@ -12,8 +12,8 @@ __declspec(align(128)) static double buf[256],buf1[256];
 
 #include <math.h>
 
-    void transpose_4321_loop_3241_( double *unsorted, double *sorted,
-                                    int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {
+void transpose_4321_loop_3241_( double *unsorted, double *sorted,
+        int *p_dim1, int *p_dim2, int *p_dim3, int *p_dim4, double *p_factor ) {
 
     int dim1,dim2,dim3,dim4;
     int dim1mod,dim2mod,dim3mod,dim4mod;
@@ -41,34 +41,34 @@ __declspec(align(128)) static double buf[256],buf1[256];
     dim4mod = (int) floor( (float)dim4 / (float) 4);
 
     /* pluto start (dim1,dim2,dim3,dim4) */
-    #pragma ivdep
-    #pragma parallel
-    #pragma loop count min(10) max(80) avg(40)
-    #pragma unroll
+#pragma ivdep
+#pragma parallel
+#pragma loop count min(10) max(80) avg(40)
+#pragma unroll
     for( j3 = 0; j3<dim3; j3++) {
-        #pragma loop count min(10) max(80) avg(40)
-        #pragma unroll
+#pragma loop count min(10) max(80) avg(40)
+#pragma unroll
         for( j2 = 0; j2<dim2; j2++) {
-            #pragma loop count min(10) max(80) avg(40)
-            #pragma unroll
-            #pragma vector always
+#pragma loop count min(10) max(80) avg(40)
+#pragma unroll
+#pragma vector always
             for( j4 = 0; j4<dim4; j4+=2) {
-                #pragma loop count min(10) max(80) avg(40)
-                #pragma unroll
-                #pragma vector always
+#pragma loop count min(10) max(80) avg(40)
+#pragma unroll
+#pragma vector always
                 for( j1 = 0; j1<dim1; j1+=2) {
                     //sorted[j1+dim1*(j2+dim2*(j3+dim3*j4))] = unsorted[j4+dim4*(j3+dim3*(j2+dim2*j1))] * factor;
 
-		pA = unsorted + j4+dim4*(j3+dim3*(j2+dim2*j1));
-		pB = sorted   + j1+dim1*(j2+dim2*(j3+dim3*j4));
-		x = _mm_loadu_pd(pA);
-		x = _mm_mul_pd(x,fac_vector);
-		y = _mm_loadu_pd(pA + N2);
-		y = _mm_mul_pd(y,fac_vector);
-		z = _mm_shuffle_pd( x, y, 0);
-		w = _mm_shuffle_pd( x, y, 3);
-		_mm_storeu_pd(pB,z);
-		_mm_storeu_pd(pB + N1,w);
+                    pA = unsorted + j4+dim4*(j3+dim3*(j2+dim2*j1));
+                    pB = sorted   + j1+dim1*(j2+dim2*(j3+dim3*j4));
+                    x = _mm_loadu_pd(pA);
+                    x = _mm_mul_pd(x,fac_vector);
+                    y = _mm_loadu_pd(pA + N2);
+                    y = _mm_mul_pd(y,fac_vector);
+                    z = _mm_shuffle_pd( x, y, 0);
+                    w = _mm_shuffle_pd( x, y, 3);
+                    _mm_storeu_pd(pB,z);
+                    _mm_storeu_pd(pB + N1,w);
 
                 }
             }
@@ -76,5 +76,5 @@ __declspec(align(128)) static double buf[256],buf1[256];
     }
     /* pluto end */
     return;
-    }
+}
 

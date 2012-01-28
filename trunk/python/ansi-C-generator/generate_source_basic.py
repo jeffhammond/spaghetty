@@ -3,31 +3,39 @@ import string
 import sys
 import os
 
-c_compiler = 'icc'
-c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
+#c_compiler = 'icc'
+#c_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
 #c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -funroll-loops -prefetch -ssp -vec-report3 -opt-report 3'
-c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -funroll-loops -prefetch -ssp'
+#c_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -align -funroll-loops -prefetch -ssp'
 #c_compiler = 'gcc'
 #c_link_flags = '-O1 -march=pentium4 -mtune=pentium4 '
 #c_opt_flags = '-O3 -march=pentium4 -mtune=pentium4 -funroll-loops '
-fortran_compiler = 'ifort'
-fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
-fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align'
+#fortran_compiler = 'ifort'
+#fortran_link_flags = '-O1 -xT -march=core2 -mtune=core2 -align'
+#fortran_opt_flags = '-O3 -xT -march=core2 -mtune=core2 -funroll-loops -align'
 #fortran_compiler = 'gfortran'
 #fortran_link_flags = '-O1 -march=pentium4 -mtune=pentium4 '
 #fortran_opt_flags = '-O3 -march=pentium4 -mtune=pentium4 -funroll-loops '
-src_dir = '/home/jeff/code/spaghetty/trunk/source/ansi-C/'
-obj_dir = '/home/jeff/code/spaghetty/trunk/object/ansi-C/'
-exe_dir = '/home/jeff/code/spaghetty/trunk/binary/ansi-C/'
 
-modlabel = 'realA'
-#modlabel = 'gcc'
+c_compiler = 'gcc'
+c_opt_flags = '-g -O3'
+c_link_flags = '-g -O3'
+fortran_compiler = 'gfortran'
+fortran_opt_flags = '-g -O3'
+fortran_link_flags = '-g -O3'
 
-#factor_version = '_plus'
+src_dir = '/home/jeff/eclipse/SPAGHETTY/source/ansi-C/'
+obj_dir = '/home/jeff/eclipse/SPAGHETTY/object/ansi-C/'
+exe_dir = '/home/jeff/eclipse/SPAGHETTY/binary/ansi-C/'
+
+#modlabel = 'realA'
+modlabel = 'gcc'
+
+factor_version = '_plus'
 #factor_version = '_minus'
 #factor_version = '_phalf'
 #factor_version = '_mhalf'
-factor_version = '_frac'
+#factor_version = '_frac'
 
 lib_name = 'tce_sort_'+modlabel+'.a'
 
