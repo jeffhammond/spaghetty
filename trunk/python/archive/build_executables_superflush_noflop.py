@@ -12,18 +12,18 @@ else:
     print 'Not using MPI'
 
 # BGP
-fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
+fortran_compiler = 'bgxlf_r'
+fortran_opt_flags = '-O5 -g -qipa -qsmp=omp -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
 
 if ( mpi ):
-    fortran_linker = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
+    fortran_linker = 'mpixlf77_r'
 else:
-    fortran_linker = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
+    fortran_linker = 'bgxlf_r'
 
 fortran_link_flags = '-O3 -g -qnoipa -qarch=450d -qtune=450 -qmaxmem=-1 -qextname -qreport=smplist:hotlist -qsource'
 
-c_compiler = '/opt/ibmcmp/vacpp/bg/9.0/bin/bgxlc_r'
-c_opt_flags = '-O5 -g -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -c'
+c_compiler = 'bgxlc_r'
+c_opt_flags = '-O5 -g -qsmp=omp -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1'
 
 hpm_lib = '-L/soft/apps/UPC/lib -lhpm'
 
@@ -32,11 +32,12 @@ lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
 exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
 
 lib_name = 'tce_sort_f77_noflop.a'
+lib_name = 'tce_sort_f77_omp.a'
 
 flush_rank='1000'
 
-count = '100'
-rank  = '40'
+count = '20'
+rank  = '32'
 ranks = [rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])
 sizechar = str(size)
@@ -55,18 +56,33 @@ indices = ['4','3','2','1']
 transpose_list = perm(indices)
 loop_list = perm(indices)
 
-print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_noflop.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_noflop.F')
-os.system('ar -r '+lib_name+' tce_sort_hirata_noflop.o')
+name = 'tce_sort_hirata_noflop'
+rc = os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+name+'.F')
+if not rc==0:
+    print 'FAILED: '+fortran_compiler+' '+fortran_opt_flags+' -c '+name+'.F'
+    exit(rc)
+else:
+    os.system('ar -r '+lib_name+' '+name+'.o')
 
+name = 'f_memcpy'
+print c_compiler+' '+c_opt_flags+' -c '+name+'.c'
+rc = os.system(c_compiler+' '+c_opt_flags+' -c '+name+'.c')
+if not rc==0:
+    print 'FAILED: '+c_compiler+' '+c_opt_flags+' -c '+name+'.c'
+    exit(rc)
+else:
+    os.system('ar -r '+lib_name+' '+name+'.o')
 
 timer = ''
 
 if ( timer == "ticks" ):
     timer_call = "getticks()"
-    print c_compiler+' '+c_opt_flags+' -c getticks_bgp.c'
-    os.system(c_compiler+' '+c_opt_flags+' -c getticks_bgp.c')
-    os.system('ar -r '+lib_name+' getticks_bgp.o')
+    name = 'getticks_bgp'
+    if not rc==0:
+        print 'FAILED: '+c_compiler+' '+c_opt_flags+' -c '+name+'.c'
+        exit(rc)
+    else:
+        os.system('ar -r '+lib_name+' '+name+'.o')
 else:
     timer_call = "rtc()"
 
@@ -154,15 +170,18 @@ for transpose_order in transpose_list:
         source_file.write('        Tstart=0.0d0\n')
         source_file.write('        Tfinish=0.0d0\n')
 
-    source_file.write('        call hpm_start("tce_sort_4_noflop #1")\n')
+    #source_file.write('        call hpm_start("tce_sort_4_noflop #1")\n')
+    source_file.write('        call hpm_start("tce_sort_4_omp #1")\n')
     source_file.write('        Tstart='+timer_call+'\n')
     source_file.write('        DO 30 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
+    #source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('30      CONTINUE\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4_noflop #1")\n')
+    #source_file.write('        call hpm_stop("tce_sort_4_noflop #1")\n')
+    source_file.write('        call hpm_stop("tce_sort_4_omp #1")\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
@@ -189,7 +208,8 @@ for transpose_order in transpose_list:
         source_file.write('        write(6,*) "'+fortran_opt_flags.split()[option]+'"\n')
         
     source_file.write('        write(6,*) "==================="\n')
-    source_file.write('        write(6,*) "Hirata noflop Reference #1 = ",Thirata,"seconds"\n')
+    #source_file.write('        write(6,*) "Hirata noflop Reference #1 = ",Thirata,"seconds"\n')
+    source_file.write('        write(6,*) "Hirata OpenMP Reference #1 = ",Thirata,"seconds"\n')
     source_file.write('        write(6,1001) "Algorithm","Jeff","Speedup","Best","Best Speedup"\n')
     for loop_order in loop_list:
         dummy = dummy+1
@@ -304,7 +324,8 @@ for transpose_order in transpose_list:
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
-    source_file.write('        call hpm_start("tce_sort_4_noflop #2")\n')
+    #source_file.write('        call hpm_start("tce_sort_4_noflop #2")\n')
+    source_file.write('        call hpm_start("tce_sort_4_omp #2")\n')
     source_file.write('        Tstart='+timer_call+'\n')
     source_file.write('          CALL tce_sort_4_noflop(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
@@ -335,9 +356,13 @@ for transpose_order in transpose_list:
     source_file.write('      END\n')
     source_file.close()
     print fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x'
-    os.system(fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+hpm_lib+' -o '+exe_dir+driver_name+'.x')
-    os.system('mv '+source_name+' '+src_dir)
-    os.system('mv '+lst_name+' '+lst_dir)
+    rc  = os.system(fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+hpm_lib+' -o '+exe_dir+driver_name+'.x')
+    if not rc==0:
+        print 'FAILED: '+fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+hpm_lib+' -o '+exe_dir+driver_name+'.x'
+        exit(rc)
+    else:
+        os.system('mv '+source_name+' '+src_dir)
+        os.system('mv '+lst_name+' '+lst_dir)
 
 
 

@@ -8,4 +8,6 @@ bgxlc_r -O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qmaxmem=-1 -
 
 mpixlf77_r -O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource memcpy_timing.F f_memcpy.o -L/soft/apps/UPC/lib -lhpm -lxlf90 -lxlsmp -lpthread -o memcpy_timing.x
 
-mpixlf77_r -O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource daxpy_timing.F f_memcpy.o -L/soft/apps/ESSL-4.4/lib -lesslsmpbg -L/soft/apps/UPC/lib -lhpm -lxlf90_r -lxlsmp -lpthread -o daxpy_timing.x
+mpixlf77_r -O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource daxpy_timing.F f_memcpy.o -L/soft/apps/ESSL-4.4.1-0/lib -lesslbg -L/soft/apps/UPC/lib -lhpm -lxlf90_r -lpthread -o daxpy_timing_serial.x
+
+mpixlf77_r -O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource daxpy_timing.F f_memcpy.o -L/soft/apps/ESSL-4.4.1-0/lib -lesslsmpbg -L/soft/apps/UPC/lib -lhpm -lxlf90_r -lxlsmp -lpthread -o daxpy_timing_smp.x
