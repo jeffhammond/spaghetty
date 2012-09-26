@@ -5,16 +5,13 @@ import string
 import sys
 import os
 
-# BGP
+ar = 'ar'
 
-ar='/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-ar'
+fortran_compiler = 'ftn'
+fortran_opt_flags = '-O3'
 
-fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_opt_flags = '-O5 -g -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
-
-src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
-obj_dir = '/gpfs/home/jhammond/spaghetty/python/archive/obj/'
-lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
+src_dir = './src/'
+obj_dir = './obj/'
 
 lib_name = 'tce_sort_f77_basic.a'
 
@@ -39,15 +36,15 @@ for transpose_order in transpose_list:
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
+    source_name = 'trans_'+A+B+C+D
+    print source_name
+    source_file = open(source_name+'.F','w')
     for loop_order in loop_list:
         a = loop_order[0]
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
         subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_'
-        source_name = subroutine_name+'.F'
-        #print source_name
-        source_file = open(source_name,'w')
         source_file.write('        subroutine '+subroutine_name+'(unsorted,sorted,\n')
         source_file.write('     &                           dim1,dim2,dim3,dim4,factor)\n')
         source_file.write('        implicit none\n')
@@ -70,11 +67,9 @@ for transpose_order in transpose_list:
         source_file.write('        enddo\n')
         source_file.write('        return\n')
         source_file.write('        end\n')
-        source_file.close()
-        #print fortran_compiler+' '+fortran_opt_flags+' -c '+source_name
-        os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name)
-        os.system(ar+' -r '+lib_name+' '+subroutine_name+'.o')
-        os.system('mv '+subroutine_name+'.o '+obj_dir)
-        os.system('mv '+subroutine_name+'.F '+src_dir)
-        os.system('mv '+subroutine_name+'.lst '+lst_dir)
+    source_file.close()
+    os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name+'.F')
+    os.system(ar+' -r '+lib_name+' '+source_name+'.o')
+    os.system('mv '+source_name+'.o '+obj_dir)
+    os.system('mv '+source_name+'.F '+src_dir)
 
