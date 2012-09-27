@@ -11,6 +11,7 @@ if ( mpi ):
 else:
     print 'Not using MPI'
 
+#OpenMP = True
 OpenMP = False
 if ( OpenMP ):
     print 'Using OpenMP'
@@ -19,9 +20,9 @@ else:
 
 fortran_compiler = 'ifort'
 if (OpenMP):
-        fortran_opt_flags = '-g -i8 -O3 -openmp -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops'
+        fortran_opt_flags = '-g -i8 -O3 -openmp -xSSE4.2 -opt-prefetch -funroll-loops'
 else:
-        fortran_opt_flags = '-g -i8 -O3 -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops'
+        fortran_opt_flags = '-g -i8 -O3 -xSSE4.2 -opt-prefetch -funroll-loops'
 
 if ( mpi ):
     fortran_linker = 'mpif77'
@@ -30,10 +31,13 @@ else:
 
 fortran_link_flags = fortran_opt_flags
 
-src_dir = '/fusion/home/jhammond/spaghetty/python/archive/src/'
-exe_dir = '/fusion/home/jhammond/spaghetty/python/archive/exe/'
+src_dir = '~/spaghetty/python/archive/src/'
+exe_dir = '~/spaghetty/python/archive/exe/'
 
-lib_name = 'tce_sort_intel.a'
+if (OpenMP):
+        lib_name = 'tce_sort_intel_omp.a'
+else:
+        lib_name = 'tce_sort_intel.a'
 
 flush_rank='1000'
 
@@ -55,9 +59,9 @@ indices = ['4','3','2','1']
 transpose_list = perm(indices)
 loop_list = perm(indices)
 
-#print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
-#os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
-#os.system('ar -r '+lib_name+' tce_sort_hirata.o')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
+os.system('ar -r '+lib_name+' tce_sort_hirata.o')
 
 #timer = 'jeff'
 #timer_call = "jefftime()"
@@ -162,7 +166,11 @@ for transpose_order in transpose_list:
 
     source_file.write('        Tstart='+timer_call+'\n')
     source_file.write('        DO 30 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
+    if (OpenMP):
+            source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
+    else:
+            source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
+
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4),factor)\n')
     source_file.write('30      CONTINUE\n')
@@ -201,7 +209,11 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel'
+        if (OpenMP):
+            subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel_omp'
+        else:
+            subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel'
+
         # THIS PART FLUSHES THE CACHE
         source_file.write('        do ii=1,'+flush_rank+'\n')
         source_file.write('          do jj=1,'+flush_rank+'\n')
@@ -305,7 +317,11 @@ for transpose_order in transpose_list:
     source_file.write('        enddo \n')
     # END CACHE FLUSH
     source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
+    if (OpenMP):
+            source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
+    else:
+            source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
+
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4),factor)\n')
     source_file.write('        Tfinish='+timer_call+'\n')

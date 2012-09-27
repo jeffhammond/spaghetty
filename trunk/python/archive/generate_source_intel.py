@@ -5,16 +5,23 @@ import string
 import sys
 import os
 
+assembly = False
+
 OpenMP = False
 #OpenMP = True
+if ( OpenMP ):
+    print 'Using OpenMP'
+else:
+    print 'Not using OpenMP'
 
 fortran_compiler = 'ifort'
 if (OpenMP):
-        fortran_opt_flags = '-g -i8 -O3 -openmp -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops -c'
+        fortran_opt_flags = '-g -i8 -O3 -openmp -xSSE4.2 -opt-prefetch -funroll-loops '
 else:
-        fortran_opt_flags = '-g -i8 -O3 -xSSE2,SSE3,SSSE3,SSE4.1,SSE4.2 -opt-prefetch -funroll-loops -c'
+        fortran_opt_flags = '-g -i8 -O3 -xSSE4.2 -opt-prefetch -funroll-loops '
 
-src_dir = '/fusion/home/jhammond/spaghetty/python/archive/src/'
+src_dir = '~/spaghetty/python/archive/src/'
+asm_dir = '~/spaghetty/python/archive/asm/'
 
 if (OpenMP):
         lib_name = 'tce_sort_intel_omp.a'
@@ -40,19 +47,21 @@ for transpose_order in transpose_list:
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
+    if (OpenMP):
+        source_name = 'trans_'+A+B+C+D+'_intel_omp'
+    else:
+        source_name = 'trans_'+A+B+C+D+'_intel'
+    print source_name
+    source_file = open(source_name+'.F','w')
     for loop_order in loop_list:
         a = loop_order[0]
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
         if (OpenMP):
-                subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel_omp'
+            subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel_omp'
         else:
-                subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel'
-
-        source_name = subroutine_name+'.F'
-        print source_name
-        source_file = open(source_name,'w')
+            subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_intel'
         source_file.write('        subroutine '+subroutine_name+'(unsorted,sorted,\n')
         source_file.write('     &                dim1,dim2,dim3,dim4,factor)\n')
         source_file.write('        implicit none\n')
@@ -82,9 +91,17 @@ for transpose_order in transpose_list:
 
         source_file.write('        return\n')
         source_file.write('        end\n')
-        source_file.close()
-        os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name)
-        os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
-        os.system('rm '+subroutine_name+'.o')
-        os.system('mv '+subroutine_name+'.F '+src_dir)
+
+    source_file.close()
+    if (assembly):
+        os.system(fortran_compiler+' '+fortran_opt_flags+' -fsource-asm -fcode-asm -S '+source_name+'.F')
+        os.system('mv '+source_name+'.cod '+asm_dir)
+        os.system('rm '+source_name+'.F')
+    else:
+        os.system(fortran_compiler+' '+fortran_opt_flags+' -c '+source_name+'.F')
+        os.system('ar -r '+lib_name+' '+source_name+'.o')
+        os.system('rm '+source_name+'.o')
+        os.system('mv '+source_name+'.F '+src_dir)
+
+
 
