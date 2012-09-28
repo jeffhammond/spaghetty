@@ -11,8 +11,9 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-machine='fusion'
-n=1 # column of indices[][n][] to use
+#machine='fusion'
+machine='hopper'
+n=2 # column of indices[][n][] to use
 
 # [TRANSPOSE,FUSION-BEST,HOPPER-BEST]
 indices = [['1234','1234','1234'],
@@ -40,7 +41,7 @@ indices = [['1234','1234','1234'],
            ['4312','3142','1324'],
            ['4321','2431','3241']]
 
-source_file = open('tce_sort4_spagetty_'+machine+'.F','w')
+source_file = open('tce_sort4_spaghetty_'+machine+'.F','w')
 
 source_file.write('       subroutine tce_sort_4(unsorted,sorted,a,b,c,d,i,j,k,l,factor)\n')
 source_file.write('       implicit none                                                \n')
@@ -69,6 +70,8 @@ for i in range(24):
         source_file.write('       elseif (version.eq.'+A+B+C+D+') then \n')
         source_file.write('         call '+subroutine_name+'(unsorted,sorted,a,b,c,d,factor)   \n')
 source_file.write('       endif                     \n')
+source_file.write('       return\n')
+source_file.write('       end\n')
 
 for i in range(24):
     A = indices[i][0][0]
