@@ -13,8 +13,8 @@ def perm(l):
 
 indices = ['4','3','2','1']
 
-Debug=True
-#Debug=False
+#Debug=True
+Debug=False
 
 if Debug:
     all_permutations = [indices]
@@ -118,7 +118,7 @@ for transpose_order in transpose_list:
 makefile.write('\n\n')
 makefile.write('all: libspaghetty.a \n\n')
 makefile.write('libspaghetty.a: $(OBJECTS) \n')
-makefile.write('\t$(AR) $(ARFLAGS) $@ $< \n\n')
+makefile.write('\t$(AR) $(ARFLAGS) $@ $(OBJECTS) \n\n')
 makefile.write('%.o: %.f \n')
 makefile.write('\t$(FC) $(FFLAGS) -c $< -o $@ \n\n')
 makefile.write('clean: \n')
