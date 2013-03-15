@@ -80,7 +80,7 @@ def generate_subroutine(inVec,outVec,blkVec):
 	source_file.write(f8+'double precision sorted(dim'+SinA+'*dim'+SinB+'*dim'+SinC+'*dim'+SinD+')\n')
 	source_file.write(f8+'double precision unsorted(dim'+SinA+'*dim'+SinB+'*dim'+SinC+'*dim'+SinD+')\n')
 	source_file.write(f8+'double precision factor\n')
-	source_file.write('!$omp parallel do if(dim'+SoutA+'>12) private(j1,j2,j3,j4) schedule(static) \n')
+	source_file.write('!$omp parallel do collapse(4) if(dim'+SoutA+'>12) private(j1,j2,j3,j4) schedule(static) \n')
 	source_file.write(f8+'do j'+SoutA+' = 1,dim'+SoutA+','+SblkAin+'\n')
 	source_file.write(f9+'do j'+SoutB+' = 1,dim'+SoutB+','+SblkBin+'\n')
 	source_file.write(f10+'do j'+SoutC+' = 1,dim'+SoutC+','+SblkCin+'\n')

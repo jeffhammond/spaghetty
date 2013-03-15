@@ -51,7 +51,7 @@ for transpose_order in transpose_list:
         source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
         source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
         if not (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
-            source_file.write('!$omp parallel do \n')
+            source_file.write('!$omp parallel do collapse(4) collapse(4) \n')
             source_file.write('!$omp& private(j1,j2,j3,j4)\n')
             source_file.write('!$omp& shared(sorted,unsorted)\n')
             source_file.write('!$omp& schedule(static)\n')
@@ -129,7 +129,7 @@ for transpose_order in transpose_list:
             source_file.write('        enddo\n')
 
         if not (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
-            source_file.write('!$omp end parallel do\n')
+            source_file.write('!$omp end parallel do collapse(4)\n')
 
         source_file.write('        return\n')
         source_file.write('        end\n')

@@ -71,7 +71,7 @@ for transpose_order in transpose_list:
         source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
         source_file.write('        double precision factor\n')
         if (OpenMP):
-                source_file.write('!$omp parallel do\n')
+                source_file.write('!$omp parallel do collapse(4)\n')
                 source_file.write('!$omp& private(j1,j2,j3,j4)\n')
                 source_file.write('!$omp& shared(sorted,unsorted)\n')
                 source_file.write('!$omp& schedule(static)\n')
