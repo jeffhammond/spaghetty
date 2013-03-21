@@ -21,6 +21,29 @@ def generate_permutation_list(Debug):
     return permlist
 
 
+def get_omp_info(OpenMP):
+    if OpenMP:
+        name = 'omp'
+        text = 'with OpenMP'
+    else:
+        name = 'nomp'
+        text = 'without OpenMP'
+    return (name,text)
+
+
+def get_fac_info(Factor):
+    if (Factor==1.0):
+        name = 'copy'
+        text = 'scale by 1.0'
+    elif (Factor==-1.0):
+        name = 'neg'
+        text = 'scale by -1.0'
+    else:
+        name = 'any'
+        text = 'scale by any value'
+    return (name,text)
+
+
 #Debug=True
 Debug=False
 
@@ -46,31 +69,19 @@ for transpose_order in generate_permutation_list(Debug):
         source_file = open(source_name+'.f','w')
 
         for OpenMP in [True,False]:
-            if OpenMP:
-                omp_name = 'omp'
-                omp_text = 'with OpenMP'
-            else:
-                omp_name = 'nomp'
-                omp_text = 'without OpenMP'
+            (omp_name,omp_text) = get_omp_info(OpenMP)
 
             for Factor in [1.0,-1.0,37.0]:
-                if (Factor==1.0):
-                    fac_name = 'copy'
-                    fac_text = 'scale by 1.0'
-                elif (Factor==-1.0):
-                    fac_name = 'neg'
-                    fac_text = 'scale by -1.0'
-                else:
-                    fac_name = 'any'
-                    fac_text = 'scale by any value'
+                (fac_name,fac_text) = get_fac_info(Factor)
 
                 variant = omp_name+'_'+fac_name
                 subroutine_name = source_name+'_'+variant
                 print subroutine_name
+                description = '! '+omp_text+', '+fac_text+'\n'
 
-                source_file.write('! '+omp_text+', '+fac_text+'\n')
+                source_file.write(description)
                 source_file.write('        subroutine '+subroutine_name+'(unsorted,sorted,\n')
-                if Factor == 37.0:
+                if Factor not in [1.0,-1.0]:
                     source_file.write('     &                dim1,dim2,dim3,dim4,factor)\n')
                 else:
                     source_file.write('     &                dim1,dim2,dim3,dim4)\n')
@@ -79,12 +90,12 @@ for transpose_order in generate_permutation_list(Debug):
                 source_file.write('        integer j1,j2,j3,j4\n')
                 source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
                 source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
-                if Factor == 37.0:
+                if Factor not in [1.0,-1.0]:
                     source_file.write('        double precision factor\n')
                 if OpenMP:
                     source_file.write('!$omp parallel do collapse(4)\n')
                     source_file.write('!$omp& private(j1,j2,j3,j4)\n')
-                    if Factor == 37.0:
+                    if Factor not in [1.0,-1.0]:
                         source_file.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
                     else:
                         source_file.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
@@ -100,7 +111,7 @@ for transpose_order in generate_permutation_list(Debug):
                 elif (Factor==-1.0):
                     source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
                     source_file.write('     &    -unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-                elif Factor == 37.0:
+                else:
                     source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
                     source_file.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
 
@@ -124,6 +135,6 @@ makefile.write('\t$(FC) $(FFLAGS) -c $< -o $@ \n\n')
 makefile.write('clean: \n')
 makefile.write('\t$(RM) $(RMFLAGS) $(OBJECTS) \n\n')
 makefile.write('realclean: clean \n')
-makefile.write('\t$(RM) $(RMFLAGS) libspaghetty.a \n\n')
+makefile.write('\t$(RM) $(RMFLAGS) libspaghetty.a *.f \n\n')
 
 makefile.close()
