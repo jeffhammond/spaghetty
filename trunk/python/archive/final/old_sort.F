@@ -1,4 +1,4 @@
-      subroutine tce_sort_0(x,y,s)
+      subroutine old_sort_0(x,y,s)
       implicit none
       double precision y
       double precision x
@@ -7,7 +7,7 @@
       return
       end
 
-      subroutine tce_sort_2(x,y,a,b,i,j,s)
+      subroutine old_sort_2(x,y,a,b,i,j,s)
       implicit none
       integer a,b
       integer i,j
@@ -30,7 +30,7 @@
       return
       end
 
-      subroutine tce_sort_4(x,y,a,b,c,d,i,j,k,l,s)
+      subroutine old_sort_4(x,y,a,b,c,d,i,j,k,l,s)
       implicit none
       integer a,b,c,d
       integer i,j,k,l
@@ -94,7 +94,7 @@
       return
       end
 
-      subroutine tce_sort_6(x,y,a,b,c,d,e,f,i,j,k,l,m,n,s)
+      subroutine old_sort_6(x,y,a,b,c,d,e,f,i,j,k,l,m,n,s)
       implicit none
       integer a,b,c,d,e,f
       integer i,j,k,l,m,n
@@ -233,7 +233,7 @@
       return
       end
 
-      subroutine tce_sort_8(x,y,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,s)
+      subroutine old_sort_8(x,y,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,s)
       implicit none
       integer a,b,c,d,e,f,g,h
       integer i,j,k,l,m,n,o,p
@@ -477,7 +477,7 @@
       return
       end
 
-      subroutine tce_sortacc_0(x,y,s)
+      subroutine old_sortacc_0(x,y,s)
       implicit none
       double precision y
       double precision x
@@ -486,7 +486,7 @@
       return
       end
 
-      subroutine tce_sortacc_2(x,y,a,b,i,j,s)
+      subroutine old_sortacc_2(x,y,a,b,i,j,s)
       implicit none
       integer a,b
       integer i,j
@@ -509,7 +509,7 @@
       return
       end
 
-      subroutine tce_sortacc_4(x,y,a,b,c,d,i,j,k,l,s)
+      subroutine old_sortacc_4(x,y,a,b,c,d,i,j,k,l,s)
       implicit none
       integer a,b,c,d
       integer i,j,k,l
@@ -573,7 +573,7 @@
       return
       end
 
-      subroutine tce_sortacc_6(x,y,a,b,c,d,e,f,i,j,k,l,m,n,s)
+      subroutine old_sortacc_6(x,y,a,b,c,d,e,f,i,j,k,l,m,n,s)
       implicit none
       integer a,b,c,d,e,f
       integer i,j,k,l,m,n
@@ -712,7 +712,7 @@
       return
       end
 
-      subroutine tce_sortacc_8(x,y,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,s)
+      subroutine old_sortacc_8(x,y,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,s)
       implicit none
       integer a,b,c,d,e,f,g,h
       integer i,j,k,l,m,n,o,p
