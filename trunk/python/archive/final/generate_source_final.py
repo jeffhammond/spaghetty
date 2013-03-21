@@ -21,6 +21,14 @@ def generate_permutation_list(Debug):
     return permlist
 
 
+def perm_to_string(perm):
+    A = perm[0]
+    B = perm[1]
+    C = perm[2]
+    D = perm[3]
+    return A+B+C+D
+
+
 def get_omp_info(OpenMP):
     if OpenMP:
         name = 'omp'
@@ -110,17 +118,9 @@ makefile.write('FFLAGS  = -O3 -fopenmp  \n\n')
 makefile.write('OBJECTS = \\\n')
 
 for transpose_order in generate_permutation_list(Debug):
-    A = transpose_order[0]
-    B = transpose_order[1]
-    C = transpose_order[2]
-    D = transpose_order[3]
     for loop_order in generate_permutation_list(Debug):
-        a = loop_order[0]
-        b = loop_order[1]
-        c = loop_order[2]
-        d = loop_order[3]
 
-        source_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d
+        source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
         makefile.write(source_name+'.o \\\n')
         source_file = open(source_name+'.f','w')
 
