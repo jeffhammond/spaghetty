@@ -137,10 +137,13 @@ def generate_all_subroutines(Debug):
 
 def generate_makefile(Debug):
     makefile = open('Makefile','w')
+    makefile.write('CC      = gcc \n')
     makefile.write('FC      = gfortran \n')
     if (Debug):
+        makefile.write('CFLAGS  = -g -O0 -Wall -fopenmp -std=c99  \n\n')
         makefile.write('FFLAGS  = -g -O0 -Wall -fopenmp  \n\n')
     else:
+        makefile.write('CFLAGS  = -O3 -fopenmp -std=c99  \n\n')
         makefile.write('FFLAGS  = -O3 -fopenmp  \n\n')
 
     makefile.write('SOURCES = \\\n')
@@ -156,8 +159,11 @@ def generate_makefile(Debug):
             makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
-    makefile.write('all: libspaghetty.a \n\n')
-    makefile.write('libspaghetty.a: $(OBJECTS) \n')
+    makefile.write('OBJECTS += tester_cutil.o tester_futil.o old_sort.o \n\n')
+    makefile.write('all: libspaghetty.a libtestutil.a \n\n')
+    makefile.write('libspaghetty.a: $(TESTUTIL) \n')
+    makefile.write('\t$(AR) $(ARFLAGS) $@ $(TESTUTIL) \n\n')
+    makefile.write('libtestutil.a: $(TESTUTIL) \n')
     makefile.write('\t$(AR) $(ARFLAGS) $@ $(OBJECTS) \n\n')
     makefile.write('%.o: %.f \n')
     makefile.write('\t$(FC) $(FFLAGS) -c $< -o $@ \n\n')

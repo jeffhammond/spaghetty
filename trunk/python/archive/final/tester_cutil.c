@@ -1,7 +1,8 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifdef USE_OMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
@@ -11,7 +12,7 @@
 
 double wtime(void)
 {
-#if   defined(USE_OMP)
+#if   defined(_OPENMP)
     return omp_get_wtime();
 #elif defined(USE_MPI)
     return MPI_Wtime();
@@ -21,11 +22,11 @@ double wtime(void)
 #endif
 }
 
-void flush_cache(const int64_t * bytes)
+void flush_cache(void)
 {
-    int64_t n = bytes/sizeof(double);
+    size_t n = 32*1024*1024/sizeof(double);
 
-    double * tmp = (double) malloc(n*sizeof(double));
+    double * tmp = (double *) malloc(n*sizeof(double));
 
     if (tmp==NULL)
 #ifdef USE_MPI
@@ -34,7 +35,7 @@ void flush_cache(const int64_t * bytes)
         exit(1);
 #endif
 
-    for (int i=0; i<n; i++)
+    for (size_t i=0; i<n; i++)
         tmp[i] = (double)i;
 
     free(tmp);
