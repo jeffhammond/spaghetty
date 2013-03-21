@@ -44,6 +44,62 @@ def get_fac_info(Factor):
     return (name,text)
 
 
+def generate_subroutine(ofile, name, description, OpenMP, Factor, transpose_order, loop_order):
+    A = transpose_order[0]
+    B = transpose_order[1]
+    C = transpose_order[2]
+    D = transpose_order[3]
+    a = loop_order[0]
+    b = loop_order[1]
+    c = loop_order[2]
+    d = loop_order[3]
+    source_file.write(description)
+    source_file.write('        subroutine '+name+'(unsorted,sorted,\n')
+    if Factor not in [1.0,-1.0]:
+        source_file.write('     &                dim1,dim2,dim3,dim4,factor)\n')
+    else:
+        source_file.write('     &                dim1,dim2,dim3,dim4)\n')
+    source_file.write('        implicit none\n')
+    source_file.write('        integer dim1,dim2,dim3,dim4\n')
+    source_file.write('        integer j1,j2,j3,j4\n')
+    source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
+    source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
+    if Factor not in [1.0,-1.0]:
+        source_file.write('        double precision factor\n')
+    if OpenMP:
+        source_file.write('!$omp parallel do collapse(4)\n')
+        source_file.write('!$omp& private(j1,j2,j3,j4)\n')
+        if Factor not in [1.0,-1.0]:
+            source_file.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
+        else:
+            source_file.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
+        source_file.write('!$omp& shared(sorted,unsorted)\n')
+        source_file.write('!$omp& schedule(static)\n')
+    source_file.write('        do j'+a+' = 1,dim'+a+'\n')
+    source_file.write('         do j'+b+' = 1,dim'+b+'\n')
+    source_file.write('          do j'+c+' = 1,dim'+c+'\n')
+    source_file.write('           do j'+d+' = 1,dim'+d+'\n')
+    if (Factor==1.0):
+        source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        source_file.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    elif (Factor==-1.0):
+        source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        source_file.write('     &    -unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    else:
+        source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        source_file.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+
+    source_file.write('           enddo\n')
+    source_file.write('          enddo\n')
+    source_file.write('         enddo\n')
+    source_file.write('        enddo\n')
+    if OpenMP:
+        source_file.write('!$omp end parallel do\n')
+    source_file.write('        return\n')
+    source_file.write('        end\n\n')
+    return
+
+
 #Debug=True
 Debug=False
 
@@ -79,52 +135,10 @@ for transpose_order in generate_permutation_list(Debug):
                 print subroutine_name
                 description = '! '+omp_text+', '+fac_text+'\n'
 
-                source_file.write(description)
-                source_file.write('        subroutine '+subroutine_name+'(unsorted,sorted,\n')
-                if Factor not in [1.0,-1.0]:
-                    source_file.write('     &                dim1,dim2,dim3,dim4,factor)\n')
-                else:
-                    source_file.write('     &                dim1,dim2,dim3,dim4)\n')
-                source_file.write('        implicit none\n')
-                source_file.write('        integer dim1,dim2,dim3,dim4\n')
-                source_file.write('        integer j1,j2,j3,j4\n')
-                source_file.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
-                source_file.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
-                if Factor not in [1.0,-1.0]:
-                    source_file.write('        double precision factor\n')
-                if OpenMP:
-                    source_file.write('!$omp parallel do collapse(4)\n')
-                    source_file.write('!$omp& private(j1,j2,j3,j4)\n')
-                    if Factor not in [1.0,-1.0]:
-                        source_file.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
-                    else:
-                        source_file.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
-                    source_file.write('!$omp& shared(sorted,unsorted)\n')
-                    source_file.write('!$omp& schedule(static)\n')
-                source_file.write('        do j'+a+' = 1,dim'+a+'\n')
-                source_file.write('         do j'+b+' = 1,dim'+b+'\n')
-                source_file.write('          do j'+c+' = 1,dim'+c+'\n')
-                source_file.write('           do j'+d+' = 1,dim'+d+'\n')
-                if (Factor==1.0):
-                    source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-                    source_file.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-                elif (Factor==-1.0):
-                    source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-                    source_file.write('     &    -unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-                else:
-                    source_file.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-                    source_file.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-
-                source_file.write('           enddo\n')
-                source_file.write('          enddo\n')
-                source_file.write('         enddo\n')
-                source_file.write('        enddo\n')
-                if OpenMP:
-                    source_file.write('!$omp end parallel do\n')
-                source_file.write('        return\n')
-                source_file.write('        end\n\n')
+                generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
 
         source_file.close()
+
 
 makefile.write('\n\n')
 makefile.write('all: libspaghetty.a \n\n')
