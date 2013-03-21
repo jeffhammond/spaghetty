@@ -11,31 +11,31 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
-indices = ['4','3','2','1']
+
+def generate_permutation_list(Debug):
+    indices = ['4','3','2','1']
+    if Debug:
+        permlist        = [indices]
+    else:
+        permlist        = perm(indices)
+    return permlist
+
 
 #Debug=True
 Debug=False
 
-if Debug:
-    all_permutations = [indices]
-    transpose_list   = [indices]
-    loop_list        = [indices]
-else:
-    all_permutations = perm(indices)
-    transpose_list   = perm(indices)
-    loop_list        = perm(indices)
 
 makefile = open('Makefile','w')
 makefile.write('FC      = gfortran \n')
 makefile.write('FFLAGS  = -O3 -fopenmp  \n\n')
 makefile.write('OBJECTS = \\\n')
 
-for transpose_order in transpose_list:
+for transpose_order in generate_permutation_list(Debug):
     A = transpose_order[0]
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
-    for loop_order in loop_list:
+    for loop_order in generate_permutation_list(Debug):
         a = loop_order[0]
         b = loop_order[1]
         c = loop_order[2]
