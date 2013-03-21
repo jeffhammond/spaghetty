@@ -152,6 +152,7 @@ def generate_makefile(Debug):
             source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
             makefile.write(source_name+'.f \\\n')
 
+    makefile.write('\n\n')
     makefile.write('OBJECTS = \\\n')
     for transpose_order in generate_permutation_list(Debug):
         for loop_order in generate_permutation_list(Debug):
