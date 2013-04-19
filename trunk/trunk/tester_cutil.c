@@ -22,24 +22,12 @@ double wtime(void)
 #endif
 }
 
-void flush_cache(void)
+double wtime_(void)
 {
-    size_t n = 32*1024*1024/sizeof(double);
+    return wtime();
+}_
 
-    double * tmp = (double *) malloc(n*sizeof(double));
-
-    if (tmp==NULL)
-#ifdef USE_MPI
-        MPI_Abort(MPI_COMM_WORLD,1);
-#else
-        exit(1);
-#endif
-
-    for (size_t i=0; i<n; i++)
-        tmp[i] = (double)i;
-
-    free(tmp);
-
-    return;
-}
- 
+double wtime__(void)
+{
+    return wtime();
+}_

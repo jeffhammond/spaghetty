@@ -112,6 +112,53 @@ def generate_subroutine(ofile, name, description, OpenMP, Factor, transpose_orde
     return
 
 
+def generate_tester(ofile, transpose_order, loop_order):
+    A = transpose_order[0]
+    B = transpose_order[1]
+    C = transpose_order[2]
+    D = transpose_order[3]
+    a = loop_order[0]
+    b = loop_order[1]
+    c = loop_order[2]
+    d = loop_order[3]
+    source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+    ofile.write('        subroutine test_'+source_name+'(dt1p,dt1m,dtfac,\n')
+    ofile.write('     &                reference,unsorted,sorted,\n')
+    ofile.write('     &                dim1,dim2,dim3,dim4)\n')
+    ofile.write('        implicit none\n')
+    ofile.write('        integer dim1,dim2,dim3,dim4\n')
+    ofile.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
+    ofile.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
+    ofile.write('        double precision reference(dim1*dim2*dim3*dim4)\n')
+    ofile.write('        double precision factor\n')
+    ofile.write('        double precision t0,t1,dt1p,dt1m,dtfac\n')
+
+    for OpenMP in [True,False]:
+        (omp_name,omp_text) = get_omp_info(OpenMP)
+        for Factor in [1.0,-1.0,37.0]:
+            (fac_name,fac_text) = get_fac_info(Factor)
+            variant = omp_name+'_'+fac_name
+            subroutine_name = source_name+'_'+variant
+            ofile.write('        call zero_1d_array(dim1*dim2*dim3*dim4,sorted)\n')
+            if Factor not in [1.0,-1.0]:
+                ofile.write('        factor = '+str(Factor)+'\n')
+                ofile.write('        call '+subroutine_name+'(unsorted,sorted,\n')
+                ofile.write('     &                dim1,dim2,dim3,dim4,factor)\n')
+            else:
+                ofile.write('        call '+subroutine_name+'(unsorted,sorted,\n')
+                ofile.write('     &                dim1,dim2,dim3,dim4)\n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    ofile.write('        \n')
+    return
+
+
 def generate_all_subroutines(Debug):
     for transpose_order in generate_permutation_list(Debug):
         for loop_order in generate_permutation_list(Debug):
@@ -133,7 +180,6 @@ def generate_all_subroutines(Debug):
                     generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
 
             source_file.close()
-
 
 def generate_makefile(Debug):
     makefile = open('src/Makefile','w')

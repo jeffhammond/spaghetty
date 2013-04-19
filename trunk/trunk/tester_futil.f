@@ -3,9 +3,15 @@
       integer i
       integer n
       double precision x(n)
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n)
+!$omp& shared(x)
+!$omp& schedule(static)
       do i=1,n
        x(i)=0.0
       enddo 
+!$omp end parallel do
       return
       end
 
@@ -15,9 +21,15 @@
       integer n
       double precision x(n)
       double precision val
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n,val)
+!$omp& shared(x)
+!$omp& schedule(static)
       do i=1,n
        x(i)=val
       enddo 
+!$omp end parallel do
       return
       end
 
@@ -26,11 +38,17 @@
       integer i,j
       integer a,b
       double precision x(a,b)
+!$omp parallel do collapse(2)
+!$omp& private(i,j)
+!$omp& firstprivate(a,b)
+!$omp& shared(x)
+!$omp& schedule(static)
       do j=1,b
        do i=1,a
         x(i,j)=i+j*a
        enddo 
       enddo 
+!$omp end parallel do
       return
       end
 
@@ -39,6 +57,11 @@
       integer i,j,k,l
       integer a,b,c,d
       double precision x(a,b,c,d)
+!$omp parallel do collapse(4)
+!$omp& private(i,j,k,l)
+!$omp& firstprivate(a,b,c,d)
+!$omp& shared(x)
+!$omp& schedule(static)
       do l=1,d
        do k=1,c
         do j=1,b
@@ -48,6 +71,7 @@
         enddo 
        enddo 
       enddo 
+!$omp end parallel do
       return
       end
 
@@ -56,6 +80,11 @@
       integer i,j,k,l,m,n
       integer a,b,c,d,e,f
       double precision x(a,b,c,d,e,f)
+!$omp parallel do collapse(6)
+!$omp& private(i,j,k,l,m,n)
+!$omp& firstprivate(a,b,c,d,e,f)
+!$omp& shared(x)
+!$omp& schedule(static)
       do n=1,f
        do m=1,e
         do l=1,d
@@ -69,6 +98,7 @@
         enddo 
        enddo 
       enddo 
+!$omp end parallel do
       return
       end
 
