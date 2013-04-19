@@ -117,7 +117,7 @@ def generate_all_subroutines(Debug):
         for loop_order in generate_permutation_list(Debug):
 
             source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-            source_file = open(source_name+'.f','w')
+            source_file = open('src/'+source_name+'.f','w')
 
             for OpenMP in [True,False]:
                 (omp_name,omp_text) = get_omp_info(OpenMP)
@@ -136,7 +136,7 @@ def generate_all_subroutines(Debug):
 
 
 def generate_makefile(Debug):
-    makefile = open('Makefile','w')
+    makefile = open('src/Makefile','w')
     makefile.write('CC      = gcc \n')
     makefile.write('FC      = gfortran \n')
     if (Debug):
