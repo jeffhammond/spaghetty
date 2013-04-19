@@ -25,9 +25,9 @@ double wtime(void)
 double wtime_(void)
 {
     return wtime();
-}_
+}
 
 double wtime__(void)
 {
     return wtime();
-}_
+}
