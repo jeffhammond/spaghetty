@@ -124,10 +124,10 @@ def generate_tester(ofile, transpose_order):
     ofile.write('! external variables\n')
     ofile.write('        double precision besttime(3,2) ! best time for (fac,omp) \n')
     ofile.write('        integer bestloop(4,3,2) ! best loop order for (fac,omp) \n')
+    ofile.write('        integer dim1, dim2, dim3, dim4\n')
     ofile.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
     ofile.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
     ofile.write('        double precision reference(dim1*dim2*dim3*dim4)\n')
-    ofile.write('        integer dim1, dim2, dim3, dim4\n')
     ofile.write('! internal variables\n')
     ofile.write('        integer errors\n')
     ofile.write('        integer loop, omp, fac, r\n')
@@ -335,17 +335,37 @@ def generate_all_subroutines(Debug):
 
             source_file.close()
 
-def generate_makefile(Debug):
+def generate_makefile(Debug,Compiler):
     makefile = open('src/Makefile','w')
-    makefile.write('CC      = gcc \n')
-    makefile.write('FC      = gfortran \n')
-    if (Debug):
-        makefile.write('CFLAGS  = -g -O0 -Wall -fopenmp -std=c99  \n')
-        makefile.write('FFLAGS  = -g -O0 -Wall -fopenmp -fno-underscoring \n\n')
+    if (Compiler=='GNU'):
+        makefile.write('CC      = gcc \n')
+        makefile.write('FC      = gfortran \n')
+        if (Debug):
+            makefile.write('CFLAGS  = -g -O0 -Wall -fopenmp -std=c99  \n')
+            makefile.write('FFLAGS  = -g -O0 -Wall -fopenmp -fno-underscoring \n\n')
+        else:
+            makefile.write('CFLAGS  = -O3 -fopenmp -std=c99  \n')
+            makefile.write('FFLAGS  = -O3 -fopenmp -fno-underscoring \n\n')
+        makefile.write('SFLAGS = -S -fverbose-asm \n\n')
+    elif (Compiler=='Intel'):
+        makefile.write('CC      = icc \n')
+        makefile.write('FC      = ifort \n')
+        if (Debug):
+            makefile.write('CFLAGS  = -g -O0 -Wall -openmp -std=c99  \n')
+            makefile.write('FFLAGS  = -g -O0 -Wall -openmp -assume nounderscore -nofor-main \n\n')
+        else:
+            makefile.write('CFLAGS  = -O3 -openmp -std=c99  \n')
+            makefile.write('FFLAGS  = -O3 -openmp -assume nounderscore -nofor-main \n\n')
+        makefile.write('SFLAGS = -S -fsource-asm -fverbose-asm -fcode-asm \n\n')
+    elif (Compiler=='IBM'):
+        makefile.write('CC      = bgxlc_r \n')
+        makefile.write('FC      = bgxlf_r \n')
+    elif (Compiler=='Cray'):
+        makefile.write('CC      = cc \n')
+        makefile.write('FC      = ftn \n')
     else:
-        makefile.write('CFLAGS  = -O2 -fopenmp -std=c99  \n')
-        makefile.write('FFLAGS  = -O2 -fopenmp -fnounderscore \n\n')
-    makefile.write('FLIBS  = -lgfortran \n\n')
+        print 'you must define Compiler'
+        exit()
 
     makefile.write('SOURCES = \\\n')
     for transpose_order in generate_permutation_list(Debug):
@@ -369,20 +389,36 @@ def generate_makefile(Debug):
         makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
+    makefile.write('ASSEMBLY = \\\n')
+    for transpose_order in generate_permutation_list(Debug):
+        for loop_order in generate_permutation_list(Debug):
+            source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+            makefile.write(source_name+'.s \\\n')
+
+    #for transpose_order in generate_permutation_list(Debug):
+    #    source_name = 'test_trans_'+perm_to_string(transpose_order)
+    #    makefile.write(source_name+'.s \\\n')
+
+    makefile.write('\n\n')
     makefile.write('TESTOBJ = tester_cutil.o tester_futil.o old_sort.o \n\n')
     makefile.write('all: test_trans_all.x  \n\n')
     makefile.write('%.x: %.o libspaghetty.a libtestutil.a \n')
-    makefile.write('\t$(CC) $(CFLAGS) $< -L. -lspaghetty -ltestutil $(FLIBS) -o $@ \n\n')
+    makefile.write('\t$(FC) $(FFLAGS) $< -L. -lspaghetty -ltestutil -o $@ \n\n')
     makefile.write('libspaghetty.a: $(OBJECTS) \n')
     makefile.write('\t$(AR) $(ARFLAGS) $@ $(OBJECTS) \n\n')
     makefile.write('libtestutil.a: $(TESTOBJ) \n')
     makefile.write('\t$(AR) $(ARFLAGS) $@ $(TESTOBJ) \n\n')
+    makefile.write('asm: $(ASSEMBLY) \n\n')
+    makefile.write('%.s: %.f \n')
+    makefile.write('\t$(FC) $(FFLAGS) $(SFLAGS) $< -o $@ \n\n')
+    makefile.write('%.s: %.c \n')
+    makefile.write('\t$(CC) $(CFLAGS) $(SFLAGS) $< -o $@ \n\n')
     makefile.write('%.o: %.f \n')
     makefile.write('\t$(FC) $(FFLAGS) -c $< -o $@ \n\n')
     makefile.write('%.o: %.c \n')
     makefile.write('\t$(CC) $(CFLAGS) -c $< -o $@ \n\n')
     makefile.write('clean: \n')
-    makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.o $(OBJECTS) $(TESTOBJ) \n\n')
+    makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.o $(OBJECTS) $(TESTOBJ) $(ASSEMBLY) \n\n')
     makefile.write('realclean: clean \n')
     makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.x libspaghetty.a libtestutil.a \n\n')
     makefile.write('srcclean: realclean \n')
@@ -390,7 +426,8 @@ def generate_makefile(Debug):
     makefile.close()
     return
 
-Debug = True
+Debug = False
+Compiler = 'GNU'
 
 generate_all_subroutines(Debug)
-generate_makefile(Debug)
+generate_makefile(Debug,Compiler)
