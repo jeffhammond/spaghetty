@@ -56,6 +56,40 @@ def get_fac_info(Factor):
     return (name,text)
 
 
+def generate_cfunction(ofile, name, description, OpenMP, Factor, transpose_order, loop_order):
+    A = transpose_order[0]
+    B = transpose_order[1]
+    C = transpose_order[2]
+    D = transpose_order[3]
+    a = loop_order[0]
+    b = loop_order[1]
+    c = loop_order[2]
+    d = loop_order[3]
+    ofile.write(description)
+    ofile.write('void '+name+'(double * unsorted, double * sorted, int * dim1, int * dim2, int * dim3, int * dim4, double * factor)\n')
+    ofile.write('{\n')
+    if OpenMP:
+        ofile.write('#pragma omp parallel for collapse(4) firstprivate(dim1,dim2,dim3,dim4,factor) shared(sorted,unsorted) schedule(static)\n')
+    ofile.write('  for (int j'+a+' = 0,dim'+a+'-1, j'+a+'++) {\n')
+    ofile.write('   for (int j'+b+' = 0,dim'+b+'-1, j'+b+'++) {\n')
+    ofile.write('    for (int j'+c+' = 0,dim'+c+'-1, j'+c+'++) {\n')
+    ofile.write('     for (int j'+d+' = 0,dim'+d+'-1, j'+d+'++) {\n')
+    if (Factor==1.0):
+        ofile.write('     sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*(j'+A+')))] = unsorted[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n')
+    elif (Factor==-1.0):
+        ofile.write('     sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*(j'+A+')))] = -unsorted[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n')
+    else:
+        ofile.write('     sorted[j'+D+'+dim'+D+'*(j'+C+'+dim'+C+'*(j'+B+'+dim'+B+'*(j'+A+')))] = factor*unsorted[j4+dim4*(j3+dim3*(j2+dim2*(j1)))];\n')
+
+    ofile.write('     }\n')
+    ofile.write('    }\n')
+    ofile.write('   }\n')
+    ofile.write('  }\n')
+    ofile.write('  return;\n')
+    ofile.write('}\n\n')
+    return
+
+
 def generate_subroutine(ofile, name, description, OpenMP, Factor, transpose_order, loop_order):
     A = transpose_order[0]
     B = transpose_order[1]
@@ -318,7 +352,8 @@ def generate_all_subroutines(Debug):
         for loop_order in generate_permutation_list(Debug):
 
             source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-            source_file = open('src/'+source_name+'.f','w')
+            fsource_file = open('src/'+source_name+'.f','w')
+            csource_file = open('src/'+source_name+'.c','w')
 
             for OpenMP in [True,False]:
                 (omp_name,omp_text) = get_omp_info(OpenMP)
@@ -328,12 +363,15 @@ def generate_all_subroutines(Debug):
 
                     variant = omp_name+'_'+fac_name
                     subroutine_name = source_name+'_'+variant
+                    cfunction_name = source_name+'_'+variant+'_c'
                     print subroutine_name
                     description = '! '+omp_text+', '+fac_text+'\n'
 
-                    generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
+                    generate_subroutine(fsource_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
+                    generate_cfunction(csource_file, cfunction_name, description, OpenMP, Factor, transpose_order, loop_order)
 
-            source_file.close()
+            fsource_file.close()
+            csource_file.close()
 
 def generate_makefile(Debug,Compiler):
     makefile = open('src/Makefile','w')
