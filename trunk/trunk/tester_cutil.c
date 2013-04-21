@@ -12,14 +12,17 @@
 
 double wtime(void)
 {
+    double t = 0.0;
 #if   defined(_OPENMP)
-    return omp_get_wtime();
+#warning Using OpenMP timer
+    t = omp_get_wtime();
 #elif defined(USE_MPI)
-    return MPI_Wtime();
+#warning Using MPI timer
+    t = MPI_Wtime();
 #else
 #warning NO TIMER AVAILABLE!!!
-    return 0.0;
 #endif
+    return t;
 }
 
 double wtime_(void)

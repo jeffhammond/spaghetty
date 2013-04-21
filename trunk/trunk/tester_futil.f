@@ -11,6 +11,7 @@
 !$omp& reduction(+:errors)
       do i=1,n
         if (x(i).ne.y(i)) then
+!$omp atomic
           errors = errors + 1
         endif
       enddo 
