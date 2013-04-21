@@ -70,6 +70,41 @@
       return
       end
 
+      subroutine print_4d_array(a,b,c,d,x)
+      implicit none
+      integer i,j,k,l, a,b,c,d
+      double precision x(a,b,c,d)
+      do l=1,d
+       do k=1,c
+        do j=1,b
+         do i=1,a
+          write(6,1) i,j,k,l,x(i,j,k,l)
+         enddo 
+        enddo 
+       enddo 
+      enddo 
+      return
+ 1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1)
+      end
+
+      subroutine print_4d_arrays(a,b,c,d,x,y)
+      implicit none
+      integer i,j,k,l, a,b,c,d
+      double precision x(a,b,c,d)
+      double precision y(a,b,c,d)
+      do l=1,d
+       do k=1,c
+        do j=1,b
+         do i=1,a
+          write(6,1) i,j,k,l,x(i,j,k,l),y(i,j,k,l)
+         enddo 
+        enddo 
+       enddo 
+      enddo 
+      return
+ 1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1,1x,f12.1)
+      end
+
       subroutine init_4d_array(a,b,c,d,x)
       implicit none
       integer i,j,k,l, a,b,c,d
