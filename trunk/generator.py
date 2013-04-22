@@ -310,10 +310,10 @@ def generate_tester(ofile, transpose_order, reps, Language):
     return
 
 
-def generate_test_driver(Debug, underscoring):
+def generate_test_driver(Debug, subdir, underscoring):
     oname = 'test_trans_all'
-    cfile = open('src/'+oname+'.c','w')
-    hfile = open('src/'+oname+'.h','w')
+    cfile = open(subdir+'/'+oname+'.c','w')
+    hfile = open(subdir+'/'+oname+'.h','w')
     cfile.write('#include <stdio.h>\n')
     cfile.write('#include <stdlib.h>\n')
     cfile.write('#include <string.h>\n')
@@ -362,8 +362,8 @@ def generate_test_driver(Debug, underscoring):
     hfile.close()
 
 
-def generate_all_subroutines(Debug, underscoring):
-    generate_test_driver(Debug, underscoring)
+def generate_all_subroutines(Debug, subdir, underscoring):
+    generate_test_driver(Debug, subdir, underscoring)
     if (Debug):
         reps = 3
     else:
@@ -371,12 +371,12 @@ def generate_all_subroutines(Debug, underscoring):
     for Language in ['f','c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            source_file = open('src/'+source_name+'.f','w')
+            source_file = open(subdir+'/'+source_name+'.f','w')
             generate_tester(source_file, transpose_order, reps, Language)
             source_file.close()
             for loop_order in generate_permutation_list(Debug):
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                source_file = open('src/'+source_name+'.'+Language,'w')
+                source_file = open(subdir+'/'+source_name+'.'+Language,'w')
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
                 for OpenMP in [True,False]:
                     (omp_name,omp_text) = get_omp_info(OpenMP)
@@ -396,8 +396,8 @@ def generate_all_subroutines(Debug, underscoring):
                 source_file.close()
 
 
-def generate_makefile(Debug,Compiler):
-    makefile = open('src/Makefile','w')
+def generate_makefile(Debug, subdir, Compiler):
+    makefile = open(subdir+'/Makefile','w')
     if (Compiler=='GNU'):
         makefile.write('CC       = gcc \n')
         makefile.write('FC       = gfortran \n')
@@ -530,6 +530,8 @@ elif (Compiler=='IBM'):
 elif (Compiler=='Cray'):
     underscoring='_'
 
-
-generate_all_subroutines(Debug, underscoring)
-generate_makefile(Debug,Compiler)
+subdir = Compiler
+os.system('mkdir '+subdir)
+os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
+generate_all_subroutines(Debug, subdir, underscoring)
+generate_makefile(Debug, subdir, Compiler)
