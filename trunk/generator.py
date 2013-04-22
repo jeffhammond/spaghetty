@@ -400,7 +400,7 @@ def generate_makefile(Debug,Compiler):
     if (Compiler=='GNU'):
         makefile.write('CC       = gcc \n')
         makefile.write('FC       = gfortran \n')
-        makefile.write('LD       = gfortran \n')
+        makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -fopenmp \n')
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -fno-underscoring $(OMPFLAGS) \n')
@@ -409,11 +409,11 @@ def generate_makefile(Debug,Compiler):
         else:
             makefile.write('OFLAGS   = -g -O1 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
-        makefile.write('SFLAGS = -fverbose-asm \n\n')
+        makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='Intel'):
         makefile.write('CC       = icc \n')
         makefile.write('FC       = ifort \n')
-        makefile.write('LD       = ifort \n')
+        makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -openmp \n')
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -assume nounderscore $(OMPFLAGS) \n')
@@ -422,10 +422,20 @@ def generate_makefile(Debug,Compiler):
         else:
             makefile.write('OFLAGS   = -g -O1 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) -nofor-main \n')
-        makefile.write('SFLAGS = -fsource-asm -fverbose-asm -fcode-asm \n\n')
+        makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
     elif (Compiler=='IBM'):
         makefile.write('CC       = bgxlc_r \n')
         makefile.write('FC       = bgxlf_r \n')
+        makefile.write('LD       = $(FC) \n')
+        makefile.write('OMPFLAGS = -qsmp=omp \n')
+        makefile.write('CFLAGS   = -qlanglvl=stdc99 $(OMPFLAGS) \n')
+        makefile.write('FFLAGS   = $(OMPFLAGS) \n')
+        if (Debug):
+            makefile.write('OFLAGS   = -g -O3 -qstrict \n')
+        else:
+            makefile.write('OFLAGS   = -g -O3 -qhot \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
         makefile.write('CC       = cc \n')
         makefile.write('FC       = ftn \n')
@@ -497,7 +507,7 @@ def generate_makefile(Debug,Compiler):
     makefile.close()
     return
 
-Compiler = 'Intel'
+Compiler = 'IBM'
 Debug = False
 
 generate_all_subroutines(Debug)
