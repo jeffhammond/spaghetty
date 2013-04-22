@@ -438,8 +438,8 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
-        makefile.write('CC       = cc \n')
-        makefile.write('FC       = ftn \n')
+        makefile.write('CC       = craycc \n')
+        makefile.write('FC       = crayftn \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -h thread3 \n')
         makefile.write('CFLAGS   = -h c99 $(OMPFLAGS) \n')
