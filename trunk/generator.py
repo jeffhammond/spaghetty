@@ -310,7 +310,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     return
 
 
-def generate_test_driver(Debug):
+def generate_test_driver(Debug, underscoring):
     oname = 'test_trans_all'
     cfile = open('src/'+oname+'.c','w')
     hfile = open('src/'+oname+'.h','w')
@@ -348,7 +348,7 @@ def generate_test_driver(Debug):
             B = transpose_order[1]
             C = transpose_order[2]
             D = transpose_order[3]
-            test_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
+            test_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language+underscoring
             cfile.write('    test_'+test_name+'(reference, unsorted, sorted, &dim1, &dim2, &dim3, &dim4);\n')
             hfile.write('void test_'+test_name+'(double * unsorted, double * sorted, double * reference,\n')
             hfile.write('                     int * dim1, int * dim2, int * dim3, int * dim4);\n')
@@ -362,8 +362,8 @@ def generate_test_driver(Debug):
     hfile.close()
 
 
-def generate_all_subroutines(Debug):
-    generate_test_driver(Debug)
+def generate_all_subroutines(Debug, underscoring):
+    generate_test_driver(Debug, underscoring)
     if (Debug):
         reps = 3
     else:
@@ -384,13 +384,14 @@ def generate_all_subroutines(Debug):
                         (fac_name,fac_text) = get_fac_info(Factor)
                         variant = omp_name+'_'+fac_name+'_'+Language
                         print source_name+'_'+variant
-                        subroutine_name = source_name+'_'+variant
                         if (Language=='f'):
+                            subroutine_name = source_name+'_'+variant
                             description = '! '+omp_text+', '+fac_text+'\n'
                             generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
                         if (Language=='c'):
+                            cfunction_name = source_name+'_'+variant+underscoring
                             description = '/* '+omp_text+', '+fac_text+' */\n'
-                            generate_cfunction(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
+                            generate_cfunction(source_file, cfunction_name, description, OpenMP, Factor, transpose_order, loop_order)
 
                 source_file.close()
 
@@ -439,6 +440,16 @@ def generate_makefile(Debug,Compiler):
     elif (Compiler=='Cray'):
         makefile.write('CC       = cc \n')
         makefile.write('FC       = ftn \n')
+        makefile.write('LD       = $(FC) \n')
+        makefile.write('OMPFLAGS = -h thread3 \n')
+        makefile.write('CFLAGS   = -h c99 $(OMPFLAGS) \n')
+        makefile.write('FFLAGS   = $(OMPFLAGS) \n')
+        if (Debug):
+            makefile.write('OFLAGS   = -g -O0 \n')
+        else:
+            makefile.write('OFLAGS   = -O3 \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('SFLAGS   =  \n\n')
     else:
         print 'you must define Compiler'
         exit()
@@ -507,8 +518,18 @@ def generate_makefile(Debug,Compiler):
     makefile.close()
     return
 
-Compiler = 'IBM'
+Compiler = 'Cray'
 Debug = False
 
-generate_all_subroutines(Debug)
+if (Compiler=='GNU'):
+    underscoring=''
+elif (Compiler=='Intel'):
+    underscoring=''
+elif (Compiler=='IBM'):
+    underscoring=''
+elif (Compiler=='Cray'):
+    underscoring='_'
+
+
+generate_all_subroutines(Debug, underscoring)
 generate_makefile(Debug,Compiler)
