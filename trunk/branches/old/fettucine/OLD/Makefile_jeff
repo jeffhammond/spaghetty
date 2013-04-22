@@ -1,0 +1,17 @@
+#
+# My heavily modified version of the NVIDIA transpose code.
+#
+################################################################################
+#
+# Build script for project
+#
+################################################################################
+
+EXECUTABLE  := transpose4d_jeff
+CUFILES   := transpose_jeff.cu
+CCFILES := transpose_gold_jeff.cpp $(NULL)
+
+################################################################################
+# Rules and targets
+
+include /opt/nvidia/cuda/common/common.mk

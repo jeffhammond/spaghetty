@@ -1,0 +1,30 @@
+ccsd_t_singles.F 4 3 6 2 1 5 
+ccsd_t_singles.F 4 3 6 2 5 1 
+ccsd_t_singles.F 4 3 6 5 2 1 
+ccsd_t_singles.F 4 6 3 2 1 5 
+ccsd_t_singles.F 4 6 3 2 5 1 
+ccsd_t_singles.F 4 6 3 5 2 1 
+ccsd_t_singles.F 6 4 3 2 1 5 
+ccsd_t_singles.F 6 4 3 2 5 1 
+ccsd_t_singles.F 6 4 3 5 2 1 
+
+ccsd_t_doubles.F 3 2 6 1 5 4 
+ccsd_t_doubles.F 3 2 6 5 1 4 
+ccsd_t_doubles.F 3 2 6 5 4 1 
+ccsd_t_doubles.F 3 6 2 1 5 4 
+ccsd_t_doubles.F 3 6 2 5 1 4 
+ccsd_t_doubles.F 3 6 2 5 4 1 
+ccsd_t_doubles.F 3 6 5 2 4 1 
+ccsd_t_doubles.F 3 6 5 2 1 4 
+ccsd_t_doubles.F 3 6 5 4 2 1 
+
+ccsd_t_doubles.F 6 5 3 2 1 4 
+ccsd_t_doubles.F 6 5 3 2 4 1 
+ccsd_t_doubles.F 6 5 3 4 2 1 
+ccsd_t_doubles.F 6 3 5 2 1 4 
+ccsd_t_doubles.F 6 3 5 2 4 1 
+ccsd_t_doubles.F 6 3 5 4 2 1 
+ccsd_t_doubles.F 6 3 2 1 5 4 
+ccsd_t_doubles.F 6 3 2 5 1 4 
+ccsd_t_doubles.F 6 3 2 5 4 1 
+

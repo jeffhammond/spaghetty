@@ -1,0 +1,81 @@
+      subroutine tce_sort_4_omp(unsorted,sorted,a,b,c,d,i,j,k,l)
+c
+      implicit none
+      integer a,b,c,d
+      integer i,j,k,l
+      integer id(4),jd(4),ia,ib,j1,j2,j3,j4
+      double precision sorted(a*b*c*d)
+      double precision unsorted(a*b*c*d)
+c
+c     Plain original algorithm
+c
+      jd(1) = a
+      jd(2) = b
+      jd(3) = c
+      jd(4) = d
+      if ((l.eq.4).or.(l.eq.3)) then
+!$omp parallel do
+!$omp& private(j1,j2,j3,j4,id,ia,ib)
+!$omp& shared(sorted,unsorted,jd,i,j,k,l,a,b,c,d)
+!$omp& schedule(static)
+      do j1 = 1,a
+       id(1) = j1
+       do j2 = 1,b
+        id(2) = j2
+        do j3 = 1,c
+         id(3) = j3
+         do j4 = 1,d
+          id(4) = j4
+          ia = id(4)+jd(4)*(id(3)-1+jd(3)*(id(2)-1+jd(2)*(id(1)-1)))
+          ib = id(l)+jd(l)*(id(k)-1+jd(k)*(id(j)-1+jd(j)*(id(i)-1)))
+          sorted(ib) = unsorted(ia)
+         enddo
+        enddo
+       enddo
+      enddo
+!$omp end parallel do
+      else if (l.eq.2) then
+!$omp parallel do
+!$omp& private(j1,j2,j3,j4,id,ia,ib)
+!$omp& shared(sorted,unsorted,jd,i,j,k,l,a,b,c,d)
+!$omp& schedule(static)
+      do j1 = 1,a
+       id(1) = j1
+       do j3 = 1,c
+        id(3) = j3
+        do j2 = 1,b
+         id(2) = j2
+         do j4 = 1,d
+          id(4) = j4
+          ia = id(4)+jd(4)*(id(3)-1+jd(3)*(id(2)-1+jd(2)*(id(1)-1)))
+          ib = id(l)+jd(l)*(id(k)-1+jd(k)*(id(j)-1+jd(j)*(id(i)-1)))
+          sorted(ib) = unsorted(ia)
+         enddo
+        enddo
+       enddo
+      enddo
+!$omp end parallel do
+      else
+!$omp parallel do
+!$omp& private(j1,j2,j3,j4,id,ia,ib)
+!$omp& shared(sorted,unsorted,jd,i,j,k,l,a,b,c,d)
+!$omp& schedule(static)
+      do j2 = 1,b
+       id(2) = j2
+       do j3 = 1,c
+        id(3) = j3
+        do j1 = 1,a
+         id(1) = j1
+         do j4 = 1,d
+          id(4) = j4
+          ia = id(4)+jd(4)*(id(3)-1+jd(3)*(id(2)-1+jd(2)*(id(1)-1)))
+          ib = id(l)+jd(l)*(id(k)-1+jd(k)*(id(j)-1+jd(j)*(id(i)-1)))
+          sorted(ib) = unsorted(ia)
+         enddo
+        enddo
+       enddo
+      enddo
+!$omp end parallel do
+      endif
+      return
+      end
