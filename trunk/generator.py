@@ -518,7 +518,10 @@ def generate_makefile(Debug, subdir, Compiler):
     makefile.close()
     return
 
-Compiler = 'Cray'
+Compiler = 'GNU'
+#Compiler = 'Intel'
+#Compiler = 'IBM'
+#Compiler = 'Cray'
 Debug = False
 
 if (Compiler=='GNU'):
