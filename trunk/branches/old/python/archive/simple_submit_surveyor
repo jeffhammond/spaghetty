@@ -1,2 +1,0 @@
-#! /bin/tcsh -f
-qsub -n 1 -t 10 --mode smp $1

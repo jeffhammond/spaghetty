@@ -1,3 +1,0 @@
-gcc -c linux_random.c
-gfortran -O3 -march=core2 -mtune=core2 -c                   dgemm.F dfill.f tce_sort_hirata.F tce_sortacc_hirata.F xerbla.F lsame.f
-gfortran -O3 -march=core2 -mtune=core2 ccsd_t2_8_skeleton.F dgemm.o dfill.o tce_sort_hirata.o tce_sortacc_hirata.o xerbla.o lsame.o linux_random.o -o ccsd_t2_8_skeleton.x
