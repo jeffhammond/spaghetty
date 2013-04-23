@@ -306,7 +306,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     return
 
 
-def generate_test_driver(Debug, subdir, underscoring):
+def generate_test_driver(Debug, Compiler, subdir, underscoring):
     oname = 'test_trans_all'
     cfile = open(subdir+'/'+oname+'.c','w')
     hfile = open(subdir+'/'+oname+'.h','w')
@@ -335,7 +335,7 @@ def generate_test_driver(Debug, subdir, underscoring):
     cfile.write('#else\n')
     cfile.write('    int nthreads = 1;\n')
     cfile.write('#endif\n\n')
-    cfile.write('    printf(\"dims = %d,%d,%d,%d OpenMP threads = %d \\n\", dim1, dim2, dim3, dim4, nthreads);\n\n')
+    cfile.write('    printf(\"dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
     cfile.write('    double * unsorted;\n')
     cfile.write('    double * sorted;\n')
     cfile.write('    double * reference;\n\n')
@@ -363,8 +363,8 @@ def generate_test_driver(Debug, subdir, underscoring):
     hfile.close()
 
 
-def generate_all_subroutines(Debug, subdir, underscoring):
-    generate_test_driver(Debug, subdir, underscoring)
+def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
+    generate_test_driver(Debug, Compiler, subdir, underscoring)
     if (Debug):
         reps = 3
     else:
@@ -399,9 +399,17 @@ def generate_all_subroutines(Debug, subdir, underscoring):
 
 def generate_makefile(Debug, subdir, Compiler):
     makefile = open(subdir+'/Makefile','w')
-    if (Compiler=='GNU'):
-        makefile.write('CC       = gcc \n')
-        makefile.write('FC       = gfortran \n')
+    if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU'):
+        if (Compiler=='GNU'):
+            makefile.write('CC       = gcc \n')
+            makefile.write('FC       = gfortran \n')
+        if (Compiler=='BGP-GNU'):
+            print 'You need to use the GCC 4.3.2 version not the default...'
+            makefile.write('CC       = powerpc-bgp-linux-gcc \n')
+            makefile.write('FC       = powerpc-bgp-linux-gfortran \n')
+        if (Compiler=='BGQ-GNU'):
+            makefile.write('CC       = powerpc64-bgq-linux-gcc \n')
+            makefile.write('FC       = powerpc64-bgq-linux-gfortran \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -fopenmp \n')
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
@@ -425,9 +433,13 @@ def generate_makefile(Debug, subdir, Compiler):
             makefile.write('OFLAGS   = -g -O1 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
-    elif (Compiler=='IBM'):
-        makefile.write('CC       = bgxlc_r \n')
-        makefile.write('FC       = bgxlf_r \n')
+    elif (Compiler=='XL' or Compiler=='BG-XL'):
+        if (Compiler=='XL'):
+            makefile.write('CC       = xlc_r \n')
+            makefile.write('FC       = xlf_r \n')
+        if (Compiler=='BG-XL'):
+            makefile.write('CC       = bgxlc_r \n')
+            makefile.write('FC       = bgxlf_r \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -qsmp=omp \n')
         makefile.write('CFLAGS   = -qlanglvl=stdc99 $(OMPFLAGS) \n')
@@ -522,7 +534,7 @@ def generate_makefile(Debug, subdir, Compiler):
 
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
-    if Compiler not in ['GNU','Intel','IBM','Cray']:
+    if Compiler not in ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray']:
         print Compiler+' is not a valid compiler choice'
         exit()
 else:
@@ -535,11 +547,11 @@ else:
     Debug = False
 
 
-if (Compiler=='GNU'):
+if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU'):
     underscoring=''
 elif (Compiler=='Intel'):
     underscoring=''
-elif (Compiler=='IBM'):
+elif (Compiler=='XL' or Compiler=='BG-XL'):
     underscoring=''
 elif (Compiler=='Cray'):
     underscoring='_'
@@ -553,5 +565,5 @@ else:
 
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
-generate_all_subroutines(Debug, subdir, underscoring)
+generate_all_subroutines(Debug, Compiler, subdir, underscoring)
 generate_makefile(Debug, subdir, Compiler)
