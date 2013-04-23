@@ -518,11 +518,20 @@ def generate_makefile(Debug, subdir, Compiler):
     makefile.close()
     return
 
-Compiler = 'GNU'
-#Compiler = 'Intel'
-#Compiler = 'IBM'
-#Compiler = 'Cray'
-Debug = False
+if len(sys.argv)>1:
+    Compiler = str(sys.argv[1])
+    if Compiler not in ['GNU','Intel','IBM','Cray']:
+        print Compiler+' is not a valid compiler choice'
+        exit()
+else:
+    Compiler = 'GNU'
+
+
+if len(sys.argv)>2:
+    Debug = bool(sys.argv[2])
+    if Debug!=True:
+        Debug=False
+
 
 if (Compiler=='GNU'):
     underscoring=''
@@ -533,7 +542,13 @@ elif (Compiler=='IBM'):
 elif (Compiler=='Cray'):
     underscoring='_'
 
-subdir = Compiler
+
+if Debug:
+    subdir = str(Compiler)+'-Debug'
+else:
+    subdir = str(Compiler)
+
+
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
 generate_all_subroutines(Debug, subdir, underscoring)
