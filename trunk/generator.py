@@ -5,10 +5,6 @@ import string
 import sys
 import os
 
-#Debug=True
-Debug=False
-
-
 def perm(l):
     sz = len(l)
     if sz <= 1:
@@ -334,7 +330,12 @@ def generate_test_driver(Debug, subdir, underscoring):
     cfile.write('    int dim3 = (argc>3) ? atoi(argv[3]) : 30;\n')
     cfile.write('    int dim4 = (argc>4) ? atoi(argv[4]) : 30;\n')
     cfile.write('    int size = dim1*dim2*dim3*dim4;\n\n')
-    cfile.write('    printf(\"dims = %d,%d,%d,%d \\n\", dim1, dim2, dim3, dim4);\n\n')
+    cfile.write('#ifdef _OPENMP\n')
+    cfile.write('    int nthreads = omp_get_max_threads();\n')
+    cfile.write('#else\n')
+    cfile.write('    int nthreads = 1;\n')
+    cfile.write('#endif\n\n')
+    cfile.write('    printf(\"dims = %d,%d,%d,%d OpenMP threads = %d \\n\", dim1, dim2, dim3, dim4, nthreads);\n\n')
     cfile.write('    double * unsorted;\n')
     cfile.write('    double * sorted;\n')
     cfile.write('    double * reference;\n\n')
@@ -518,6 +519,7 @@ def generate_makefile(Debug, subdir, Compiler):
     makefile.close()
     return
 
+
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
     if Compiler not in ['GNU','Intel','IBM','Cray']:
@@ -528,9 +530,9 @@ else:
 
 
 if len(sys.argv)>2:
-    Debug = bool(sys.argv[2])
-    if Debug!=True:
-        Debug=False
+    Debug = (str(sys.argv[2])=='Debug')
+else:
+    Debug = False
 
 
 if (Compiler=='GNU'):
