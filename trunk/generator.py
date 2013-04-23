@@ -75,9 +75,9 @@ def generate_cfunction(ofile, name, description, OpenMP, Factor, transpose_order
         ofile.write('  const int f  = *factor;\n')
     if OpenMP:
         if Factor not in [1.0,-1.0]:
-            ofile.write('#pragma omp parallel for collapse(4) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+            ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
         else:
-            ofile.write('#pragma omp parallel for collapse(4) firstprivate(d1,d2,d3,d4) shared(sorted,unsorted) schedule(static)\n')
+            ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4) shared(sorted,unsorted) schedule(static)\n')
     ofile.write('  for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('   for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('    for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
@@ -120,7 +120,7 @@ def generate_subroutine(ofile, name, description, OpenMP, Factor, transpose_orde
     if Factor not in [1.0,-1.0]:
         ofile.write('        double precision factor\n')
     if OpenMP:
-        ofile.write('!$omp parallel do collapse(4)\n')
+        ofile.write('!$omp parallel do collapse(2)\n')
         ofile.write('!$omp& private(j1,j2,j3,j4)\n')
         if Factor not in [1.0,-1.0]:
             ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
@@ -298,7 +298,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('          enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
-    ofile.write(' 1000 format(1x,a8,a12,\' = \',4i1,f9.6,\' (\',f9.6,\' -> \',f5.2,\'x)\')\n')
+    ofile.write(' 1000 format(1x,a8,a12,\' = \',4i1,f9.6,\' (\',f9.6,\' -> \',f6.3,\'x)\')\n')
     ofile.write(' 2000 format(1x,\'transpose: \',4i1)\n')
     ofile.write('! 3000 format(1x,a30,f12.6)\n')
     ofile.write('! 4000 format(1x,a16,4f12.6)\n')
@@ -409,7 +409,7 @@ def generate_makefile(Debug, subdir, Compiler):
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
-            makefile.write('OFLAGS   = -g -O1 \n')
+            makefile.write('OFLAGS   = -g -O3 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='Intel'):
