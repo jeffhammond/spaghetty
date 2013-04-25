@@ -73,6 +73,9 @@ def generate_cfunction(ofile, name, description, OpenMP, Factor, transpose_order
     ofile.write('  const int d4 = *dim4;\n')
     if Factor not in [1.0,-1.0]:
         ofile.write('  const int f  = *factor;\n')
+    ofile.write('#if (_OPENMP <= 200805) && (__GNUC__ == 4 && __GNUC_MINOR__ <= 4)\n')
+    ofile.write('#warning GCC is broken for firstprivate or something like that \n')
+    ofile.write('#endif \n')
     if OpenMP:
         if Factor not in [1.0,-1.0]:
             ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
@@ -298,7 +301,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('          enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
-    ofile.write(' 1000 format(1x,a8,a12,\' = \',4i1,f9.6,\' (\',f9.6,\' -> \',f6.3,\'x)\')\n')
+    ofile.write(' 1000 format(1x,a8,a12,\' = \',4i1,f9.6,\' (\',f9.6,\' -> \',f7.3,\'x)\')\n')
     ofile.write(' 2000 format(1x,\'transpose: \',4i1)\n')
     ofile.write('! 3000 format(1x,a30,f12.6)\n')
     ofile.write('! 4000 format(1x,a16,4f12.6)\n')
