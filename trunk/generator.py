@@ -402,15 +402,19 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
 
 def generate_makefile(Debug, subdir, Compiler):
     makefile = open(subdir+'/Makefile','w')
-    if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU'):
+    if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
         if (Compiler=='GNU'):
             makefile.write('CC       = gcc \n')
             makefile.write('FC       = gfortran \n')
-        if (Compiler=='BGP-GNU'):
+        elif (Compiler=='Mac'):
+            print 'Using the 4.8 version of GCC...'
+            makefile.write('CC       = gcc-mp-4.8 \n')
+            makefile.write('FC       = gfortran-mp-4.8 \n')
+        elif (Compiler=='BGP-GNU'):
             print 'You need to use the GCC 4.3.2 version not the default...'
             makefile.write('CC       = powerpc-bgp-linux-gcc \n')
             makefile.write('FC       = powerpc-bgp-linux-gfortran \n')
-        if (Compiler=='BGQ-GNU'):
+        elif (Compiler=='BGQ-GNU'):
             makefile.write('CC       = powerpc64-bgq-linux-gcc \n')
             makefile.write('FC       = powerpc64-bgq-linux-gfortran \n')
         makefile.write('LD       = $(FC) \n')
@@ -535,9 +539,11 @@ def generate_makefile(Debug, subdir, Compiler):
     return
 
 
+compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac']
+
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
-    if Compiler not in ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray']:
+    if Compiler not in compilers:
         print Compiler+' is not a valid compiler choice'
         exit()
 else:
@@ -547,10 +553,11 @@ else:
 if len(sys.argv)>2:
     Debug = (str(sys.argv[2])=='Debug')
 else:
-    Debug = False
+    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac'
+    exit()
 
 
-if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU'):
+if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
     underscoring=''
 elif (Compiler=='Intel'):
     underscoring=''
