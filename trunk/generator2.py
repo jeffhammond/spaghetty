@@ -436,7 +436,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
 def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
     generate_test_driver(Debug, Compiler, subdir, underscoring)
     if (Debug):
-        reps = 3
+        reps = 5
     else:
         reps = 15
     for transpose_order in generate_permutation_list(Debug):
