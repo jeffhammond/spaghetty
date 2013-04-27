@@ -35,6 +35,23 @@
       return
       end
 
+      subroutine scale_1d_array(n,x,val)
+      implicit none
+      integer i, n
+      double precision x(n)
+      double precision val
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n,val)
+!$omp& shared(x)
+!$omp& schedule(static)
+      do i=1,n
+       x(i)=x(i)*val
+      enddo 
+!$omp end parallel do
+      return
+      end
+
       subroutine fill_1d_array(n,x,val)
       implicit none
       integer i, n
