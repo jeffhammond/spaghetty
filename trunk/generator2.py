@@ -379,7 +379,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('          enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
-    ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f8.6,1x,\'(\',f8.6,\' -> \',f7.3,\'x)\')\n')
+    ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f9.6,1x,\'(\',f9.6,\' -> \',f7.3,\'x)\')\n')
     ofile.write(' 2000 format(1x,\'transpose: \',4i1)\n')
     ofile.write('        end\n')
     return
@@ -445,9 +445,9 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
 def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
     generate_test_driver(Debug, Compiler, subdir, underscoring)
     if (Debug):
-        reps = 3
+        reps = 1
     else:
-        reps = 15
+        reps = 1
     for Language in ['f','c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
@@ -513,9 +513,9 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -assume nounderscore $(OMPFLAGS) \n')
         if (Debug):
-            makefile.write('OFLAGS   = -g -O0 -Wall \n')
+            makefile.write('OFLAGS   = -g -O0 \n')
         else:
-            makefile.write('OFLAGS   = -g -O1 \n')
+            makefile.write('OFLAGS   = -g -O3 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
     elif (Compiler=='XL' or Compiler=='BG-XL'):
