@@ -38,6 +38,10 @@ def get_omp_info(OpenMP):
         text = 'without OpenMP'
     return (name,text)
 
+#
+# NOTES
+#
+# collapse(4) is not good.  on BGQ it is terrible, probably due to L1 thrashing.
 
 def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_order):
     A = transpose_order[0]
@@ -349,6 +353,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('!*************************************************\n')
     ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
     ofile.write('        write(6,2000) '+str(A)+','+str(B)+','+str(C)+','+str(D)+'\n')
+    ofile.write('        write(6,1500) \'old_sort(acc)_4 \',dt0\n')
     ofile.write('        do omp = 1, 2\n')
     ofile.write('          do fac = 1, 5\n')
     ofile.write('            besttime(fac,omp) = 1000000.0\n')
@@ -365,12 +370,14 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('              write(6,1000) \'best \',labels(omp,fac),\n')
     ofile.write('     &        bestloop(1,fac,omp),bestloop(2,fac,omp),\n')
     ofile.write('     &        bestloop(3,fac,omp),bestloop(4,fac,omp),\n')
-    ofile.write('     &        besttime(fac,omp),dt0,dt0/besttime(fac,omp)\n')
+    ofile.write('     &        besttime(fac,omp),dt0/besttime(fac,omp),\n')
+    ofile.write('     &        (8*dim1*dim2*dim3*dim4)/besttime(fac,omp)\n')
     ofile.write('            endif\n')
     ofile.write('          enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
-    ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f9.6,1x,\'(\',f9.6,\' -> \',f7.3,\'x)\')\n')
+    ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f9.6,1x,\'(\',f7.3,\'x,\',d8.3,\' B/s)\')\n')
+    ofile.write(' 1500 format(1x,a30,\' = \',5x,f9.6)\n')
     ofile.write(' 2000 format(1x,\'transpose: \',4i1)\n')
     ofile.write('        end\n')
     return
