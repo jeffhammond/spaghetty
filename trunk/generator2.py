@@ -437,16 +437,16 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
         reps = 3
     else:
         reps = 15
-    for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
-            source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            source_file = open(subdir+'/'+source_name+'.f','w')
-            generate_tester(source_file, transpose_order, reps, Language)
-            source_file.close()
-            for loop_order in generate_permutation_list(Debug):
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                source_file = open(subdir+'/'+source_name+'.'+Language,'w')
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+    for transpose_order in generate_permutation_list(Debug):
+        source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
+        source_file = open(subdir+'/'+source_name+'.f','w')
+        generate_tester(source_file, transpose_order, reps, Language)
+        source_file.close()
+        for loop_order in generate_permutation_list(Debug):
+            source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
+            source_file = open(subdir+'/'+source_name+'.'+Language,'w')
+            source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+            for Language in ['f','c']:
                 for OpenMP in [True,False]:
                     (omp_name,omp_text) = get_omp_info(OpenMP)
                     variant = omp_name+'_'+Language
