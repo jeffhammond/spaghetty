@@ -61,47 +61,47 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     if OpenMP:
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4) shared(sorted,unsorted) schedule(static)\n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
-    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
-    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
-    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }\n\n')
+    ofile.write('    }}}}\n\n')
     ofile.write('  } else if (f!=1.0 && g==0.0) { \n\n')
     if OpenMP:
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
-    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
-    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
-    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }\n\n')
+    ofile.write('    }}}}\n\n')
     ofile.write('  } else if (f==1.0 && g==1.0) { \n\n')
     if OpenMP:
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
-    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
-    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
-    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }\n\n')
+    ofile.write('    }}}}\n\n')
     ofile.write('  } else if (f!=1.0 && g==1.0) { \n\n')
     if OpenMP:
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
-    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
-    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
-    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }\n\n')
+    ofile.write('    }}}}\n\n')
     ofile.write('  } else { \n\n')
     if OpenMP:
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f,g) shared(sorted,unsorted) schedule(static)\n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
-    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
-    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
-    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = g*sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] + f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }\n\n')
+    ofile.write('    }}}}\n\n')
     ofile.write('  }\n\n')
     ofile.write('  return;\n')
     ofile.write('}\n\n')
@@ -334,15 +334,17 @@ def generate_tester(ofile, transpose_order, reps, Language):
                 ofile.write('        if (acc_factor .eq. 0.0) then\n')
                 ofile.write('          call compare_1d_array(dim1*dim2*dim3*dim4,\n')
                 ofile.write('     &                          sorted,reference,errors) \n')
-                ofile.write('          if (errors.eq.0) then\n')
-                ofile.write('            dt(loop,fac,omp) = (t1-t0)\n')
-                ofile.write('          else\n')
-                ofile.write('            dt(loop,fac,omp) = 10000000.0\n')
-                ofile.write('            print*,\''+subroutine_name+'\'\n')
-                ofile.write('            print*,\'errors = \',errors \n')
-                ofile.write('            call print_4d_arrays(dim1,dim2,dim3,dim4,\n')
-                ofile.write('     &                           sorted,reference) \n')
-                ofile.write('          endif\n')
+                ofile.write('        else\n')
+                ofile.write('          errors = 0\n')
+                ofile.write('        endif\n')
+                ofile.write('        if (errors.eq.0) then\n')
+                ofile.write('          dt(loop,fac,omp) = (t1-t0)\n')
+                ofile.write('        else\n')
+                ofile.write('          dt(loop,fac,omp) = 10000000.0\n')
+                ofile.write('          print*,\''+subroutine_name+'\'\n')
+                ofile.write('          print*,\'errors = \',errors \n')
+                ofile.write('          call print_4d_arrays(dim1,dim2,dim3,dim4,\n')
+                ofile.write('     &                         sorted,reference) \n')
                 ofile.write('        endif\n')
     ofile.write('!*************************************************\n')
     ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
@@ -403,7 +405,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
     cfile.write('#else\n')
     cfile.write('    int nthreads = 1;\n')
     cfile.write('#endif\n\n')
-    cfile.write('    printf(\"dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
+    cfile.write('    printf(\"v2: dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
     cfile.write('    double * unsorted;\n')
     cfile.write('    double * sorted;\n')
     cfile.write('    double * reference;\n\n')
@@ -438,16 +440,16 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
     else:
         reps = 15
     for transpose_order in generate_permutation_list(Debug):
-        source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-        source_file = open(subdir+'/'+source_name+'.f','w')
-        generate_tester(source_file, transpose_order, reps, Language)
-        source_file.close()
-        for loop_order in generate_permutation_list(Debug):
-            source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-            source_file = open(subdir+'/'+source_name+'.'+Language,'w')
-            source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-            for Language in ['f','c']:
-                for OpenMP in [True,False]:
+        for Language in ['f','c']:
+            source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
+            source_file = open(subdir+'/'+source_name+'.f','w')
+            generate_tester(source_file, transpose_order, reps, Language)
+            source_file.close()
+            for loop_order in generate_permutation_list(Debug):
+                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
+                source_file = open(subdir+'/'+source_name+'.'+Language,'w')
+                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+                for OpenMP in [False,True]:
                     (omp_name,omp_text) = get_omp_info(OpenMP)
                     variant = omp_name+'_'+Language
                     print 'generating '+source_name+'_'+variant
@@ -490,6 +492,23 @@ def generate_makefile(Debug, subdir, Compiler):
             makefile.write('OFLAGS   = -g -O3 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
+    elif (Compiler=='LLVM' or Compiler=='BGQ-LLVM'):
+        if (Compiler=='LLVM'):
+            makefile.write('CC       = clang \n')
+            makefile.write('FC       = gfortran \n')
+        if (Compiler=='BGQ-LLVM'):
+            makefile.write('CC       = bgclang \n')
+            makefile.write('FC       = powerpc64-bgq-linux-gfortran \n')
+        makefile.write('LD       = $(FC) \n')
+        makefile.write('OMPFLAGS = -fopenmp \n')
+        makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
+        makefile.write('FFLAGS   = -fno-underscoring $(OMPFLAGS) \n')
+        if (Debug):
+            makefile.write('OFLAGS   = -g -O0 -Wall \n')
+        else:
+            makefile.write('OFLAGS   = -g -O3 \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='Intel'):
         makefile.write('CC       = icc \n')
         makefile.write('FC       = ifort \n')
@@ -517,7 +536,7 @@ def generate_makefile(Debug, subdir, Compiler):
         if (Debug):
             makefile.write('OFLAGS   = -g -O3 -qstrict \n')
         else:
-            makefile.write('OFLAGS   = -g -O3 -qhot \n')
+            makefile.write('OFLAGS   = -g -O3 -qhot -qsimd=auto \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
@@ -601,7 +620,7 @@ def generate_makefile(Debug, subdir, Compiler):
     makefile.close()
     return
 
-compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac']
+compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac','LLVM','BGQ-LLVM']
 
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
@@ -609,7 +628,7 @@ if len(sys.argv)>1:
         print Compiler+' is not a valid compiler choice'
         exit()
 else:
-    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac'
+    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM'
     exit()
 
 
@@ -619,13 +638,9 @@ else:
     Debug = False
 
 
-if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
+if (Compiler in ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Mac','LLVM','BGQ-LLVM']):
     underscoring=''
-elif (Compiler=='Intel'):
-    underscoring=''
-elif (Compiler=='XL' or Compiler=='BG-XL'):
-    underscoring=''
-elif (Compiler=='Cray'):
+elif (Compiler in ['Cray']):
     underscoring='_'
 
 

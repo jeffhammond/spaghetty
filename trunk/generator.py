@@ -338,7 +338,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
     cfile.write('#else\n')
     cfile.write('    int nthreads = 1;\n')
     cfile.write('#endif\n\n')
-    cfile.write('    printf(\"dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
+    cfile.write('    printf(\"v1: dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
     cfile.write('    double * unsorted;\n')
     cfile.write('    double * sorted;\n')
     cfile.write('    double * reference;\n\n')
@@ -547,14 +547,14 @@ if len(sys.argv)>1:
         print Compiler+' is not a valid compiler choice'
         exit()
 else:
-    Compiler = 'GNU'
+    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac'
+    exit()
 
 
 if len(sys.argv)>2:
     Debug = (str(sys.argv[2])=='Debug')
 else:
-    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac'
-    exit()
+    Debug = False
 
 
 if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
