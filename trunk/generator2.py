@@ -39,34 +39,7 @@ def get_omp_info(OpenMP):
     return (name,text)
 
 
-def get_fac_info(Factor,Accumulate):
-    if (Accumulate==0.0):
-        if (Factor==1.0):
-            name = 'copy'
-            text = 'copy: y = x'
-        elif (Factor==-1.0):
-            name = 'ncopy'
-            text = 'negative copy: y = -x'
-        else:
-            name = 'scal'
-            text = 'scaled copy: y = a*x'
-    elif (Accumulate==1.0):
-        if (Factor==1.0):
-            name = 'acc'
-            text = 'accumulate: y += x '
-        elif (Factor==-1.0):
-            name = 'nacc'
-            text = 'negative accumulate: y -= x'
-        else:
-            name = 'sacc'
-            text = 'scaled accumulate: y += a*x'
-    else:
-        name = 'gacc'
-        text = 'generalized accumulate: y = g*y+a*x'
-    return (name,text)
-
-
-def generate_cfunction(ofile, name, description, OpenMP, Factor, Accumulate, transpose_order, loop_order):
+def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_order):
     A = transpose_order[0]
     B = transpose_order[1]
     C = transpose_order[2]
@@ -76,70 +49,66 @@ def generate_cfunction(ofile, name, description, OpenMP, Factor, Accumulate, tra
     c = loop_order[2]
     d = loop_order[3]
     ofile.write(description)
-    if (Accumulate==0.0):
-        if Factor not in [1.0,-1.0]:
-            ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const double * const factor)\n')
-        else:
-            ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4)\n')
-    elif (Accumulate==1.0):
-        if Factor not in [1.0,-1.0]:
-            ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const double * const factor)\n')
-        else:
-            ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4)\n')
-    else:
-        ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const double * const factor, const double * const acc_factor)\n')
+    ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const double * const factor, const double * const acc_factor)\n')
     ofile.write('{\n')
     ofile.write('  const int d1 = *dim1;\n')
     ofile.write('  const int d2 = *dim2;\n')
     ofile.write('  const int d3 = *dim3;\n')
     ofile.write('  const int d4 = *dim4;\n')
-    if Factor not in [1.0,-1.0]:
-        ofile.write('  const int f  = *factor;\n')
-    if Accumulate not in [0.0,1.0]:
-        if Factor in [1.0,-1.0]:
-            ofile.write('  const int f  = *factor;\n')
-        ofile.write('  const int g  = *acc_factor;\n')
-    #ofile.write('#if (_OPENMP <= 200805) && (__GNUC__ == 4 && __GNUC_MINOR__ <= 4)\n')
-    #ofile.write('#warning GCC is broken for firstprivate or something like that \n')
-    #ofile.write('#endif \n')
+    ofile.write('  const int f  = *factor;\n')
+    ofile.write('  const int g  = *acc_factor;\n')
+    ofile.write('  if (f==1.0 && g==0.0) {\n')
     if OpenMP:
-        if Accumulate in [0.0,1.0]:
-            if Factor in [1.0,-1.0]:
-                ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4) shared(sorted,unsorted) schedule(static)\n')
-            else:
-                ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
-        else:
-            ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f,g) shared(sorted,unsorted) schedule(static)\n')
-    ofile.write('  for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
-    ofile.write('   for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
-    ofile.write('    for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
-    ofile.write('     for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
-    if (Accumulate==0.0):
-        if (Factor==1.0):
-            ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-        elif (Factor==-1.0):
-            ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = -unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-        else:
-            ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    elif (Accumulate==1.0):
-        if (Factor==1.0):
-            ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-        elif (Factor==-1.0):
-            ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] -= unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-        else:
-            ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    else:
-        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = g*sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] + f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('     }\n')
-    ofile.write('    }\n')
-    ofile.write('   }\n')
-    ofile.write('  }\n')
+        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4) shared(sorted,unsorted) schedule(static)\n')
+    ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }\n\n')
+    ofile.write('  } else if (f!=1.0 && g==0.0) { \n\n')
+    if OpenMP:
+        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+    ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }\n\n')
+    ofile.write('  } else if (f==1.0 && g==1.0) { \n\n')
+    if OpenMP:
+        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+    ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }\n\n')
+    ofile.write('  } else if (f!=1.0 && g==1.0) { \n\n')
+    if OpenMP:
+        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+    ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }\n\n')
+    ofile.write('  } else { \n\n')
+    if OpenMP:
+        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f,g) shared(sorted,unsorted) schedule(static)\n')
+    ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
+    ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) \n')
+    ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) \n')
+    ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) \n')
+    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = g*sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] + f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }\n\n')
+    ofile.write('  }\n\n')
     ofile.write('  return;\n')
     ofile.write('}\n\n')
     return
 
 
-def generate_subroutine(ofile, name, description, OpenMP, Factor, Accumulate, transpose_order, loop_order):
+def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_order):
     A = transpose_order[0]
     B = transpose_order[1]
     C = transpose_order[2]
@@ -149,74 +118,116 @@ def generate_subroutine(ofile, name, description, OpenMP, Factor, Accumulate, tr
     c = loop_order[2]
     d = loop_order[3]
     ofile.write(description)
-    ofile.write('        subroutine '+name+'(unsorted,sorted,\n')
-    if Accumulate in [0.0,1.0]:
-        if Factor in [1.0,-1.0]:
-            ofile.write('     &                dim1,dim2,dim3,dim4)\n')
-        else:
-            ofile.write('     &                dim1,dim2,dim3,dim4,factor)\n')
-    else:
-        ofile.write('     &                dim1,dim2,dim3,dim4,factor,acc_factor)\n')
-    ofile.write('        implicit none\n')
-    ofile.write('        integer dim1,dim2,dim3,dim4\n')
-    ofile.write('        integer j1,j2,j3,j4\n')
-    ofile.write('        double precision sorted(dim1*dim2*dim3*dim4)\n')
-    ofile.write('        double precision unsorted(dim1*dim2*dim3*dim4)\n')
-    if Factor not in [1.0,-1.0]:
-        ofile.write('        double precision factor\n')
-    if Accumulate not in [0.0,1.0]:
-        ofile.write('        double precision acc_factor\n')
+    ofile.write('      subroutine '+name+'(unsorted,sorted,\n')
+    ofile.write('     &              dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+    ofile.write('      implicit none\n')
+    ofile.write('      integer dim1,dim2,dim3,dim4\n')
+    ofile.write('      integer j1,j2,j3,j4\n')
+    ofile.write('      double precision sorted(dim1*dim2*dim3*dim4)\n')
+    ofile.write('      double precision unsorted(dim1*dim2*dim3*dim4)\n')
+    ofile.write('      double precision factor\n')
+    ofile.write('      double precision acc_factor\n')
+    ofile.write('      if ((factor .eq. 1.0).and.(acc_factor .eq. 0.0)) then\n')
     if OpenMP:
         ofile.write('!$omp parallel do collapse(2)\n')
         ofile.write('!$omp& private(j1,j2,j3,j4)\n')
-        if Accumulate in [0.0,1.0]:
-            if Factor in [1.0,-1.0]:
-                ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
-            else:
-                ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
-        else:
-            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
         ofile.write('!$omp& shared(sorted,unsorted)\n')
         ofile.write('!$omp& schedule(static)\n')
     ofile.write('        do j'+a+' = 1,dim'+a+'\n')
     ofile.write('         do j'+b+' = 1,dim'+b+'\n')
     ofile.write('          do j'+c+' = 1,dim'+c+'\n')
     ofile.write('           do j'+d+' = 1,dim'+d+'\n')
-    if (Accumulate==0.0):
-        if (Factor==1.0):
-            ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-            ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-        elif (Factor==-1.0):
-            ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-            ofile.write('     &    -unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-        else:
-            ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-            ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-    elif (Accumulate==1.0):
-        if (Factor==1.0):
-            ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-            ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
-            ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-        elif (Factor==-1.0):
-            ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-            ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) - \n')
-            ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-        else:
-            ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-            ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
-            ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-    else:
-        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-        ofile.write('     &    acc_factor*sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
-        ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+    ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
     ofile.write('           enddo\n')
     ofile.write('          enddo\n')
     ofile.write('         enddo\n')
     ofile.write('        enddo\n')
     if OpenMP:
         ofile.write('!$omp end parallel do\n')
-    ofile.write('        return\n')
-    ofile.write('        end\n\n')
+    ofile.write('      else if ((factor .ne. 1.0).and.(acc_factor .eq. 0.0)) then\n')
+    if OpenMP:
+        ofile.write('!$omp parallel do collapse(2)\n')
+        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
+        ofile.write('!$omp& shared(sorted,unsorted)\n')
+        ofile.write('!$omp& schedule(static)\n')
+    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+    ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    ofile.write('           enddo\n')
+    ofile.write('          enddo\n')
+    ofile.write('         enddo\n')
+    ofile.write('        enddo\n')
+    if OpenMP:
+        ofile.write('!$omp end parallel do\n')
+    ofile.write('      else if ((factor .eq. 1.0).and.(acc_factor .eq. 1.0)) then\n')
+    if OpenMP:
+        ofile.write('!$omp parallel do collapse(2)\n')
+        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
+        ofile.write('!$omp& shared(sorted,unsorted)\n')
+        ofile.write('!$omp& schedule(static)\n')
+    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+    ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
+    ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    ofile.write('           enddo\n')
+    ofile.write('          enddo\n')
+    ofile.write('         enddo\n')
+    ofile.write('        enddo\n')
+    if OpenMP:
+        ofile.write('!$omp end parallel do\n')
+    ofile.write('      else if ((factor .ne. 1.0).and.(acc_factor .eq. 1.0)) then\n')
+    if OpenMP:
+        ofile.write('!$omp parallel do collapse(2)\n')
+        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
+        ofile.write('!$omp& shared(sorted,unsorted)\n')
+        ofile.write('!$omp& schedule(static)\n')
+    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+    ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
+    ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    ofile.write('           enddo\n')
+    ofile.write('          enddo\n')
+    ofile.write('         enddo\n')
+    ofile.write('        enddo\n')
+    if OpenMP:
+        ofile.write('!$omp end parallel do\n')
+    ofile.write('      else \n')
+    if OpenMP:
+        ofile.write('!$omp parallel do collapse(2)\n')
+        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+        ofile.write('!$omp& shared(sorted,unsorted)\n')
+        ofile.write('!$omp& schedule(static)\n')
+    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+    ofile.write('     &    acc_factor*sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
+    ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+    ofile.write('           enddo\n')
+    ofile.write('          enddo\n')
+    ofile.write('         enddo\n')
+    ofile.write('        enddo\n')
+    if OpenMP:
+        ofile.write('!$omp end parallel do\n')
+    ofile.write('      endif\n')
+    ofile.write('      return\n')
+    ofile.write('      end\n\n')
     return
 
 
@@ -238,17 +249,17 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('        integer errors\n')
     ofile.write('        integer loop, omp, fac, r\n')
     ofile.write('        integer loops(4,24) \n')
-    ofile.write('        integer bestloop(4,7,2) ! best loop order for (fac,omp) \n')
+    ofile.write('        integer bestloop(4,5,2) ! best loop order for (fac,omp) \n')
     ofile.write('        double precision factor, acc_factor\n')
     ofile.write('        double precision t0, t1 \n')
     ofile.write('        double precision dt0 ! reference timing for old_sort \n')
-    ofile.write('        double precision dt(24,7,2) ! time for (loop,fac,omp) \n')
-    ofile.write('        double precision besttime(7,2) ! best time for (fac,omp) \n')
+    ofile.write('        double precision dt(24,5,2) ! time for (loop,fac,omp) \n')
+    ofile.write('        double precision besttime(5,2) ! best time for (fac,omp) \n')
     ofile.write('        double precision wtime\n')
     ofile.write('        external wtime\n')
-    ofile.write('        character*20 labels(2,7)\n')
+    ofile.write('        character*20 labels(2,5)\n')
     ofile.write('        do omp = 1, 2\n')
-    ofile.write('         do fac = 1, 7\n')
+    ofile.write('         do fac = 1, 5\n')
     ofile.write('          labels(omp,fac) = \'UNDEFINED\' \n')
     ofile.write('          do loop = 1, 24\n')
     ofile.write('           dt(loop,fac,omp) = 1000000.0\n')
@@ -256,46 +267,34 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('         enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        call init_4d_array(dim1,dim2,dim3,dim4,unsorted)\n')
-    ofile.write('        call zero_1d_array(dim1*dim2*dim3*dim4,reference)\n')
-    #for (Factor,Accumulate) in [(1.0,0.0),(-1.0,0.0),(37.0,0.0), (1.0,1.0),(-1.0,1.0),(37.0,1.0), (37.0,37.0)]:
-    #for (Factor,Accumulate) in [(1.0,0.0),(-1.0,0.0),(37.0,0.0)]:
-    for (Factor,Accumulate) in [(1.0,1.0),(-1.0,1.0)]:
-        (fac_name,fac_text) = get_fac_info(Factor,Accumulate)
+    for (Factor,Accumulate) in [(1.0,0.0),(37.0,0.0),(1.0,1.0),(37.0,1.0),(37.0,37.0)]:
         if (Accumulate==0.0):
             if Factor==1.0:
                 fac = 1
-            elif Factor==-1.0:
-                fac = 2
             else:
-                fac = 3
+                fac = 2 
         elif (Accumulate==1.0):
             if Factor==1.0:
-                fac = 4
-            elif Factor==-1.0:
-                fac = 5
+                fac = 3
             else:
-                fac = 6
+                fac = 4
         else:
-            fac = 7
-        # flush cache routine belongs here if we want to do that
+            fac = 5
+
         if (Accumulate==0.0):
-            ofile.write('        t0  = wtime() \n')
-            ofile.write('        factor = '+str(Factor)+'\n')
-            ofile.write('        do r = 1,'+str(reps)+'\n')
-            ofile.write('          call old_sort_4(unsorted,reference,\n')
-            ofile.write('     &                    dim1,dim2,dim3,dim4,\n')
-            ofile.write('     &                     '+str(A)+','+str(B)+','+str(C)+','+str(D)+',factor)\n')
-            ofile.write('        enddo\n')
-            ofile.write('        t1  = wtime() \n')
+            old_name = 'old_sort_4'
         else:
-            ofile.write('        t0  = wtime() \n')
-            ofile.write('        factor = '+str(Factor)+'\n')
-            ofile.write('        do r = 1,'+str(reps)+'\n')
-            ofile.write('          call old_sortacc_4(unsorted,reference,\n')
-            ofile.write('     &                    dim1,dim2,dim3,dim4,\n')
-            ofile.write('     &                     '+str(A)+','+str(B)+','+str(C)+','+str(D)+',factor)\n')
-            ofile.write('        enddo\n')
-            ofile.write('        t1  = wtime() \n')
+            old_name = 'old_sortacc_4'
+        # flush cache routine belongs here if we want to do that
+        ofile.write('        call zero_1d_array(dim1*dim2*dim3*dim4,reference)\n')
+        ofile.write('        t0  = wtime() \n')
+        ofile.write('        factor = '+str(Factor)+'\n')
+        ofile.write('        do r = 1,'+str(reps)+'\n')
+        ofile.write('          call '+old_name+'(unsorted,reference,\n')
+        ofile.write('     &                    dim1,dim2,dim3,dim4,\n')
+        ofile.write('     &                     '+str(A)+','+str(B)+','+str(C)+','+str(D)+',factor)\n')
+        ofile.write('        enddo\n')
+        ofile.write('        t1  = wtime() \n')
         ofile.write('        dt0 = (t1-t0) \n')
         for OpenMP in [False,True]:
             (omp_name,omp_text) = get_omp_info(OpenMP)
@@ -311,9 +310,9 @@ def generate_tester(ofile, transpose_order, reps, Language):
                 c = loop_order[2]
                 d = loop_order[3]
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-                variant = omp_name+'_'+fac_name+'_'+Language
+                variant = omp_name+'_'+Language
                 subroutine_name = source_name+'_'+variant
-                ofile.write('        labels('+str(omp)+','+str(fac)+') = \''+variant+'\' \n')
+                ofile.write('        labels('+str(omp)+','+str(fac)+') = \''+variant+'('+str(Factor)+','+str(Accumulate)+')\' \n')
                 ofile.write('!******** '+str(a)+','+str(b)+','+str(c)+','+str(d)+' ********\n')
                 ofile.write('        fac  = '+str(fac)+' \n')
                 ofile.write('        omp  = '+str(omp)+' \n')
@@ -324,42 +323,32 @@ def generate_tester(ofile, transpose_order, reps, Language):
                 ofile.write('        loops(4,loop) = '+str(d)+'\n')
                 ofile.write('        call zero_1d_array(dim1*dim2*dim3*dim4,sorted)\n')
                 # flush cache routine belongs here if we want to do that
+                ofile.write('        factor     = '+str(Factor)+'\n')
+                ofile.write('        acc_factor = '+str(Accumulate)+'\n')
                 ofile.write('        t0 = wtime() \n')
-                if Accumulate in [1.0,-1.0]:
-                    if Factor in [1.0,-1.0]:
-                        extra_arg = ''
-                    else:
-                        ofile.write('        factor = '+str(Factor)+'\n')
-                        extra_arg = ',factor'
-                    ofile.write('        do r = 1,'+str(reps)+'\n')
-                    ofile.write('          call '+subroutine_name+'(unsorted,sorted,\n')
-                    ofile.write('     &                  dim1,dim2,dim3,dim4'+extra_arg+')\n')
-                    ofile.write('        enddo\n')
-                else:
-                    ofile.write('        factor = '+str(Factor)+'\n')
-                    # must set acc_factor to 1.0 here so we can check correctness properly
-                    ofile.write('        acc_factor = 1.0\n')
-                    ofile.write('        do r = 1,'+str(reps)+'\n')
-                    ofile.write('          call '+subroutine_name+'(unsorted,sorted,\n')
-                    ofile.write('     &                  dim1,dim2,dim3,dim4,factor,acc_factor)\n')
-                    ofile.write('        enddo\n')
+                ofile.write('        do r = 1,'+str(reps)+'\n')
+                ofile.write('          call '+subroutine_name+'(unsorted,sorted,\n')
+                ofile.write('     &                  dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+                ofile.write('        enddo\n')
                 ofile.write('        t1 = wtime() \n')
-                ofile.write('        call compare_1d_array(dim1*dim2*dim3*dim4,\n')
-                ofile.write('     &                        sorted,reference,errors) \n')
-                ofile.write('        if (errors.eq.0) then\n')
-                ofile.write('          dt(loop,fac,omp) = (t1-t0)\n')
-                ofile.write('        else\n')
-                ofile.write('          dt(loop,fac,omp) = 10000000.0\n')
-                ofile.write('          print*,\''+subroutine_name+'\'\n')
-                ofile.write('          print*,\'errors = \',errors \n')
-                ofile.write('          call print_4d_arrays(dim1,dim2,dim3,dim4,\n')
-                ofile.write('     &                         sorted,reference) \n')
+                ofile.write('        if (acc_factor .eq. 0.0) then\n')
+                ofile.write('          call compare_1d_array(dim1*dim2*dim3*dim4,\n')
+                ofile.write('     &                          sorted,reference,errors) \n')
+                ofile.write('          if (errors.eq.0) then\n')
+                ofile.write('            dt(loop,fac,omp) = (t1-t0)\n')
+                ofile.write('          else\n')
+                ofile.write('            dt(loop,fac,omp) = 10000000.0\n')
+                ofile.write('            print*,\''+subroutine_name+'\'\n')
+                ofile.write('            print*,\'errors = \',errors \n')
+                ofile.write('            call print_4d_arrays(dim1,dim2,dim3,dim4,\n')
+                ofile.write('     &                           sorted,reference) \n')
+                ofile.write('          endif\n')
                 ofile.write('        endif\n')
     ofile.write('!*************************************************\n')
     ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
     ofile.write('        write(6,2000) '+str(A)+','+str(B)+','+str(C)+','+str(D)+'\n')
     ofile.write('        do omp = 1, 2\n')
-    ofile.write('          do fac = 1, 7\n')
+    ofile.write('          do fac = 1, 5\n')
     ofile.write('            besttime(fac,omp) = 1000000.0\n')
     ofile.write('            do loop = 1, 24\n')
     ofile.write('              if (dt(loop,fac,omp).lt.besttime(fac,omp)) then\n')
@@ -445,9 +434,9 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
 def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
     generate_test_driver(Debug, Compiler, subdir, underscoring)
     if (Debug):
-        reps = 1
+        reps = 3
     else:
-        reps = 1
+        reps = 15
     for Language in ['f','c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
@@ -460,20 +449,16 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
                 for OpenMP in [True,False]:
                     (omp_name,omp_text) = get_omp_info(OpenMP)
-                    #for (Factor,Accumulate) in [(1.0,0.0),(-1.0,0.0),(37.0,0.0), (1.0,1.0),(-1.0,1.0),(37.0,1.0), (37.0,37.0)]:
-                    #for (Factor,Accumulate) in [(1.0,0.0),(-1.0,0.0),(37.0,0.0)]:
-                    for (Factor,Accumulate) in [(1.0,1.0),(-1.0,1.0)]:
-                        (fac_name,fac_text) = get_fac_info(Factor,Accumulate)
-                        variant = omp_name+'_'+fac_name+'_'+Language
-                        print 'generating '+source_name+'_'+variant
-                        if (Language=='f'):
-                            subroutine_name = source_name+'_'+variant
-                            description = '! '+omp_text+', '+fac_text+'\n'
-                            generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, Accumulate, transpose_order, loop_order)
-                        if (Language=='c'):
-                            cfunction_name = source_name+'_'+variant+underscoring
-                            description = '/* '+omp_text+', '+fac_text+' */\n'
-                            generate_cfunction(source_file, cfunction_name, description, OpenMP, Factor, Accumulate, transpose_order, loop_order)
+                    variant = omp_name+'_'+Language
+                    print 'generating '+source_name+'_'+variant
+                    if (Language=='f'):
+                        subroutine_name = source_name+'_'+variant
+                        description = '! '+omp_text+'\n'
+                        generate_subroutine(source_file, subroutine_name, description, OpenMP, transpose_order, loop_order)
+                    if (Language=='c'):
+                        cfunction_name = source_name+'_'+variant+underscoring
+                        description = '/* '+omp_text+' */\n'
+                        generate_cfunction(source_file, cfunction_name, description, OpenMP, transpose_order, loop_order)
 
                 source_file.close()
 
