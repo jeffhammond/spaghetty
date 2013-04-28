@@ -503,8 +503,9 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('RFLAGS   = -g -O0 -Wall \n')
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
-            makefile.write('RFLAGS   = -g -O2  \n')
-            makefile.write('OFLAGS   = -g -O3 \n')
+            makefile.write('RFLAGS   = -O2  \n')
+            makefile.write('OFLAGS   = -O3 \n')
+        flags = '-fopenmp -std=c99 -fno-underscoring -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='LLVM' or Compiler=='BGQ-LLVM'):
@@ -522,8 +523,9 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('RFLAGS   = -g -O0 -Wall \n')
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
-            makefile.write('RFLAGS   = -g -O2  \n')
-            makefile.write('OFLAGS   = -g -O3 \n')
+            makefile.write('RFLAGS   = -O2  \n')
+            makefile.write('OFLAGS   = -O3 \n')
+        flags = '-fopenmp -std=c99 -fno-underscoring -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='Intel'):
@@ -537,8 +539,9 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('RFLAGS   = -g -O0 \n')
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
-            makefile.write('RFLAGS   = -g -O2  \n')
-            makefile.write('OFLAGS   = -g -O3 -opt-streaming-stores always -opt-prefetch-distance=64,8 -opt-streaming-cache-evict=0  \n')
+            makefile.write('RFLAGS   = -O2  \n')
+            makefile.write('OFLAGS   = -O3 -mavx \n')
+        flags = '-openmp -std=c99 -assume nounderscore -O3 -mavx'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
     elif (Compiler=='XL' or Compiler=='BG-XL'):
@@ -574,6 +577,7 @@ def generate_makefile(Debug, subdir, Compiler, rev):
         else:
             makefile.write('RFLAGS   = -O2 \n')
             makefile.write('OFLAGS   = -O3 \n')
+        flags = '-h thread3 -h c99 -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   =  \n\n')
     else:
