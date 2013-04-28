@@ -257,6 +257,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('        double precision factor, acc_factor\n')
     ofile.write('        double precision t0, t1 \n')
     ofile.write('        double precision dt0 ! reference timing for old_sort \n')
+    ofile.write('        double precision dt1 ! reference timing for old_sortacc \n')
     ofile.write('        double precision dt(24,5,2) ! time for (loop,fac,omp) \n')
     ofile.write('        double precision besttime(5,2) ! best time for (fac,omp) \n')
     ofile.write('        double precision wtime\n')
@@ -299,7 +300,10 @@ def generate_tester(ofile, transpose_order, reps, Language):
         ofile.write('     &                     '+str(A)+','+str(B)+','+str(C)+','+str(D)+',factor)\n')
         ofile.write('        enddo\n')
         ofile.write('        t1  = wtime() \n')
-        ofile.write('        dt0 = (t1-t0) \n')
+        if (Accumulate==0.0):
+            ofile.write('        dt0 = (t1-t0) \n')
+        else:
+            ofile.write('        dt1 = (t1-t0) \n')
         for OpenMP in [False,True]:
             (omp_name,omp_text) = get_omp_info(OpenMP)
             if OpenMP:
@@ -353,7 +357,8 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('!*************************************************\n')
     ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
     ofile.write('        write(6,2000) '+str(A)+','+str(B)+','+str(C)+','+str(D)+'\n')
-    ofile.write('        write(6,1500) \'old_sort(acc)_4 \',dt0\n')
+    ofile.write('        write(6,1500) \'old_sort_4   \',dt0,(8*dim1*dim2*dim3*dim4)/dt0\n')
+    ofile.write('        write(6,1500) \'old_sortacc_4\',dt1,(8*dim1*dim2*dim3*dim4)/dt1\n')
     ofile.write('        do omp = 1, 2\n')
     ofile.write('          do fac = 1, 5\n')
     ofile.write('            besttime(fac,omp) = 1000000.0\n')
@@ -376,8 +381,8 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('          enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
-    ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f9.6,1x,\'(\',f7.3,\'x,\',d8.3,\' B/s)\')\n')
-    ofile.write(' 1500 format(1x,a30,\' = \',5x,f9.6)\n')
+    ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f9.6,1x,\'(\',f7.3,\'x,\',e10.3,\' B/s)\')\n')
+    ofile.write(' 1500 format(11x,a13,7x,\' = \',5x,f9.6,1x,\'(\',9x,e10.3,\' B/s)\')\n')
     ofile.write(' 2000 format(1x,\'transpose: \',4i1)\n')
     ofile.write('        end\n')
     return
@@ -449,7 +454,7 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
     for transpose_order in generate_permutation_list(Debug):
         for Language in ['f','c']:
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            source_file = open(subdir+'/'+source_name+'.f','w')
+            source_file = open(subdir+'/'+source_name+'.F','w')
             generate_tester(source_file, transpose_order, reps, Language)
             source_file.close()
             for loop_order in generate_permutation_list(Debug):
@@ -494,10 +499,12 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -fno-underscoring $(OMPFLAGS) \n')
         if (Debug):
+            makefile.write('RFLAGS   = -g -O0 -Wall \n')
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
+            makefile.write('RFLAGS   = -g -O2  \n')
             makefile.write('OFLAGS   = -g -O3 \n')
-        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='LLVM' or Compiler=='BGQ-LLVM'):
         if (Compiler=='LLVM'):
@@ -511,10 +518,12 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -fno-underscoring $(OMPFLAGS) \n')
         if (Debug):
+            makefile.write('RFLAGS   = -g -O0 -Wall \n')
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
+            makefile.write('RFLAGS   = -g -O2  \n')
             makefile.write('OFLAGS   = -g -O3 \n')
-        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='Intel'):
         makefile.write('CC       = icc \n')
@@ -524,10 +533,12 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -assume nounderscore $(OMPFLAGS) \n')
         if (Debug):
+            makefile.write('RFLAGS   = -g -O0 \n')
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
-            makefile.write('OFLAGS   = -g -O3 \n')
-        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) -nofor-main \n')
+            makefile.write('RFLAGS   = -g -O2  \n')
+            makefile.write('OFLAGS   = -g -O3 -opt-streaming-stores always -opt-prefetch-distance=64,8 -opt-streaming-cache-evict=0  \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
     elif (Compiler=='XL' or Compiler=='BG-XL'):
         if (Compiler=='XL'):
@@ -541,10 +552,12 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('CFLAGS   = -qlanglvl=stdc99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = $(OMPFLAGS) \n')
         if (Debug):
+            makefile.write('RFLAGS   = -g -O3 -qstrict \n')
             makefile.write('OFLAGS   = -g -O3 -qstrict \n')
         else:
+            makefile.write('RFLAGS   = -g -O3 -qstrict \n')
             makefile.write('OFLAGS   = -g -O3 -qhot -qsimd=auto \n')
-        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
         makefile.write('CC       = craycc \n')
@@ -554,20 +567,23 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('CFLAGS   = -h c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = $(OMPFLAGS) \n')
         if (Debug):
+            makefile.write('RFLAGS   = -g -O0 \n')
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
+            makefile.write('RFLAGS   = -O2 \n')
             makefile.write('OFLAGS   = -O3 \n')
-        makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
+        makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   =  \n\n')
     else:
         print 'you must define Compiler'
         exit()
 
+    makefile.write('\n\n')
     makefile.write('SOURCES = \\\n')
     for Language in ['f','c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            makefile.write(source_name+'.f \\\n')
+            makefile.write(source_name+'.F \\\n')
 
         for transpose_order in generate_permutation_list(Debug):
             for loop_order in generate_permutation_list(Debug):
@@ -576,12 +592,15 @@ def generate_makefile(Debug, subdir, Compiler):
 
 
     makefile.write('\n\n')
-    makefile.write('OBJECTS = \\\n')
+    makefile.write('ROBJECTS = \\\n')
     for Language in ['f','c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             makefile.write(source_name+'.o \\\n')
 
+    makefile.write('\n\n')
+    makefile.write('OBJECTS = \\\n')
+    for Language in ['f','c']:
         for transpose_order in generate_permutation_list(Debug):
             for loop_order in generate_permutation_list(Debug):
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
@@ -603,17 +622,19 @@ def generate_makefile(Debug, subdir, Compiler):
     makefile.write('\n\n')
     makefile.write('TESTOBJ = tester_cutil.o tester_futil.o old_sort.o \n\n')
     makefile.write('all: test_trans_all.x  \n\n')
-    makefile.write('%.x: %.o libspaghetty.a libtestutil.a \n')
-    makefile.write('\t$(LD) $(LDFLAGS) $< -L. -lspaghetty -ltestutil -o $@ \n\n')
+    makefile.write('%.x: %.o libtestutil.a libspaghetty.a \n')
+    makefile.write('\t$(LD) $(LDFLAGS) $< -L. -ltestutil -lspaghetty -o $@ \n\n')
     makefile.write('libspaghetty.a: $(OBJECTS) \n')
     makefile.write('\t$(AR) $(ARFLAGS) $@ $(OBJECTS) \n\n')
-    makefile.write('libtestutil.a: $(TESTOBJ) \n')
-    makefile.write('\t$(AR) $(ARFLAGS) $@ $(TESTOBJ) \n\n')
+    makefile.write('libtestutil.a: $(TESTOBJ) $(ROBJECTS) \n')
+    makefile.write('\t$(AR) $(ARFLAGS) $@ $(TESTOBJ) $(ROBJECTS) \n\n')
     makefile.write('asm: $(ASSEMBLY) \n\n')
     makefile.write('%.s: %.f \n')
     makefile.write('\t$(FC) $(FFLAGS) $(SFLAGS) -S $< -o $@ \n\n')
     makefile.write('%.s: %.c \n')
     makefile.write('\t$(CC) $(CFLAGS) $(SFLAGS) -S $< -o $@ \n\n')
+    makefile.write('%.o: %.F \n')
+    makefile.write('\t$(FC) $(FFLAGS) $(RFLAGS) -c $< -o $@ \n\n')
     makefile.write('%.o: %.f \n')
     makefile.write('\t$(FC) $(FFLAGS) $(OFLAGS) -c $< -o $@ \n\n')
     makefile.write('%.o: %.c \n')               
