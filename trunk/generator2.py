@@ -420,6 +420,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
     cfile.write('    printf(\"SPAGHETTY: generator2.py r'+str(rev)+'\\n\");\n')
     cfile.write('    printf(\"dims = %d,%d,%d,%d - OpenMP threads = %d \\n\", dim1, dim2, dim3, dim4, nthreads);\n')
     cfile.write('    printf(\"%s compiler: %s \\n\", \"'+Compiler+'\",\"'+flags+'\");\n\n')
+    cfile.write('    fflush(stdout);\n')
     cfile.write('    double * unsorted = NULL;\n')
     cfile.write('    double * sorted = NULL;\n')
     cfile.write('    double * reference = NULL;\n\n')
