@@ -388,7 +388,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     return
 
 
-def generate_test_driver(Debug, Compiler, subdir, underscoring):
+def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
     oname = 'test_trans_all'
     cfile = open(subdir+'/'+oname+'.c','w')
     hfile = open(subdir+'/'+oname+'.h','w')
@@ -417,10 +417,12 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
     cfile.write('#else\n')
     cfile.write('    int nthreads = 1;\n')
     cfile.write('#endif\n\n')
-    cfile.write('    printf(\"v2: dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
-    cfile.write('    double * unsorted;\n')
-    cfile.write('    double * sorted;\n')
-    cfile.write('    double * reference;\n\n')
+    cfile.write('    printf(\"SPAGHETTY: generator2.py r'+str(rev)+'\\n\");\n')
+    cfile.write('    printf(\"dims = %d,%d,%d,%d - OpenMP threads = %d \\n\", dim1, dim2, dim3, dim4, nthreads);\n')
+    cfile.write('    printf(\"%s compiler: %s \\n\", \"'+Compiler+'\",\"'+flags+'\");\n\n')
+    cfile.write('    double * unsorted = NULL;\n')
+    cfile.write('    double * sorted = NULL;\n')
+    cfile.write('    double * reference = NULL;\n\n')
     cfile.write('    rc = posix_memalign((void**)&unsorted,  128, size*sizeof(double)); assert(rc==0 && unsorted!=NULL);\n')
     cfile.write('    rc = posix_memalign((void**)&sorted,    128, size*sizeof(double)); assert(rc==0 && sorted!=NULL);\n')
     cfile.write('    rc = posix_memalign((void**)&reference, 128, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
@@ -446,7 +448,6 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
 
 
 def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
-    generate_test_driver(Debug, Compiler, subdir, underscoring)
     if (Debug):
         reps = 5
     else:
@@ -477,7 +478,7 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
                 source_file.close()
 
 
-def generate_makefile(Debug, subdir, Compiler):
+def generate_makefile(Debug, subdir, Compiler, rev):
     makefile = open(subdir+'/Makefile','w')
     if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
         if (Compiler=='GNU'):
@@ -557,6 +558,7 @@ def generate_makefile(Debug, subdir, Compiler):
         else:
             makefile.write('RFLAGS   = -g -O3 -qstrict \n')
             makefile.write('OFLAGS   = -g -O3 -qhot -qsimd=auto \n')
+        flags = '-qsmp=omp -qlanglvl=stdc99 -g -O3 -qhot -qsimd=auto'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
@@ -646,6 +648,7 @@ def generate_makefile(Debug, subdir, Compiler):
     makefile.write('srcclean: realclean \n')
     makefile.write('\t$(RM) $(RMFLAGS) $(SOURCES) \n\n')
     makefile.close()
+    generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags)
     return
 
 compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac','LLVM','BGQ-LLVM']
@@ -678,7 +681,8 @@ else:
     subdir = str(Compiler)
 
 
+rev = os.system('svn info generator2.py  | grep Revision | sed "s/Revision: //g"')
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
 generate_all_subroutines(Debug, Compiler, subdir, underscoring)
-generate_makefile(Debug, subdir, Compiler)
+generate_makefile(Debug, subdir, Compiler, rev)
