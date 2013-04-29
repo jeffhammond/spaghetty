@@ -181,4 +181,135 @@
       return
       end
 
+! this stuff is actually used by the spaghetty code, not just the tester
+
+      subroutine copy_1d_array_nomp(n,x,y)
+      implicit none
+      integer i, n
+      double precision x(n), y(n)
+      do i=1,n
+        y(i) = x(i)
+      enddo 
+      return
+      end
+
+      subroutine copy_scale_1d_array_nomp(n,x,y,f)
+      implicit none
+      integer i, n
+      double precision x(n), y(n), f
+      do i=1,n
+        y(i) = f * x(i)
+      enddo 
+      return
+      end
+
+      subroutine accumulate_1d_array_nomp(n,x,y)
+      implicit none
+      integer i, n
+      double precision x(n), y(n)
+      do i=1,n
+        y(i) = y(i) + x(i)
+      enddo 
+      return
+      end
+
+      subroutine accumulate_scale_1d_array_nomp(n,x,y,f)
+      implicit none
+      integer i, n
+      double precision x(n), y(n), f
+      do i=1,n
+        y(i) = y(i) + f*x(i)
+      enddo 
+      return
+      end
+
+      subroutine scale_accumulate_scale_1d_array_nomp(n,x,y,f,g)
+      implicit none
+      integer i, n
+      double precision x(n), y(n), f, g
+      do i=1,n
+        y(i) = g*y(i) + f*x(i)
+      enddo 
+      return
+      end
+
+      subroutine copy_1d_array_omp(n,x,y)
+      implicit none
+      integer i, n
+      double precision x(n), y(n)
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n)
+!$omp& shared(x,y)
+!$omp& schedule(static)
+      do i=1,n
+        y(i) = x(i)
+      enddo 
+!$omp end parallel do
+      return
+      end
+
+      subroutine copy_scale_1d_array_omp(n,x,y,f)
+      implicit none
+      integer i, n
+      double precision x(n), y(n), f
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n,f)
+!$omp& shared(x,y)
+!$omp& schedule(static)
+      do i=1,n
+        y(i) = f * x(i)
+      enddo 
+!$omp end parallel do
+      return
+      end
+
+      subroutine accumulate_1d_array_omp(n,x,y)
+      implicit none
+      integer i, n
+      double precision x(n), y(n)
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n)
+!$omp& shared(x,y)
+!$omp& schedule(static)
+      do i=1,n
+        y(i) = y(i) + x(i)
+      enddo 
+!$omp end parallel do
+      return
+      end
+
+      subroutine accumulate_scale_1d_array_omp(n,x,y,f)
+      implicit none
+      integer i, n
+      double precision x(n), y(n), f
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n,f)
+!$omp& shared(x,y)
+!$omp& schedule(static)
+      do i=1,n
+        y(i) = y(i) + f*x(i)
+      enddo 
+!$omp end parallel do
+      return
+      end
+
+      subroutine scale_accumulate_scale_1d_array_omp(n,x,y,f,g)
+      implicit none
+      integer i, n
+      double precision x(n), y(n), f, g
+!$omp parallel do
+!$omp& private(i)
+!$omp& firstprivate(n,f,g)
+!$omp& shared(x,y)
+!$omp& schedule(static)
+      do i=1,n
+        y(i) = g*y(i) + f*x(i)
+      enddo 
+!$omp end parallel do
+      return
+      end
 
