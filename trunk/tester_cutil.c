@@ -13,7 +13,7 @@
 #include <mpi.h>
 #endif
 
-static inline double wtime_impl(void)
+double wtime_impl(void)
 {
     double t = 0.0;
 #if   defined(_OPENMP)
