@@ -1,3 +1,14 @@
+#if defined(__llvm__) && defined(_OPENMP)
+      subroutine f_wtime_impl(t);
+      implicit none
+      double precision t
+      double precision omp_get_wtime
+      external omp_get_wtime
+      t = omp_get_wtime()
+      return
+      end
+#endif
+
       subroutine compare_1d_array(n,x,y,errors)
       implicit none
       integer i, n, errors

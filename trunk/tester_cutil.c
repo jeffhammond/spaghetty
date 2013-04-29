@@ -3,8 +3,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef _OPENMP
-#include <omp.h>
+#if defined(_OPENMP)
+#  include <omp.h>
+#elif defined(__llvm__)
+   void f_wtime_impl(double * t);
 #endif
 
 #ifdef USE_MPI
@@ -20,6 +22,8 @@ static inline double wtime_impl(void)
 #elif defined(USE_MPI)
 #warning Using MPI timer
     t = MPI_Wtime();
+#elif defined(__llvm__)
+    f_wtime_impl(&t);
 #else
 #warning NO TIMER AVAILABLE!!!
 #endif

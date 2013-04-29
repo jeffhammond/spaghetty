@@ -4,6 +4,7 @@ import fileinput
 import string
 import sys
 import os
+import subprocess
 
 def perm(l):
     sz = len(l)
@@ -64,7 +65,9 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('  const int g  = *acc_factor;\n')
     ofile.write('  if (f==1.0 && g==0.0) {\n')
     if OpenMP:
+        ofile.write('#ifdef _OPENMP \n')
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
@@ -73,7 +76,9 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('    }}}}\n\n')
     ofile.write('  } else if (f!=1.0 && g==0.0) { \n\n')
     if OpenMP:
+        ofile.write('#ifdef _OPENMP \n')
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
@@ -82,7 +87,9 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('    }}}}\n\n')
     ofile.write('  } else if (f==1.0 && g==1.0) { \n\n')
     if OpenMP:
+        ofile.write('#ifdef _OPENMP \n')
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
@@ -91,7 +98,9 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('    }}}}\n\n')
     ofile.write('  } else if (f!=1.0 && g==1.0) { \n\n')
     if OpenMP:
+        ofile.write('#ifdef _OPENMP \n')
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
@@ -100,7 +109,9 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('    }}}}\n\n')
     ofile.write('  } else { \n\n')
     if OpenMP:
+        ofile.write('#ifdef _OPENMP \n')
         ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f,g) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
@@ -510,7 +521,7 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
             makefile.write('RFLAGS   = -O2  \n')
-            makefile.write('OFLAGS   = -O3 \n')
+            makefile.write('OFLAGS   = -Os \n')
         flags = '-fopenmp -std=c99 -fno-underscoring -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
@@ -642,9 +653,9 @@ def generate_makefile(Debug, subdir, Compiler, rev):
     makefile.write('\t$(AR) $(ARFLAGS) $@ $(TESTOBJ) $(ROBJECTS) \n\n')
     makefile.write('asm: $(ASSEMBLY) \n\n')
     makefile.write('%.s: %.f \n')
-    makefile.write('\t$(FC) $(FFLAGS) $(SFLAGS) -S $< -o $@ \n\n')
+    makefile.write('\t$(FC) $(FFLAGS) $(OFLAGS) $(SFLAGS) -S $< -o $@ \n\n')
     makefile.write('%.s: %.c \n')
-    makefile.write('\t$(CC) $(CFLAGS) $(SFLAGS) -S $< -o $@ \n\n')
+    makefile.write('\t$(CC) $(CFLAGS) $(OFLAGS) $(SFLAGS) -S $< -o $@ \n\n')
     makefile.write('%.o: %.F \n')
     makefile.write('\t$(FC) $(FFLAGS) $(RFLAGS) -c $< -o $@ \n\n')
     makefile.write('%.o: %.f \n')
@@ -691,7 +702,11 @@ else:
     subdir = str(Compiler)
 
 
-rev = os.system('svn info generator2.py  | grep Revision | sed "s/Revision: //g"')
+#rev = os.system('svn info generator2.py  | grep Revision | sed "s/Revision: //g"')
+#rev = subprocess.check_output('svn info generator2.py | grep Revision | sed "s/Revision: //g"')
+#print 'rev = ',str(rev)
+#exit()
+rev = 242
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
 generate_all_subroutines(Debug, Compiler, subdir, underscoring)
