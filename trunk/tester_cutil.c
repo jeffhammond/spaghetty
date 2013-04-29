@@ -38,7 +38,7 @@ double wtime_(void)
 
 double wtime__(void)
 {
-    return wtime_imple();
+    return wtime_impl();
 }
 
 /* memcpy(void *restrict s1, const void *restrict s2, size_t n); */
