@@ -13,7 +13,8 @@ def perm(l):
 
 
 def generate_permutation_list(Debug):
-    indices = ['4','3','2','1']
+    #indices = ['4','3','2','1']
+    indices = ['1','2','3','4']
     if Debug:
         permlist        = [indices]
     else:
