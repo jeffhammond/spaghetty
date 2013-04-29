@@ -146,7 +146,7 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ofile.write('      if ((factor .eq. 1.0).and.(acc_factor .eq. 0.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
         ofile.write('           call f_memcpy(sorted(1),unsorted(1),dim'+d+'*dim'+c+'*dim'+b+'*dim'+a+')\n')
-    elif (False and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+    elif (b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
         if OpenMP:
             ofile.write('!$omp parallel do \n')
             ofile.write('!$omp& private(j1)\n')
@@ -155,8 +155,8 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
             ofile.write('!$omp& schedule(static)\n')
         ofile.write('        do j'+a+' = 1,dim'+a+'\n')
         ofile.write('           call f_memcpy(\n')
-        ofile.write('     1          sorted(dim'+B+'*(j'+A+'-1)),\n')
-        ofile.write('     2        unsorted(dim2*(j1-1)),\n')
+        ofile.write('     1          sorted(dim'+B+'*(j'+A+')),\n')
+        ofile.write('     2        unsorted(dim2*(j1)),\n')
         ofile.write('     3        dim'+d+'*dim'+c+'*dim'+b+')\n')
         ofile.write('        enddo\n')
         if OpenMP:
@@ -171,8 +171,8 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
         ofile.write('        do j'+a+' = 1,dim'+a+'\n')
         ofile.write('         do j'+b+' = 1,dim'+b+'\n')
         ofile.write('           call f_memcpy(\n')
-        ofile.write('     1          sorted(dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1))),\n')
-        ofile.write('     2        unsorted(dim3*(j2-1+dim2*(j1-1))),\n')
+        ofile.write('     1          sorted(dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'))),\n')
+        ofile.write('     2        unsorted(dim3*(j2-1+dim2*(j1))),\n')
         ofile.write('     3        dim'+d+'*dim'+c+')\n')
         ofile.write('         enddo\n')
         ofile.write('        enddo\n')
@@ -189,8 +189,8 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
         ofile.write('         do j'+b+' = 1,dim'+b+'\n')
         ofile.write('          do j'+c+' = 1,dim'+c+'\n')
         ofile.write('           call f_memcpy(\n')
-        ofile.write('     1          sorted(dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))),\n')
-        ofile.write('     2        unsorted(dim4*(j3-1+dim3*(j2-1+dim2*(j1-1)))),\n')
+        ofile.write('     1          sorted(dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+')))),\n')
+        ofile.write('     2        unsorted(dim4*(j3-1+dim3*(j2-1+dim2*(j1)))),\n')
         ofile.write('     3        dim'+d+')\n')
         ofile.write('          enddo\n')
         ofile.write('         enddo\n')

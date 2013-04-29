@@ -52,6 +52,7 @@ static inline void f_memcpy_impl(void * restrict new, void * restrict old, int *
 {
   /* this can only be used for doubles... since the count needs to be converted to bytes */
   const size_t l = (size_t) *length * sizeof(double);
+  //printf("length = %d; l = %zu \n", *length, l);
   memcpy(new,old,l);
   return;
 }
