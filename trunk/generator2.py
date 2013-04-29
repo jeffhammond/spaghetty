@@ -790,6 +790,6 @@ else:
 #exit()
 rev = 242
 os.system('mkdir '+subdir)
-os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
+os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
 generate_all_subroutines(Debug, Compiler, subdir, underscoring)
 generate_makefile(Debug, subdir, Compiler, rev)
