@@ -50,7 +50,8 @@ double wtime__(void)
 /* Fortran does not respect const but requires no aliasing... */
 static inline void f_memcpy_impl(void * restrict new, void * restrict old, int * length)
 {
-  const size_t l = (size_t) *length;
+  /* this can only be used for doubles... since the count needs to be converted to bytes */
+  const size_t l = (size_t) *length * sizeof(double);
   memcpy(new,old,l);
   return;
 }
