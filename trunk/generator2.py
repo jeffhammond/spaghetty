@@ -518,17 +518,18 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
     hfile.close()
 
 
-def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
+def generate_all_subroutines(Debug, NewTester, Compiler, subdir, underscoring):
     if (Debug):
         reps = 5
     else:
         reps = 15
     for transpose_order in generate_permutation_list(Debug):
         for Language in ['f','c']:
-            source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            source_file = open(subdir+'/'+source_name+'.F','w')
-            generate_tester(source_file, transpose_order, reps, Language)
-            source_file.close()
+            if NewTester:
+                source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
+                source_file = open(subdir+'/'+source_name+'.F','w')
+                generate_tester(source_file, transpose_order, reps, Language)
+                source_file.close()
             for loop_order in generate_permutation_list(Debug):
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
                 source_file = open(subdir+'/'+source_name+'.'+Language,'w')
@@ -763,5 +764,5 @@ else:
 rev = 242
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
-generate_all_subroutines(Debug, Compiler, subdir, underscoring)
+generate_all_subroutines(Debug, False, Compiler, subdir, underscoring)
 generate_makefile(Debug, subdir, Compiler, rev)
