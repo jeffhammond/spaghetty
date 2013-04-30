@@ -1,4 +1,4 @@
-#if defined(__llvm__) && defined(_OPENMP)
+#if defined(_OPENMP)
       subroutine f_wtime_impl(t);
       implicit none
       double precision t
