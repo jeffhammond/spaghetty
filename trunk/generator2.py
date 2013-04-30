@@ -646,6 +646,13 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, tran
     cfile.write('#include \"'+oname+'.h\"\n\n')
     cfile.write('int main(int argc, char * argv[])\n')
     cfile.write('{\n')
+    cfile.write('#ifdef USE_MPI\n')
+    cfile.write('    int provided, rank, size;\n')
+    cfile.write('    MPI_Init_thread(&argc,&argv,MPI_THREAD_FUNNELED,&provided);\n')
+    cfile.write('    if (provided<MPI_THREAD_FUNNELED) MPI_Abort(MPI_COMM_WORLD);\n')
+    cfile.write('    MPI_Comm_rank(MPI_COMM_WORLD, &rank);\n')
+    cfile.write('    MPI_Comm_size(MPI_COMM_WORLD, &size);\n')
+    cfile.write('#endif\n\n')
     cfile.write('    int rc;\n')
     cfile.write('    int dim1 = (argc>1) ? atoi(argv[1]) : 30;\n')
     cfile.write('    int dim2 = (argc>2) ? atoi(argv[2]) : 30;\n')
@@ -668,19 +675,32 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, tran
     cfile.write('    rc = posix_memalign((void**)&sorted,    128, size*sizeof(double)); assert(rc==0 && sorted!=NULL);\n')
     cfile.write('    rc = posix_memalign((void**)&reference, 128, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
     cfile.write('    /*********** begin testing **********/\n\n')
+    i = 0
     for transpose_order in trans_list:
         A = transpose_order[0]
         B = transpose_order[1]
         C = transpose_order[2]
         D = transpose_order[3]
         test_name = 'trans_'+perm_to_string(transpose_order)+underscoring
+        cfile.write('#ifdef USE_MPI\n')
+        cfile.write('    if ('+str(i)+'%size == rank) {\n')
+        cfile.write('      printf(\"rank %d is running test_'+test_name+'\", rank);\n')
+        cfile.write('      fflush(stdout);\n')
+        cfile.write('      test_'+test_name+'(reference, unsorted, sorted, &dim1, &dim2, &dim3, &dim4);\n')
+        cfile.write('    }\n')
+        cfile.write('#else\n')
         cfile.write('    test_'+test_name+'(reference, unsorted, sorted, &dim1, &dim2, &dim3, &dim4);\n')
+        cfile.write('#endif\n\n')
         hfile.write('void test_'+test_name+'(double * unsorted, double * sorted, double * reference,\n')
         hfile.write('                     int * dim1, int * dim2, int * dim3, int * dim4);\n')
+        i = i + 1
     cfile.write('    /* end testing */\n')
     cfile.write('    free(reference);\n')
     cfile.write('    free(sorted);\n')
     cfile.write('    free(unsorted);\n\n')
+    cfile.write('#ifdef USE_MPI\n')
+    cfile.write('    MPI_Finalize();\n')
+    cfile.write('#endif\n\n')
     cfile.write('    return 0;\n')
     cfile.write('}\n\n')
     cfile.close()
@@ -723,8 +743,10 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
     makefile = open(subdir+'/Makefile','w')
     if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
         if (Compiler=='GNU'):
-            makefile.write('CC       = gcc \n')
-            makefile.write('FC       = gfortran \n')
+            #makefile.write('CC       = gcc \n')
+            #makefile.write('FC       = gfortran \n')
+            makefile.write('CC       = mpicc \n')
+            makefile.write('FC       = mpif77 \n')
         if (Compiler=='Mac'):
             print 'Using the 4.8 version of GCC...'
             makefile.write('CC       = gcc-mp-4.8 \n')
