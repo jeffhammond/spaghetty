@@ -368,9 +368,9 @@ def generate_tester(ofile, transpose_order, reps, Language):
         ofile.write('        enddo\n')
         ofile.write('        t1  = wtime() \n')
         if (Accumulate==0.0):
-            ofile.write('        dt0 = (t1-t0)/'++str(reps)+'\n')
+            ofile.write('        dt0 = (t1-t0)/'+str(reps)+'\n')
         else:
-            ofile.write('        dt1 = (t1-t0)/'++str(reps)+'\n')
+            ofile.write('        dt1 = (t1-t0)/'+str(reps)+'\n')
         for OpenMP in [False,True]:
             (omp_name,omp_text) = get_omp_info(OpenMP)
             if OpenMP:
@@ -413,7 +413,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
                 ofile.write('          errors = 0\n')
                 ofile.write('        endif\n')
                 ofile.write('        if (errors.eq.0) then\n')
-                ofile.write('          dt(loop,fac,omp) = (t1-t0)/'++str(reps)+'\n')
+                ofile.write('          dt(loop,fac,omp) = (t1-t0)/'+str(reps)+'\n')
                 ofile.write('        else\n')
                 ofile.write('          dt(loop,fac,omp) = 10000000.0\n')
                 ofile.write('          print*,\''+subroutine_name+'\'\n')
