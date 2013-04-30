@@ -699,7 +699,7 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
     makefile.write('%.o: %.c \n')               
     makefile.write('\t$(CC) $(CFLAGS) $(OFLAGS) -c $< -o $@ \n\n')
     makefile.write('clean: \n')
-    makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.o $(OBJECTS) $(TESTOBJ) $(ASSEMBLY) \n\n')
+    makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.o $(ROBJECTS) $(OBJECTS) $(TESTOBJ) $(ASSEMBLY) \n\n')
     makefile.write('realclean: clean \n')
     makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.x libspaghetty.a libtestutil.a \n\n')
     makefile.close()
