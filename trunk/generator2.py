@@ -629,7 +629,7 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
             makefile.write('RFLAGS   = -Os -mavx \n')
-            makefile.write('OFLAGS   = -Os -mavx \n')
+            makefile.write('OFLAGS   = -O3 -mavx \n')
         flags = '-openmp -std=c99 -assume nounderscore -O3 -mavx'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')

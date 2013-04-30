@@ -187,6 +187,7 @@
       implicit none
       integer i, n
       double precision x(n), y(n)
+!DEC$ UNROLL
       do i=1,n
         y(i) = x(i)
       enddo 
@@ -197,6 +198,7 @@
       implicit none
       integer i, n
       double precision x(n), y(n), f
+!DEC$ UNROLL
       do i=1,n
         y(i) = f * x(i)
       enddo 
@@ -207,6 +209,7 @@
       implicit none
       integer i, n
       double precision x(n), y(n)
+!DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + x(i)
       enddo 
@@ -217,6 +220,7 @@
       implicit none
       integer i, n
       double precision x(n), y(n), f
+!DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + f*x(i)
       enddo 
@@ -227,6 +231,7 @@
       implicit none
       integer i, n
       double precision x(n), y(n), f, g
+!DEC$ UNROLL
       do i=1,n
         y(i) = g*y(i) + f*x(i)
       enddo 
@@ -242,6 +247,7 @@
 !$omp& firstprivate(n)
 !$omp& shared(x,y)
 !$omp& schedule(static)
+!DEC$ UNROLL
       do i=1,n
         y(i) = x(i)
       enddo 
@@ -258,6 +264,7 @@
 !$omp& firstprivate(n,f)
 !$omp& shared(x,y)
 !$omp& schedule(static)
+!DEC$ UNROLL
       do i=1,n
         y(i) = f * x(i)
       enddo 
@@ -274,6 +281,7 @@
 !$omp& firstprivate(n)
 !$omp& shared(x,y)
 !$omp& schedule(static)
+!DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + x(i)
       enddo 
@@ -290,6 +298,7 @@
 !$omp& firstprivate(n,f)
 !$omp& shared(x,y)
 !$omp& schedule(static)
+!DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + f*x(i)
       enddo 
@@ -306,6 +315,7 @@
 !$omp& firstprivate(n,f,g)
 !$omp& shared(x,y)
 !$omp& schedule(static)
+!DEC$ UNROLL
       do i=1,n
         y(i) = g*y(i) + f*x(i)
       enddo 
