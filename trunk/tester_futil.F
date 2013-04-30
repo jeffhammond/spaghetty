@@ -183,7 +183,7 @@
 
 ! this stuff is actually used by the spaghetty code, not just the tester
 
-      subroutine copy_1d_array_nomp(n,x,y)
+      subroutine c_1d_nomp(n,x,y)
       implicit none
       integer i, n
       double precision x(n), y(n)
@@ -193,7 +193,7 @@
       return
       end
 
-      subroutine copy_scale_1d_array_nomp(n,x,y,f)
+      subroutine cs_1d_nomp(n,x,y,f)
       implicit none
       integer i, n
       double precision x(n), y(n), f
@@ -203,7 +203,7 @@
       return
       end
 
-      subroutine accumulate_1d_array_nomp(n,x,y)
+      subroutine a_1d_nomp(n,x,y)
       implicit none
       integer i, n
       double precision x(n), y(n)
@@ -213,7 +213,7 @@
       return
       end
 
-      subroutine accumulate_scale_1d_array_nomp(n,x,y,f)
+      subroutine as_1d_nomp(n,x,y,f)
       implicit none
       integer i, n
       double precision x(n), y(n), f
@@ -223,7 +223,7 @@
       return
       end
 
-      subroutine scale_accumulate_scale_1d_array_nomp(n,x,y,f,g)
+      subroutine sas_1d_nomp(n,x,y,f,g)
       implicit none
       integer i, n
       double precision x(n), y(n), f, g
@@ -233,7 +233,7 @@
       return
       end
 
-      subroutine copy_1d_array_omp(n,x,y)
+      subroutine c_1d_omp(n,x,y)
       implicit none
       integer i, n
       double precision x(n), y(n)
@@ -249,7 +249,7 @@
       return
       end
 
-      subroutine copy_scale_1d_array_omp(n,x,y,f)
+      subroutine cs_1d_omp(n,x,y,f)
       implicit none
       integer i, n
       double precision x(n), y(n), f
@@ -265,7 +265,7 @@
       return
       end
 
-      subroutine accumulate_1d_array_omp(n,x,y)
+      subroutine a_1d_omp(n,x,y)
       implicit none
       integer i, n
       double precision x(n), y(n)
@@ -281,7 +281,7 @@
       return
       end
 
-      subroutine accumulate_scale_1d_array_omp(n,x,y,f)
+      subroutine as_1d_omp(n,x,y,f)
       implicit none
       integer i, n
       double precision x(n), y(n), f
@@ -297,7 +297,7 @@
       return
       end
 
-      subroutine scale_accumulate_scale_1d_array_omp(n,x,y,f,g)
+      subroutine sas_1d_omp(n,x,y,f,g)
       implicit none
       integer i, n
       double precision x(n), y(n), f, g

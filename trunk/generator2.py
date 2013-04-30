@@ -138,60 +138,38 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ofile.write('     &              dim1,dim2,dim3,dim4,factor,acc_factor)\n')
     ofile.write('      implicit none\n')
     ofile.write('      integer dim1,dim2,dim3,dim4\n')
+    ofile.write('      integer dim1234,dim234,dim34\n')
     ofile.write('      integer j1,j2,j3,j4\n')
     ofile.write('      double precision sorted(dim1*dim2*dim3*dim4)\n')
     ofile.write('      double precision unsorted(dim1*dim2*dim3*dim4)\n')
     ofile.write('      double precision factor\n')
     ofile.write('      double precision acc_factor\n')
+    ##################################################################################
+    ofile.write('      dim1234 = dim1*dim2*dim3*dim4\n')
+    ofile.write('      dim234  = dim2*dim3*dim4\n')
+    ofile.write('      dim34   = dim3*dim4\n')
     ofile.write('      if ((factor .eq. 1.0).and.(acc_factor .eq. 0.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
-        ofile.write('           call f_memcpy(sorted(1),unsorted(1),dim'+d+'*dim'+c+'*dim'+b+'*dim'+a+')\n')
-    elif (b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
         if OpenMP:
-            ofile.write('!$omp parallel do \n')
-            ofile.write('!$omp& private(j1)\n')
-            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
-            ofile.write('!$omp& shared(sorted,unsorted)\n')
-            ofile.write('!$omp& schedule(static)\n')
-        ofile.write('        do j'+a+' = 1,dim'+a+'\n')
-        ofile.write('           call f_memcpy(\n')
-        ofile.write('     1          sorted(dim'+B+'*(j'+A+')),\n')
-        ofile.write('     2        unsorted(dim2*(j1)),\n')
-        ofile.write('     3        dim'+d+'*dim'+c+'*dim'+b+')\n')
-        ofile.write('        enddo\n')
-        if OpenMP:
-            ofile.write('!$omp end parallel do\n')
-    elif (False and c=='3' and C=='3' and d=='4' and D=='4'):
+            ofile.write('           call c_1d_omp(dim1234,unsorted,sorted)\n')
+        else:
+            ofile.write('           call c_1d_nomp(dim1234,unsorted,sorted)\n')
+    elif (c=='3' and C=='3' and d=='4' and D=='4'):
         if OpenMP:
             ofile.write('!$omp parallel do collapse(2)\n')
-            ofile.write('!$omp& private(j1,j2)\n')
-            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
+            ofile.write('!$omp& private(j1,j2,j4)\n')
+            ofile.write('!$omp& firstprivate(dim1,dim2,dim34)\n')
             ofile.write('!$omp& shared(sorted,unsorted)\n')
             ofile.write('!$omp& schedule(static)\n')
         ofile.write('        do j'+a+' = 1,dim'+a+'\n')
         ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-        ofile.write('           call f_memcpy(\n')
-        ofile.write('     1          sorted(dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'))),\n')
-        ofile.write('     2        unsorted(dim3*(j2-1+dim2*(j1))),\n')
-        ofile.write('     3        dim'+d+'*dim'+c+')\n')
-        ofile.write('         enddo\n')
-        ofile.write('        enddo\n')
-        if OpenMP:
-            ofile.write('!$omp end parallel do\n')
-    elif (False and d=='4' and D=='4'):
-        if OpenMP:
-            ofile.write('!$omp parallel do collapse(2)\n')
-            ofile.write('!$omp& private(j1,j2,j3)\n')
-            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
-            ofile.write('!$omp& shared(sorted,unsorted)\n')
-            ofile.write('!$omp& schedule(static)\n')
-        ofile.write('        do j'+a+' = 1,dim'+a+'\n')
-        ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-        ofile.write('          do j'+c+' = 1,dim'+c+'\n')
-        ofile.write('           call f_memcpy(\n')
-        ofile.write('     1          sorted(dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+')))),\n')
-        ofile.write('     2        unsorted(dim4*(j3-1+dim3*(j2-1+dim2*(j1)))),\n')
-        ofile.write('     3        dim'+d+')\n')
+        # function call overhead probably is not worthwhile here
+        #ofile.write('           call c_1d_nomp(dim34,\n')
+        #ofile.write('     1       unsorted(1+dim34*(j2-1+dim2*(j1-1))),\n')
+        #ofile.write('     2         sorted(1+dim34*(j'+B+'-1+dim'+B+'*(j'+A+'-1))))\n')
+        ofile.write('          do j4 = 1,dim34\n')
+        ofile.write('            sorted(j4+dim34*(j'+B+'-1+dim'+B+'*(j'+A+'-1))) = \n')
+        ofile.write('     &    unsorted(j4+dim34*(j2-1+dim2*(j1-1)))\n')
         ofile.write('          enddo\n')
         ofile.write('         enddo\n')
         ofile.write('        enddo\n')
@@ -216,86 +194,115 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
         ofile.write('        enddo\n')
         if OpenMP:
             ofile.write('!$omp end parallel do\n')
+    ##################################################################################
     ofile.write('      else if ((factor .ne. 1.0).and.(acc_factor .eq. 0.0)) then\n')
-    if OpenMP:
-        ofile.write('!$omp parallel do collapse(2)\n')
-        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
-        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
-        ofile.write('!$omp& shared(sorted,unsorted)\n')
-        ofile.write('!$omp& schedule(static)\n')
-    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
-    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
-    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
-    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-    ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-    ofile.write('           enddo\n')
-    ofile.write('          enddo\n')
-    ofile.write('         enddo\n')
-    ofile.write('        enddo\n')
-    if OpenMP:
-        ofile.write('!$omp end parallel do\n')
+    if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        if OpenMP:
+            ofile.write('           call cs_1d_omp(dim1234,unsorted,sorted,factor)\n')
+        else:
+            ofile.write('           call cs_1d_nomp(dim1234,unsorted,sorted,factor)\n')
+    else:
+        if OpenMP:
+            ofile.write('!$omp parallel do collapse(2)\n')
+            ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+        ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+        ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+        ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+        ofile.write('           enddo\n')
+        ofile.write('          enddo\n')
+        ofile.write('         enddo\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
+    ##################################################################################
     ofile.write('      else if ((factor .eq. 1.0).and.(acc_factor .eq. 1.0)) then\n')
-    if OpenMP:
-        ofile.write('!$omp parallel do collapse(2)\n')
-        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
-        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
-        ofile.write('!$omp& shared(sorted,unsorted)\n')
-        ofile.write('!$omp& schedule(static)\n')
-    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
-    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
-    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
-    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-    ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
-    ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-    ofile.write('           enddo\n')
-    ofile.write('          enddo\n')
-    ofile.write('         enddo\n')
-    ofile.write('        enddo\n')
-    if OpenMP:
-        ofile.write('!$omp end parallel do\n')
+    if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        if OpenMP:
+            ofile.write('           call a_1d_omp(dim1234,unsorted,sorted)\n')
+        else:
+            ofile.write('           call a_1d_nomp(dim1234,unsorted,sorted)\n')
+    else:
+        if OpenMP:
+            ofile.write('!$omp parallel do collapse(2)\n')
+            ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+        ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+        ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+        ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
+        ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+        ofile.write('           enddo\n')
+        ofile.write('          enddo\n')
+        ofile.write('         enddo\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
+    ##################################################################################
     ofile.write('      else if ((factor .ne. 1.0).and.(acc_factor .eq. 1.0)) then\n')
-    if OpenMP:
-        ofile.write('!$omp parallel do collapse(2)\n')
-        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
-        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
-        ofile.write('!$omp& shared(sorted,unsorted)\n')
-        ofile.write('!$omp& schedule(static)\n')
-    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
-    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
-    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
-    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-    ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
-    ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-    ofile.write('           enddo\n')
-    ofile.write('          enddo\n')
-    ofile.write('         enddo\n')
-    ofile.write('        enddo\n')
-    if OpenMP:
-        ofile.write('!$omp end parallel do\n')
+    if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        if OpenMP:
+            ofile.write('           call as_1d_omp(dim1234,unsorted,sorted,factor)\n')
+        else:
+            ofile.write('           call as_1d_nomp(dim1234,unsorted,sorted,factor)\n')
+    else:
+        if OpenMP:
+            ofile.write('!$omp parallel do collapse(2)\n')
+            ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+        ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+        ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+        ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        ofile.write('     &    sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
+        ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+        ofile.write('           enddo\n')
+        ofile.write('          enddo\n')
+        ofile.write('         enddo\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
+    ##################################################################################
     ofile.write('      else \n')
-    if OpenMP:
-        ofile.write('!$omp parallel do collapse(2)\n')
-        ofile.write('!$omp& private(j1,j2,j3,j4)\n')
-        ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor,acc_factor)\n')
-        ofile.write('!$omp& shared(sorted,unsorted)\n')
-        ofile.write('!$omp& schedule(static)\n')
-    ofile.write('        do j'+a+' = 1,dim'+a+'\n')
-    ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-    ofile.write('          do j'+c+' = 1,dim'+c+'\n')
-    ofile.write('           do j'+d+' = 1,dim'+d+'\n')
-    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
-    ofile.write('     &    acc_factor*sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
-    ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
-    ofile.write('           enddo\n')
-    ofile.write('          enddo\n')
-    ofile.write('         enddo\n')
-    ofile.write('        enddo\n')
-    if OpenMP:
-        ofile.write('!$omp end parallel do\n')
+    if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        if OpenMP:
+            ofile.write('           call sas_1d_omp(dim1234,unsorted,sorted,factor,acc_factor)\n')
+        else:
+            ofile.write('           call sas_1d_nomp(dim1234,unsorted,sorted,factor,acc_factor)\n')
+    else:
+        if OpenMP:
+            ofile.write('!$omp parallel do collapse(2)\n')
+            ofile.write('!$omp& private(j1,j2,j3,j4)\n')
+            ofile.write('!$omp& firstprivate(dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j'+a+' = 1,dim'+a+'\n')
+        ofile.write('         do j'+b+' = 1,dim'+b+'\n')
+        ofile.write('          do j'+c+' = 1,dim'+c+'\n')
+        ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+        ofile.write('     &    acc_factor*sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
+        ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
+        ofile.write('           enddo\n')
+        ofile.write('          enddo\n')
+        ofile.write('         enddo\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
     ofile.write('      endif\n')
+    ##################################################################################
     ofile.write('      return\n')
     ofile.write('      end\n\n')
     return
@@ -449,7 +456,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('     &        besttime(fac,omp),dtX/besttime(fac,omp),\n')
     ofile.write('     &        (8*dim1*dim2*dim3*dim4)/besttime(fac,omp)\n')
     ofile.write('              do loop = 1, 24\n')
-    ofile.write('                if (dt(loop,fac,omp).lt.2*besttime(fac,omp)) then\n')
+    ofile.write('                if (dt(loop,fac,omp).lt.(1.2)*besttime(fac,omp)) then\n')
     ofile.write('                  write(6,1000) \'good \',labels(omp,fac),\n')
     ofile.write('     &            loops(1,loop),loops(2,loop),            \n')
     ofile.write('     &            loops(3,loop),loops(4,loop),            \n')
@@ -621,8 +628,8 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
             makefile.write('RFLAGS   = -g -O0 \n')
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
-            makefile.write('RFLAGS   = -O2  \n')
-            makefile.write('OFLAGS   = -O3 -mavx \n')
+            makefile.write('RFLAGS   = -Os -mavx \n')
+            makefile.write('OFLAGS   = -Os -mavx \n')
         flags = '-openmp -std=c99 -assume nounderscore -O3 -mavx'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
@@ -752,6 +759,7 @@ os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
 
 trans_list = [['1','2','3','4']]
+#trans_list = generate_permutation_list(False)
 
 #generate_all_subroutines(Debug, False, Compiler, subdir, underscoring, trans_list)
 generate_all_subroutines(Debug, True, Compiler, subdir, underscoring, trans_list)
