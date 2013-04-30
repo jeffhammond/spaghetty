@@ -144,10 +144,10 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ofile.write('      double precision unsorted(dim1*dim2*dim3*dim4)\n')
     ofile.write('      double precision factor\n')
     ofile.write('      double precision acc_factor\n')
-    ##################################################################################
     ofile.write('      dim1234 = dim1*dim2*dim3*dim4\n')
     ofile.write('      dim234  = dim2*dim3*dim4\n')
     ofile.write('      dim34   = dim3*dim4\n')
+    ##################################################################################
     ofile.write('      if ((factor .eq. 1.0).and.(acc_factor .eq. 0.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
         if OpenMP:
@@ -155,6 +155,7 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
         else:
             ofile.write('           call c_1d_nomp(dim1234,unsorted,sorted)\n')
     elif (c=='3' and C=='3' and d=='4' and D=='4'):
+        # this specialization is apparently very good on BGQ...
         if OpenMP:
             ofile.write('!$omp parallel do collapse(2)\n')
             ofile.write('!$omp& private(j1,j2,j4)\n')
