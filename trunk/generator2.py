@@ -850,12 +850,12 @@ subdir = str(Compiler)
 #rev = subprocess.check_output('svn info generator2.py | grep Revision | sed "s/Revision: //g"')
 #print 'rev = ',str(rev)
 #exit()
-rev = 242
+rev = 271
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
 
-trans_list = [['1','2','3','4']]
-#trans_list = generate_permutation_list(False)
+#trans_list = [['1','2','3','4']]
+trans_list = generate_permutation_list(False)
 
 #generate_all_subroutines(Debug, False, Compiler, subdir, underscoring, trans_list)
 generate_all_subroutines(Debug, True, Compiler, subdir, underscoring, trans_list)
