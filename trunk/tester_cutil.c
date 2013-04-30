@@ -59,16 +59,19 @@ static inline void f_memcpy_impl(void * restrict new, void * restrict old, int *
 
 void f_memcpy(void * restrict new, void * restrict old, int * length)
 {
-  return f_memcpy_impl(new,old,length);
+  f_memcpy_impl(new,old,length);
+  return;
 }
 
 void f_memcpy_(void * restrict new, void * restrict old, int * length)
 {
-  return f_memcpy_impl(new,old,length);
+  f_memcpy_impl(new,old,length);
+  return;
 }
 
 void f_memcpy__(void * restrict new, void * restrict old, int * length)
 {
-  return f_memcpy_impl(new,old,length);
+  f_memcpy_impl(new,old,length);
+  return;
 }
 

@@ -550,9 +550,9 @@ def generate_all_subroutines(Debug, NewTester, Compiler, subdir, underscoring, t
             source_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
             print 'generating '+source_name
             source_file = open(subdir+'/'+source_name+'.'+Language,'w')
-            for loop_order in generate_permutation_list(Debug):
-                impl_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-                for OpenMP in [False,True]:
+            for OpenMP in [False,True]:
+                for loop_order in generate_permutation_list(Debug):
+                    impl_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
                     (omp_name,omp_text) = get_omp_info(OpenMP)
                     variant = omp_name+'_'+Language
                     if (Language=='f'):
