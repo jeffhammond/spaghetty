@@ -368,9 +368,9 @@ def generate_tester(ofile, transpose_order, reps, Language):
         ofile.write('        enddo\n')
         ofile.write('        t1  = wtime() \n')
         if (Accumulate==0.0):
-            ofile.write('        dt0 = (t1-t0) \n')
+            ofile.write('        dt0 = (t1-t0)/'++str(reps)+'\n')
         else:
-            ofile.write('        dt1 = (t1-t0) \n')
+            ofile.write('        dt1 = (t1-t0)/'++str(reps)+'\n')
         for OpenMP in [False,True]:
             (omp_name,omp_text) = get_omp_info(OpenMP)
             if OpenMP:
@@ -413,7 +413,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
                 ofile.write('          errors = 0\n')
                 ofile.write('        endif\n')
                 ofile.write('        if (errors.eq.0) then\n')
-                ofile.write('          dt(loop,fac,omp) = (t1-t0)\n')
+                ofile.write('          dt(loop,fac,omp) = (t1-t0)/'++str(reps)+'\n')
                 ofile.write('        else\n')
                 ofile.write('          dt(loop,fac,omp) = 10000000.0\n')
                 ofile.write('          print*,\''+subroutine_name+'\'\n')
@@ -458,7 +458,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     return
 
 
-def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
+def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, trans_list):
     oname = 'test_trans_all'
     cfile = open(subdir+'/'+oname+'.c','w')
     hfile = open(subdir+'/'+oname+'.h','w')
@@ -499,7 +499,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
     cfile.write('    rc = posix_memalign((void**)&reference, 128, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
     cfile.write('    /*********** begin testing **********/\n\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in trans_list:
             A = transpose_order[0]
             B = transpose_order[1]
             C = transpose_order[2]
@@ -518,39 +518,39 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
     hfile.close()
 
 
-def generate_all_subroutines(Debug, NewTester, Compiler, subdir, underscoring):
+def generate_all_subroutines(Debug, NewTester, Compiler, subdir, underscoring, trans_list):
     if (Debug):
         reps = 5
     else:
         reps = 15
-    for transpose_order in generate_permutation_list(Debug):
+    for transpose_order in trans_list: #generate_permutation_list(Debug):
         for Language in ['f','c']:
             if NewTester:
                 source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
                 source_file = open(subdir+'/'+source_name+'.F','w')
                 generate_tester(source_file, transpose_order, reps, Language)
                 source_file.close()
+            source_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
+            print 'generating '+source_name
+            source_file = open(subdir+'/'+source_name+'.'+Language,'w')
             for loop_order in generate_permutation_list(Debug):
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                source_file = open(subdir+'/'+source_name+'.'+Language,'w')
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+                impl_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
                 for OpenMP in [False,True]:
                     (omp_name,omp_text) = get_omp_info(OpenMP)
                     variant = omp_name+'_'+Language
-                    print 'generating '+source_name+'_'+variant
                     if (Language=='f'):
-                        subroutine_name = source_name+'_'+variant
+                        subroutine_name = impl_name+'_'+variant
                         description = '! '+omp_text+'\n'
                         generate_subroutine(source_file, subroutine_name, description, OpenMP, transpose_order, loop_order)
                     if (Language=='c'):
-                        cfunction_name = source_name+'_'+variant+underscoring
+                        cfunction_name = impl_name+'_'+variant+underscoring
                         description = '/* '+omp_text+' */\n'
                         generate_cfunction(source_file, cfunction_name, description, OpenMP, transpose_order, loop_order)
 
-                source_file.close()
+            source_file.close()
 
 
-def generate_makefile(Debug, subdir, Compiler, rev):
+def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
     makefile = open(subdir+'/Makefile','w')
     if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
         if (Compiler=='GNU'):
@@ -657,45 +657,26 @@ def generate_makefile(Debug, subdir, Compiler, rev):
         exit()
 
     makefile.write('\n\n')
-    makefile.write('SOURCES = \\\n')
-    for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
-            source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            makefile.write(source_name+'.F \\\n')
-
-        for transpose_order in generate_permutation_list(Debug):
-            for loop_order in generate_permutation_list(Debug):
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                makefile.write(source_name+'.f \\\n')
-
-
-    makefile.write('\n\n')
     makefile.write('ROBJECTS = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in trans_list:
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
     makefile.write('OBJECTS = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
-            for loop_order in generate_permutation_list(Debug):
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                makefile.write(source_name+'.o \\\n')
+        for transpose_order in trans_list:
+            source_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
+            makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
     makefile.write('ASSEMBLY = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
-            for loop_order in generate_permutation_list(Debug):
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                makefile.write(source_name+'.s \\\n')
+        for transpose_order in trans_list:
+            source_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
+            makefile.write(source_name+'.s \\\n')
 
-
-    for transpose_order in generate_permutation_list(Debug):
-        source_name = 'test_trans_'+perm_to_string(transpose_order)
-        makefile.write(source_name+'.s \\\n')
 
     makefile.write('\n\n')
     makefile.write('TESTOBJ = tester_cutil.o tester_futil.o old_sort.o \n\n')
@@ -721,10 +702,8 @@ def generate_makefile(Debug, subdir, Compiler, rev):
     makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.o $(OBJECTS) $(TESTOBJ) $(ASSEMBLY) \n\n')
     makefile.write('realclean: clean \n')
     makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.x libspaghetty.a libtestutil.a \n\n')
-    makefile.write('srcclean: realclean \n')
-    makefile.write('\t$(RM) $(RMFLAGS) $(SOURCES) \n\n')
     makefile.close()
-    generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags)
+    generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, trans_list)
     return
 
 compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac','LLVM','BGQ-LLVM']
@@ -751,10 +730,7 @@ elif (Compiler in ['Cray']):
     underscoring='_'
 
 
-if Debug:
-    subdir = str(Compiler)+'-Debug'
-else:
-    subdir = str(Compiler)
+subdir = str(Compiler)
 
 
 #rev = os.system('svn info generator2.py  | grep Revision | sed "s/Revision: //g"')
@@ -764,5 +740,9 @@ else:
 rev = 242
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
-generate_all_subroutines(Debug, False, Compiler, subdir, underscoring)
-generate_makefile(Debug, subdir, Compiler, rev)
+
+trans_list = [['1','2','3','4']]
+
+#generate_all_subroutines(Debug, False, Compiler, subdir, underscoring, trans_list)
+generate_all_subroutines(Debug, True, Compiler, subdir, underscoring, trans_list)
+generate_makefile(Debug, subdir, Compiler, rev, trans_list)
