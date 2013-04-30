@@ -150,6 +150,8 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ##################################################################################
     ofile.write('      if ((factor .eq. 1.0).and.(acc_factor .eq. 0.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+    # we should really only use this criteria but it is good to know that the function call is faster than loops
+    #if (A=='1' and B=='2' and C=='3' and D=='4'):
         if OpenMP:
             ofile.write('           call c_1d_omp(dim1234,unsorted,sorted)\n')
         else:
