@@ -164,10 +164,6 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
             ofile.write('!$omp& schedule(static)\n')
         ofile.write('        do j'+a+' = 1,dim'+a+'\n')
         ofile.write('         do j'+b+' = 1,dim'+b+'\n')
-        # function call overhead probably is not worthwhile here
-        #ofile.write('           call c_1d_nomp(dim34,\n')
-        #ofile.write('     1       unsorted(1+dim34*(j2-1+dim2*(j1-1))),\n')
-        #ofile.write('     2         sorted(1+dim34*(j'+B+'-1+dim'+B+'*(j'+A+'-1))))\n')
         ofile.write('          do j4 = 1,dim34\n')
         ofile.write('            sorted(j4+dim34*(j'+B+'-1+dim'+B+'*(j'+A+'-1))) = \n')
         ofile.write('     &    unsorted(j4+dim34*(j2-1+dim2*(j1-1)))\n')
