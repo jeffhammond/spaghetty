@@ -158,10 +158,21 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
     # we should really only use this criteria but it is good to know that the function call is faster than loops
     #if (A=='1' and B=='2' and C=='3' and D=='4'):
+        #if OpenMP:
+        #    ofile.write('           call c_1d_omp(dim1234,unsorted,sorted)\n')
+        #else:
+        #    ofile.write('           call c_1d_nomp(dim1234,unsorted,sorted)\n')
         if OpenMP:
-            ofile.write('           call c_1d_omp(dim1234,unsorted,sorted)\n')
-        else:
-            ofile.write('           call c_1d_nomp(dim1234,unsorted,sorted)\n')
+            ofile.write('!$omp parallel do \n')
+            ofile.write('!$omp& private(j1)\n')
+            ofile.write('!$omp& firstprivate(dim1234)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j1 = 1,dim1234\n')
+        ofile.write('            sorted(j1) = unsorted(j1)\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
     elif (c=='3' and C=='3' and d=='4' and D=='4'):
         # this specialization is apparently very good on BGQ...
         if OpenMP:
@@ -202,10 +213,21 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ##################################################################################
     ofile.write('      else if ((factor .ne. 1.0).and.(acc_factor .eq. 0.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        #if OpenMP:
+        #    ofile.write('           call cs_1d_omp(dim1234,unsorted,sorted,factor)\n')
+        #else:
+        #    ofile.write('           call cs_1d_nomp(dim1234,unsorted,sorted,factor)\n')
         if OpenMP:
-            ofile.write('           call cs_1d_omp(dim1234,unsorted,sorted,factor)\n')
-        else:
-            ofile.write('           call cs_1d_nomp(dim1234,unsorted,sorted,factor)\n')
+            ofile.write('!$omp parallel do \n')
+            ofile.write('!$omp& private(j1)\n')
+            ofile.write('!$omp& firstprivate(dim1234,factor)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j1 = 1,dim1234\n')
+        ofile.write('            sorted(j1) = factor*unsorted(j1)\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
     elif (c=='3' and C=='3' and d=='4' and D=='4'):
         # this specialization is apparently very good on BGQ...
         if OpenMP:
@@ -246,10 +268,21 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ##################################################################################
     ofile.write('      else if ((factor .eq. 1.0).and.(acc_factor .eq. 1.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        #if OpenMP:
+        #    ofile.write('           call a_1d_omp(dim1234,unsorted,sorted)\n')
+        #else:
+        #    ofile.write('           call a_1d_nomp(dim1234,unsorted,sorted)\n')
         if OpenMP:
-            ofile.write('           call a_1d_omp(dim1234,unsorted,sorted)\n')
-        else:
-            ofile.write('           call a_1d_nomp(dim1234,unsorted,sorted)\n')
+            ofile.write('!$omp parallel do \n')
+            ofile.write('!$omp& private(j1)\n')
+            ofile.write('!$omp& firstprivate(dim1234)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j1 = 1,dim1234\n')
+        ofile.write('            sorted(j1) = sorted(j1) + unsorted(j1)\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
     elif (c=='3' and C=='3' and d=='4' and D=='4'):
         # this specialization is apparently very good on BGQ...
         if OpenMP:
@@ -292,10 +325,21 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ##################################################################################
     ofile.write('      else if ((factor .ne. 1.0).and.(acc_factor .eq. 1.0)) then\n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        #if OpenMP:
+        #    ofile.write('           call as_1d_omp(dim1234,unsorted,sorted,factor)\n')
+        #else:
+        #    ofile.write('           call as_1d_nomp(dim1234,unsorted,sorted,factor)\n')
         if OpenMP:
-            ofile.write('           call as_1d_omp(dim1234,unsorted,sorted,factor)\n')
-        else:
-            ofile.write('           call as_1d_nomp(dim1234,unsorted,sorted,factor)\n')
+            ofile.write('!$omp parallel do \n')
+            ofile.write('!$omp& private(j1)\n')
+            ofile.write('!$omp& firstprivate(dim1234,factor)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j1 = 1,dim1234\n')
+        ofile.write('            sorted(j1) = sorted(j1) + factor*unsorted(j1)\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
     elif (c=='3' and C=='3' and d=='4' and D=='4'):
         # this specialization is apparently very good on BGQ...
         if OpenMP:
@@ -338,10 +382,21 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     ##################################################################################
     ofile.write('      else \n')
     if (a=='1' and A=='1' and b=='2' and B=='2' and c=='3' and C=='3' and d=='4' and D=='4'):
+        #if OpenMP:
+        #    ofile.write('           call sas_1d_omp(dim1234,unsorted,sorted,factor,acc_factor)\n')
+        #else:
+        #    ofile.write('           call sas_1d_nomp(dim1234,unsorted,sorted,factor,acc_factor)\n')
         if OpenMP:
-            ofile.write('           call sas_1d_omp(dim1234,unsorted,sorted,factor,acc_factor)\n')
-        else:
-            ofile.write('           call sas_1d_nomp(dim1234,unsorted,sorted,factor,acc_factor)\n')
+            ofile.write('!$omp parallel do \n')
+            ofile.write('!$omp& private(j1)\n')
+            ofile.write('!$omp& firstprivate(dim1234,factor,acc_factor)\n')
+            ofile.write('!$omp& shared(sorted,unsorted)\n')
+            ofile.write('!$omp& schedule(static)\n')
+        ofile.write('        do j1 = 1,dim1234\n')
+        ofile.write('            sorted(j1) = acc_factor*sorted(j1) + factor*unsorted(j1)\n')
+        ofile.write('        enddo\n')
+        if OpenMP:
+            ofile.write('!$omp end parallel do\n')
     elif (c=='3' and C=='3' and d=='4' and D=='4'):
         # this specialization is apparently very good on BGQ...
         if OpenMP:
