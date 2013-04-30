@@ -388,12 +388,12 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     return
 
 
-def generate_tester(ofile, transpose_order, reps, Language):
+def generate_tester(ofile, transpose_order, reps):
     A = transpose_order[0]
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
-    test_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
+    test_name = 'trans_'+perm_to_string(transpose_order)
     ofile.write('        subroutine test_'+test_name+'(reference, unsorted, sorted,\n')
     ofile.write('     &                dim1, dim2, dim3, dim4)\n')
     ofile.write('        implicit none\n')
@@ -404,24 +404,26 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('        double precision reference(dim1*dim2*dim3*dim4)\n')
     ofile.write('! internal variables\n')
     ofile.write('        integer errors\n')
-    ofile.write('        integer loop, omp, fac, r\n')
+    ofile.write('        integer loop, omp, fac, lang, r\n')
     ofile.write('        integer loops(4,24) \n')
-    ofile.write('        integer bestloop(4,5,2) ! best loop order for (fac,omp) \n')
+    ofile.write('        integer bestloop(4,5,2,2) ! best loop order for (fac,omp,lang) \n')
     ofile.write('        double precision factor, acc_factor\n')
     ofile.write('        double precision t0, t1 \n')
     ofile.write('        double precision dt0 ! reference timing for old_sort \n')
     ofile.write('        double precision dt1 ! reference timing for old_sortacc \n')
     ofile.write('        double precision dtX ! reference timing for comparison \n')
-    ofile.write('        double precision dt(24,5,2) ! time for (loop,fac,omp) \n')
-    ofile.write('        double precision besttime(5,2) ! best time for (fac,omp) \n')
+    ofile.write('        double precision dt(24,5,2,2) ! time for (loop,fac,omp,lang) \n')
+    ofile.write('        double precision besttime(5,2,2) ! best time for (fac,omp,lang) \n')
     ofile.write('        double precision wtime\n')
     ofile.write('        external wtime\n')
-    ofile.write('        character*20 labels(2,5)\n')
-    ofile.write('        do omp = 1, 2\n')
-    ofile.write('         do fac = 1, 5\n')
-    ofile.write('          labels(omp,fac) = \'UNDEFINED\' \n')
-    ofile.write('          do loop = 1, 24\n')
-    ofile.write('           dt(loop,fac,omp) = 1000000.0\n')
+    ofile.write('        character*20 labels(5,2,2)\n')
+    ofile.write('        do lang = 1, 2\n')
+    ofile.write('         do omp  = 1, 2\n')
+    ofile.write('          do fac  = 1, 5\n')
+    ofile.write('           labels(fac,omp,lang) = \'UNDEFINED\' \n')
+    ofile.write('           do loop = 1, 24\n')
+    ofile.write('            dt(loop,fac,omp,lang) = 1000000.0\n')
+    ofile.write('           enddo\n')
     ofile.write('          enddo\n')
     ofile.write('         enddo\n')
     ofile.write('        enddo\n')
@@ -459,93 +461,102 @@ def generate_tester(ofile, transpose_order, reps, Language):
         else:
             ofile.write('        dt1 = (t1-t0)/'+str(reps)+'\n')
         for OpenMP in [False,True]:
-            (omp_name,omp_text) = get_omp_info(OpenMP)
-            if OpenMP:
-                omp = 2
-            else:
-                omp = 1
-            loop = 0
-            for loop_order in generate_permutation_list(Debug):
-                loop = loop+1
-                a = loop_order[0]
-                b = loop_order[1]
-                c = loop_order[2]
-                d = loop_order[3]
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-                variant = omp_name+'_'+Language
-                subroutine_name = source_name+'_'+variant
-                ofile.write('        labels('+str(omp)+','+str(fac)+') = \''+variant+'('+str(Factor)+','+str(Accumulate)+')\' \n')
-                ofile.write('!******** '+str(a)+','+str(b)+','+str(c)+','+str(d)+' ********\n')
-                ofile.write('        fac  = '+str(fac)+' \n')
-                ofile.write('        omp  = '+str(omp)+' \n')
-                ofile.write('        loop = '+str(loop)+' \n')
-                ofile.write('        loops(1,loop) = '+str(a)+'\n')
-                ofile.write('        loops(2,loop) = '+str(b)+'\n')
-                ofile.write('        loops(3,loop) = '+str(c)+'\n')
-                ofile.write('        loops(4,loop) = '+str(d)+'\n')
-                ofile.write('        call zero_1d_array(dim1*dim2*dim3*dim4,sorted)\n')
-                # flush cache routine belongs here if we want to do that
-                ofile.write('        factor     = '+str(Factor)+'\n')
-                ofile.write('        acc_factor = '+str(Accumulate)+'\n')
-                ofile.write('        t0 = wtime() \n')
-                ofile.write('        do r = 1,'+str(reps)+'\n')
-                ofile.write('          call '+subroutine_name+'(unsorted,sorted,\n')
-                ofile.write('     &                  dim1,dim2,dim3,dim4,factor,acc_factor)\n')
-                ofile.write('        enddo\n')
-                ofile.write('        t1 = wtime() \n')
-                ofile.write('        if (acc_factor .eq. 0.0) then\n')
-                ofile.write('          call compare_1d_array(dim1*dim2*dim3*dim4,\n')
-                ofile.write('     &                          sorted,reference,errors) \n')
-                ofile.write('        else\n')
-                ofile.write('          errors = 0\n')
-                ofile.write('        endif\n')
-                ofile.write('        if (errors.eq.0) then\n')
-                ofile.write('          dt(loop,fac,omp) = (t1-t0)/'+str(reps)+'\n')
-                ofile.write('        else\n')
-                ofile.write('          dt(loop,fac,omp) = 10000000.0\n')
-                ofile.write('          print*,\''+subroutine_name+'\'\n')
-                ofile.write('          print*,\'errors = \',errors \n')
-                ofile.write('          call print_4d_arrays(dim1,dim2,dim3,dim4,\n')
-                ofile.write('     &                         sorted,reference) \n')
-                ofile.write('        endif\n')
-    ofile.write('!*************************************************\n')
-    ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
-    ofile.write('        write(6,2000) '+str(A)+','+str(B)+','+str(C)+','+str(D)+'\n')
-    ofile.write('        write(6,1500) \'old_sort_4   \',dt0,(8*dim1*dim2*dim3*dim4)/dt0\n')
-    ofile.write('        write(6,1500) \'old_sortacc_4\',dt1,(8*dim1*dim2*dim3*dim4)/dt1\n')
-    ofile.write('        do omp = 1, 2\n')
-    ofile.write('          do fac = 1, 5\n')
+            for Language in ['f','c']:
+                if Language=='f':
+                    lang = 1
+                else:
+                    lang = 2
+                (omp_name,omp_text) = get_omp_info(OpenMP)
+                if OpenMP:
+                    omp = 2
+                else:
+                    omp = 1
+                loop = 0
+                for loop_order in generate_permutation_list(Debug):
+                    loop = loop+1
+                    a = loop_order[0]
+                    b = loop_order[1]
+                    c = loop_order[2]
+                    d = loop_order[3]
+                    source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+                    variant = omp_name+'_'+Language
+                    subroutine_name = source_name+'_'+variant
+                    ofile.write('        labels('+str(fac)+','+str(omp)+','+str(lang)+') = \''+variant+'('+str(Factor)+','+str(Accumulate)+')\' \n')
+                    ofile.write('!******** '+str(a)+','+str(b)+','+str(c)+','+str(d)+' ********\n')
+                    ofile.write('        fac  = '+str(fac)+' \n')
+                    ofile.write('        lang = '+str(lang)+' \n')
+                    ofile.write('        omp  = '+str(omp)+' \n')
+                    ofile.write('        loop = '+str(loop)+' \n')
+                    ofile.write('        loops(1,loop) = '+str(a)+'\n')
+                    ofile.write('        loops(2,loop) = '+str(b)+'\n')
+                    ofile.write('        loops(3,loop) = '+str(c)+'\n')
+                    ofile.write('        loops(4,loop) = '+str(d)+'\n')
+                    ofile.write('        call zero_1d_array(dim1*dim2*dim3*dim4,sorted)\n')
+                    # flush cache routine belongs here if we want to do that
+                    ofile.write('        factor     = '+str(Factor)+'\n')
+                    ofile.write('        acc_factor = '+str(Accumulate)+'\n')
+                    ofile.write('        t0 = wtime() \n')
+                    ofile.write('        do r = 1,'+str(reps)+'\n')
+                    ofile.write('          call '+subroutine_name+'(unsorted,sorted,\n')
+                    ofile.write('     &                  dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+                    ofile.write('        enddo\n')
+                    ofile.write('        t1 = wtime() \n')
+                    ofile.write('        if (acc_factor .eq. 0.0) then\n')
+                    ofile.write('          call compare_1d_array(dim1*dim2*dim3*dim4,\n')
+                    ofile.write('     &                          sorted,reference,errors) \n')
+                    ofile.write('        else\n')
+                    ofile.write('          errors = 0\n')
+                    ofile.write('        endif\n')
+                    ofile.write('        if (errors.eq.0) then\n')
+                    ofile.write('          dt(loop,fac,omp,lang) = (t1-t0)/'+str(reps)+'\n')
+                    ofile.write('        else\n')
+                    ofile.write('          dt(loop,fac,omp,lang) = 10000000.0\n')
+                    ofile.write('          print*,\''+subroutine_name+'\'\n')
+                    ofile.write('          print*,\'errors = \',errors \n')
+                    ofile.write('          call print_4d_arrays(dim1,dim2,dim3,dim4,\n')
+                    ofile.write('     &                         sorted,reference) \n')
+                    ofile.write('        endif\n')
+                    ofile.write('!*************************************************\n')
+                    ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
+                    ofile.write('        write(6,2000) '+str(A)+','+str(B)+','+str(C)+','+str(D)+'\n')
+                    ofile.write('        write(6,1500) \'old_sort_4   \',dt0,(8*dim1*dim2*dim3*dim4)/dt0\n')
+                    ofile.write('        write(6,1500) \'old_sortacc_4\',dt1,(8*dim1*dim2*dim3*dim4)/dt1\n')
+    ofile.write('        do omp  = 1, 2\n')
+    ofile.write('         do lang = 1, 2\n')
+    ofile.write('          do fac  = 1, 5\n')
     ofile.write('            write(6,*) \'==========================================\'\n')
     ofile.write('            ! make sure these are right for the fac cases at hand \n')
     ofile.write('            if (fac.le.2) dtX = dt0 \n')
     ofile.write('            if (fac.gt.2) dtX = dt1 \n')
-    ofile.write('            besttime(fac,omp) = 1000000.0\n')
+    ofile.write('            besttime(fac,omp,lang) = 1000000.0\n')
     ofile.write('            do loop = 1, 24\n')
-    ofile.write('              if (dt(loop,fac,omp).lt.besttime(fac,omp)) then\n')
-    ofile.write('                besttime(fac,omp)   = dt(loop,fac,omp)\n')
-    ofile.write('                bestloop(1,fac,omp) = loops(1,loop)\n')
-    ofile.write('                bestloop(2,fac,omp) = loops(2,loop)\n')
-    ofile.write('                bestloop(3,fac,omp) = loops(3,loop)\n')
-    ofile.write('                bestloop(4,fac,omp) = loops(4,loop)\n')
+    ofile.write('              if (dt(loop,fac,omp,lang).lt.besttime(fac,omp,lang)) then\n')
+    ofile.write('                besttime(fac,omp,lang)   = dt(loop,fac,omp,lang)\n')
+    ofile.write('                bestloop(1,fac,omp,lang) = loops(1,loop)\n')
+    ofile.write('                bestloop(2,fac,omp,lang) = loops(2,loop)\n')
+    ofile.write('                bestloop(3,fac,omp,lang) = loops(3,loop)\n')
+    ofile.write('                bestloop(4,fac,omp,lang) = loops(4,loop)\n')
     ofile.write('              endif\n')
     ofile.write('            enddo\n')
-    ofile.write('            if (besttime(fac,omp).lt.1000000.0) then\n')
-    ofile.write('              write(6,1000) \'best \',labels(omp,fac),\n')
-    ofile.write('     &        bestloop(1,fac,omp),bestloop(2,fac,omp),\n')
-    ofile.write('     &        bestloop(3,fac,omp),bestloop(4,fac,omp),\n')
-    ofile.write('     &        besttime(fac,omp),dtX/besttime(fac,omp),\n')
-    ofile.write('     &        (8*dim1*dim2*dim3*dim4)/besttime(fac,omp)\n')
+    ofile.write('            if (besttime(fac,omp,lang).lt.1000000.0) then\n')
+    ofile.write('              write(6,1000) \'best \',labels(fac,omp,lang),\n')
+    ofile.write('     &        bestloop(1,fac,omp,lang),bestloop(2,fac,omp,lang),\n')
+    ofile.write('     &        bestloop(3,fac,omp,lang),bestloop(4,fac,omp,lang),\n')
+    ofile.write('     &        besttime(fac,omp,lang),dtX/besttime(fac,omp,lang),\n')
+    ofile.write('     &        (8*dim1*dim2*dim3*dim4)/besttime(fac,omp,lang)\n')
     ofile.write('              do loop = 1, 24\n')
-    ofile.write('                if (dt(loop,fac,omp).lt.(1.2)*besttime(fac,omp)) then\n')
-    ofile.write('                  write(6,1000) \'good \',labels(omp,fac),\n')
+    ofile.write('                if (dt(loop,fac,omp,lang).lt.\n')
+    ofile.write('     &                  1.2*besttime(fac,omp,lang)) then\n')
+    ofile.write('                  write(6,1000) \'good \',labels(fac,omp,lang),\n')
     ofile.write('     &            loops(1,loop),loops(2,loop),            \n')
     ofile.write('     &            loops(3,loop),loops(4,loop),            \n')
-    ofile.write('     &            dt(loop,fac,omp),dtX/dt(loop,fac,omp),  \n')
-    ofile.write('     &            (8*dim1*dim2*dim3*dim4)/dt(loop,fac,omp)\n')
+    ofile.write('     &            dt(loop,fac,omp,lang),dtX/dt(loop,fac,omp,lang),  \n')
+    ofile.write('     &            (8*dim1*dim2*dim3*dim4)/dt(loop,fac,omp,lang)\n')
     ofile.write('                endif\n')
     ofile.write('              enddo\n')
     ofile.write('            endif\n')
     ofile.write('          enddo\n')
+    ofile.write('         enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
     ofile.write(' 1000 format(1x,a8,a22,\' = \',4i1,1x,f9.6,1x,\'(\',f7.3,\'x,\',e10.3,\' B/s)\')\n')
@@ -595,16 +606,15 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, tran
     cfile.write('    rc = posix_memalign((void**)&sorted,    128, size*sizeof(double)); assert(rc==0 && sorted!=NULL);\n')
     cfile.write('    rc = posix_memalign((void**)&reference, 128, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
     cfile.write('    /*********** begin testing **********/\n\n')
-    for Language in ['f','c']:
-        for transpose_order in trans_list:
-            A = transpose_order[0]
-            B = transpose_order[1]
-            C = transpose_order[2]
-            D = transpose_order[3]
-            test_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language+underscoring
-            cfile.write('    test_'+test_name+'(reference, unsorted, sorted, &dim1, &dim2, &dim3, &dim4);\n')
-            hfile.write('void test_'+test_name+'(double * unsorted, double * sorted, double * reference,\n')
-            hfile.write('                     int * dim1, int * dim2, int * dim3, int * dim4);\n')
+    for transpose_order in trans_list:
+        A = transpose_order[0]
+        B = transpose_order[1]
+        C = transpose_order[2]
+        D = transpose_order[3]
+        test_name = 'trans_'+perm_to_string(transpose_order)+underscoring
+        cfile.write('    test_'+test_name+'(reference, unsorted, sorted, &dim1, &dim2, &dim3, &dim4);\n')
+        hfile.write('void test_'+test_name+'(double * unsorted, double * sorted, double * reference,\n')
+        hfile.write('                     int * dim1, int * dim2, int * dim3, int * dim4);\n')
     cfile.write('    /* end testing */\n')
     cfile.write('    free(reference);\n')
     cfile.write('    free(sorted);\n')
@@ -621,12 +631,12 @@ def generate_all_subroutines(Debug, NewTester, Compiler, subdir, underscoring, t
     else:
         reps = 15
     for transpose_order in trans_list: #generate_permutation_list(Debug):
+        if NewTester:
+            source_name = 'test_trans_'+perm_to_string(transpose_order)
+            source_file = open(subdir+'/'+source_name+'.F','w')
+            generate_tester(source_file, transpose_order, reps)
+            source_file.close()
         for Language in ['f','c']:
-            if NewTester:
-                source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-                source_file = open(subdir+'/'+source_name+'.F','w')
-                generate_tester(source_file, transpose_order, reps, Language)
-                source_file.close()
             source_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
             print 'generating '+source_name
             source_file = open(subdir+'/'+source_name+'.'+Language,'w')
@@ -755,10 +765,9 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
 
     makefile.write('\n\n')
     makefile.write('ROBJECTS = \\\n')
-    for Language in ['f','c']:
-        for transpose_order in trans_list:
-            source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            makefile.write(source_name+'.o \\\n')
+    for transpose_order in trans_list:
+        source_name = 'test_trans_'+perm_to_string(transpose_order)
+        makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
     makefile.write('OBJECTS = \\\n')
