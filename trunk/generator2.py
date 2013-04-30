@@ -63,6 +63,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('  const int d4 = *dim4;\n')
     ofile.write('  const int f  = *factor;\n')
     ofile.write('  const int g  = *acc_factor;\n')
+    ##################################################################################
     ofile.write('  if (f==1.0 && g==0.0) {\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
@@ -74,6 +75,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
     ofile.write('    }}}}\n\n')
+    ##################################################################################
     ofile.write('  } else if (f!=1.0 && g==0.0) { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
@@ -85,6 +87,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
     ofile.write('    }}}}\n\n')
+    ##################################################################################
     ofile.write('  } else if (f==1.0 && g==1.0) { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
@@ -96,6 +99,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
     ofile.write('    }}}}\n\n')
+    ##################################################################################
     ofile.write('  } else if (f!=1.0 && g==1.0) { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
@@ -107,6 +111,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
     ofile.write('    }}}}\n\n')
+    ##################################################################################
     ofile.write('  } else { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
@@ -118,6 +123,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
     ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = g*sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] + f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
     ofile.write('    }}}}\n\n')
+    ##################################################################################
     ofile.write('  }\n\n')
     ofile.write('  return;\n')
     ofile.write('}\n\n')
