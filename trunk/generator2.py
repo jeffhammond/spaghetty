@@ -793,9 +793,13 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
         flags = '-fopenmp -std=c99 -fno-underscoring -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
-    elif (Compiler=='Intel'):
-        makefile.write('CC       = icc \n')
-        makefile.write('FC       = ifort \n')
+    elif (Compiler=='Intel' or Compiler=='Cray-Intel'):
+        if (Compiler=='Intel'):
+            makefile.write('CC       = icc \n')
+            makefile.write('FC       = ifort \n')
+        elif (Compiler=='Cray-Intel'):
+            makefile.write('CC       = cc -DUSE_MPI \n')
+            makefile.write('FC       = ifort \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -openmp \n')
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
@@ -899,7 +903,7 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
     generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, trans_list)
     return
 
-compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac','LLVM','BGQ-LLVM']
+compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','Cray-Intel','XL','BG-XL','Cray','Mac','LLVM','BGQ-LLVM']
 
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
@@ -907,7 +911,7 @@ if len(sys.argv)>1:
         print Compiler+' is not a valid compiler choice'
         exit()
 else:
-    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM'
+    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, Cray-Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM'
     exit()
 
 
@@ -917,10 +921,13 @@ else:
     Debug = False
 
 
-if (Compiler in ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Mac','LLVM','BGQ-LLVM']):
+if (Compiler in ['GNU','BGP-GNU','BGQ-GNU','Intel','Cray-Intel','XL','BG-XL','Mac','LLVM','BGQ-LLVM']):
     underscoring=''
 elif (Compiler in ['Cray']):
     underscoring='_'
+else:
+    print 'no underscoring specified for this compiler choice ('+Compiler+')!'
+    exit()
 
 
 subdir = str(Compiler)
