@@ -947,5 +947,5 @@ os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
 trans_list = generate_permutation_list(False)
 
 #generate_all_subroutines(Debug, False, Compiler, subdir, underscoring, trans_list)
-#generate_all_subroutines(Debug, True, Compiler, subdir, underscoring, trans_list)
+generate_all_subroutines(Debug, True, Compiler, subdir, underscoring, trans_list)
 generate_makefile(Debug, subdir, Compiler, rev, trans_list)
