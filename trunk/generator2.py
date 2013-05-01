@@ -671,9 +671,10 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags, tran
     cfile.write('    double * unsorted = NULL;\n')
     cfile.write('    double * sorted = NULL;\n')
     cfile.write('    double * reference = NULL;\n\n')
-    cfile.write('    rc = posix_memalign((void**)&unsorted,  128, size*sizeof(double)); assert(rc==0 && unsorted!=NULL);\n')
-    cfile.write('    rc = posix_memalign((void**)&sorted,    128, size*sizeof(double)); assert(rc==0 && sorted!=NULL);\n')
-    cfile.write('    rc = posix_memalign((void**)&reference, 128, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
+    cfile.write('    /* 4096 is the default Linux page size and obviously a large multiple of x86 and PPC cacheline sizes */\n')
+    cfile.write('    rc = posix_memalign((void**)&unsorted,  4096, size*sizeof(double)); assert(rc==0 && unsorted!=NULL);\n')
+    cfile.write('    rc = posix_memalign((void**)&sorted,    4096, size*sizeof(double)); assert(rc==0 && sorted!=NULL);\n')
+    cfile.write('    rc = posix_memalign((void**)&reference, 4096, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
     cfile.write('    /*********** begin testing **********/\n\n')
     i = 0
     for transpose_order in trans_list:
@@ -744,19 +745,20 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
     if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
         if (Compiler=='GNU'):
             #makefile.write('CC       = gcc \n')
-            #makefile.write('FC       = gfortran \n')
-            makefile.write('CC       = mpicc \n')
-            makefile.write('FC       = mpif77 \n')
+            makefile.write('CC       = mpicc -DUSE_MPI \n')
+            makefile.write('FC       = gfortran \n')
         if (Compiler=='Mac'):
             print 'Using the 4.8 version of GCC...'
             makefile.write('CC       = gcc-mp-4.8 \n')
             makefile.write('FC       = gfortran-mp-4.8 \n')
         if (Compiler=='BGP-GNU'):
-            print 'You need to use the GCC 4.3.2 version not the default...'
-            makefile.write('CC       = powerpc-bgp-linux-gcc \n')
+            print 'To use OpenMP, you need to use the GCC 4.3.2 version not the default...'
+            #makefile.write('CC       = powerpc-bgp-linux-gcc \n')
+            makefile.write('CC       = mpicc -DUSE_MPI \n')
             makefile.write('FC       = powerpc-bgp-linux-gfortran \n')
         if (Compiler=='BGQ-GNU'):
-            makefile.write('CC       = powerpc64-bgq-linux-gcc \n')
+            #makefile.write('CC       = powerpc64-bgq-linux-gcc \n')
+            makefile.write('CC       = mpicc -DUSE_MPI \n')
             makefile.write('FC       = powerpc64-bgq-linux-gfortran \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -fopenmp \n')
@@ -812,7 +814,7 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
             makefile.write('CC       = xlc_r \n')
             makefile.write('FC       = xlf_r \n')
         if (Compiler=='BG-XL'):
-            makefile.write('CC       = bgxlc_r \n')
+            makefile.write('CC       = mpixlc_r -DUSE_MPI \n')
             makefile.write('FC       = bgxlf_r \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -qsmp=omp \n')
@@ -828,7 +830,8 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
-        makefile.write('CC       = craycc \n')
+        #makefile.write('CC       = craycc \n')
+        makefile.write('CC       = cc -DUSE_MPI \n')
         makefile.write('FC       = crayftn \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -h thread3 \n')
