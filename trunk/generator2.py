@@ -623,7 +623,7 @@ def generate_tester(ofile, transpose_order, reps):
     ofile.write('        return\n')
     ofile.write(' 1000 format(1x,i4,\': \',a8,a22,\'=\',4i1,1x,f9.6,1x,\n')
     ofile.write('     &             \'(\',f7.3,\'x,\',e10.3,\' B/s)\')\n')
-    ofile.write(' 1500 format(1x,i4,10x,a13,7x,\'=\',5x,f9.6,1x,\'(\',9x,e10.3,\' B/s)\')\n')
+    ofile.write(' 1500 format(1x,i4,\': \',10x,a13,7x,\'=\',5x,f9.6,1x,\'(\',9x,e10.3,\' B/s)\')\n')
     ofile.write(' 2000 format(1x,i4,\': transpose: \',4i1)\n')
     ofile.write('        end\n')
     return
