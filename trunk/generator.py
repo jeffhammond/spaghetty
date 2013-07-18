@@ -34,14 +34,14 @@ def get_omp_info(OpenMP):
         name = 'omp'
         text = 'with OpenMP'
     else:
-        name = 'nomp'
+        name = 'ser'
         text = 'without OpenMP'
     return (name,text)
 
 
 def get_fac_info(Factor):
     if (Factor==1.0):
-        name = 'copy'
+        name = 'cpy'
         text = 'scale by 1.0'
     elif (Factor==-1.0):
         name = 'neg'
@@ -294,17 +294,17 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('                bestloop(4,fac,omp) = loops(4,loop)\n')
     ofile.write('              endif\n')
     ofile.write('            enddo\n')
-    ofile.write('            write(6,1000) \'best \',labels(omp,fac),\n')
+    ofile.write('            write(6,1000) \'best\',\''+perm_to_string(transpose_order)+'\',labels(omp,fac),\n')
     ofile.write('     &      bestloop(1,fac,omp),bestloop(2,fac,omp),\n')
     ofile.write('     &      bestloop(3,fac,omp),bestloop(4,fac,omp),\n')
     ofile.write('     &      besttime(fac,omp),dt0,dt0/besttime(fac,omp)\n')
     ofile.write('          enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        return\n')
-    ofile.write(' 1000 format(1x,a8,a12,\' = \',4i1,f9.6,\' (\',f9.6,\' -> \',f7.3,\'x)\')\n')
-    ofile.write(' 2000 format(1x,\'transpose: \',4i1)\n')
-    ofile.write('! 3000 format(1x,a30,f12.6)\n')
-    ofile.write('! 4000 format(1x,a16,4f12.6)\n')
+    ofile.write(' 1000 format(a4,1x,a4,1x,a12,\'= \',4i1,f9.6,\' (\',f9.6,\' -> \',f7.3,\'x)\')\n')
+    ofile.write(' 2000 format(\'transpose: \',4i1)\n')
+    ofile.write('! 3000 format(a30,f12.6)\n')
+    ofile.write('! 4000 format(a16,4f12.6)\n')
     ofile.write('        end\n')
     return
 
@@ -339,6 +339,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring):
     cfile.write('    int nthreads = 1;\n')
     cfile.write('#endif\n\n')
     cfile.write('    printf(\"v1: dims = %d,%d,%d,%d - OpenMP threads = %d - %s compiler \\n\", dim1, dim2, dim3, dim4, nthreads, \"'+Compiler+'\");\n\n')
+    cfile.write('    fflush(stdout);\n')
     cfile.write('    double * unsorted;\n')
     cfile.write('    double * sorted;\n')
     cfile.write('    double * reference;\n\n')
@@ -424,7 +425,7 @@ def generate_makefile(Debug, subdir, Compiler):
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
-            makefile.write('OFLAGS   = -g -O3 \n')
+            makefile.write('OFLAGS   = -O3 \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
     elif (Compiler=='Intel'):
@@ -437,7 +438,7 @@ def generate_makefile(Debug, subdir, Compiler):
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
-            makefile.write('OFLAGS   = -g -O1 \n')
+            makefile.write('OFLAGS   = -Ofast \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
     elif (Compiler=='XL' or Compiler=='BG-XL'):
@@ -454,7 +455,7 @@ def generate_makefile(Debug, subdir, Compiler):
         if (Debug):
             makefile.write('OFLAGS   = -g -O3 -qstrict \n')
         else:
-            makefile.write('OFLAGS   = -g -O3 -qhot \n')
+            makefile.write('OFLAGS   = -O3 -qhot \n')
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
     elif (Compiler=='Cray'):
@@ -574,6 +575,6 @@ else:
 
 
 os.system('mkdir '+subdir)
-os.system('cp tester_cutil.c tester_futil.f old_sort.f '+subdir+'/.')
+os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
 generate_all_subroutines(Debug, Compiler, subdir, underscoring)
 generate_makefile(Debug, subdir, Compiler)
