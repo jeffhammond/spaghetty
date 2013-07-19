@@ -82,10 +82,11 @@ def generate_library_driver(subdir, machine, bestlist, suffix):
         if (count==0):
             logic = 'if'
         else:
-            logic = 'elif'
+            logic = 'else if'
    
         file.write('      '+logic+' (version.eq.'+transpose+') then \n')
         file.write('        call trans_'+transpose+'_loop_'+best+'_'+suffix+'(u,s,a,b,c,d,factor)\n')
+        count = count + 1
     file.write('      else\n')
     file.write('        print*,\'something is wrong...\'\n')
     file.write('      endif\n')
@@ -93,7 +94,7 @@ def generate_library_driver(subdir, machine, bestlist, suffix):
     file.write('      end\n')
     file.close()
 
-generate_library_driver('Intel','knight',knight,'omp_cpy_f')
+generate_library_driver('Intel','knight',knight,'omp_any_f')
 
 
 
