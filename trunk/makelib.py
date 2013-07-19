@@ -61,16 +61,20 @@ knight = [['4321','3241'],
           ['2134','2143'],
           ['1234','1243']]
 
-def generate_library_driver(subdir, machine, bestlist):
+def generate_library_driver(subdir, machine, bestlist, suffix):
     oname = 'tce_sort4_'+machine
     file = open(subdir+'/'+oname+'.F','w')
-    file.write('      subroutine tce_sort_4(unsorted,sorted,a,b,c,d,i,j,k,l,factor)\n')
+    file.write('c u = unsorted\n')
+    file.write('c s = sorted\n')
+    file.write('c a,b,c,d = array dimensions\n')
+    file.write('c i,j,k,l = permutation\n')
+    file.write('      subroutine tce_sort_4(u,s,a,b,c,d,i,j,k,l,factor)\n')
     file.write('      implicit none\n')
     file.write('      integer version\n')
     file.write('      integer a,b,c,d\n')
     file.write('      integer i,j,k,l\n')
-    file.write('      double precision sorted(a*b*c*d)\n')
-    file.write('      double precision unsorted(a*b*c*d)\n')
+    file.write('      double precision s(a*b*c*d)\n')
+    file.write('      double precision u(a*b*c*d)\n')
     file.write('      double precision factor\n')
     file.write('      version = 1000*i+100*j+10*k+l\n')
     count = 0
@@ -81,7 +85,7 @@ def generate_library_driver(subdir, machine, bestlist):
             logic = 'elif'
    
         file.write('      '+logic+' (version.eq.'+transpose+') then \n')
-        file.write('        call transpose_'+transpose+'_loop_'+best+'(unsorted,sorted,a,b,c,d,factor)\n')
+        file.write('        call trans_'+transpose+'_loop_'+best+'_'+suffix+'(u,s,a,b,c,d,factor)\n')
     file.write('      else\n')
     file.write('        print*,\'something is wrong...\'\n')
     file.write('      endif\n')
@@ -89,7 +93,7 @@ def generate_library_driver(subdir, machine, bestlist):
     file.write('      end\n')
     file.close()
 
-generate_library_driver('Intel','knight',knight)
+generate_library_driver('Intel','knight',knight,'omp_cpy_f')
 
 
 
