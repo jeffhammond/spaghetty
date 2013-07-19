@@ -85,12 +85,16 @@ def generate_cfunction(ofile, name, description, OpenMP, Factor, transpose_order
     ofile.write('   for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('    for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
     ofile.write('     for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
-    if (Factor==1.0):
-        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    elif (Factor==-1.0):
-        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = -unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    if ("acc" in name):
+        op = '+='
     else:
-        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+        op = '='
+    if (Factor==1.0):
+        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] '+op+' unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    elif (Factor==-1.0):
+        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] '+op+' -unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    else:
+        ofile.write('     sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] '+op+' f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
     ofile.write('     }\n')
     ofile.write('    }\n')
     ofile.write('   }\n')
@@ -135,14 +139,14 @@ def generate_subroutine(ofile, name, description, OpenMP, Factor, transpose_orde
     ofile.write('         do j'+b+' = 1,dim'+b+'\n')
     ofile.write('          do j'+c+' = 1,dim'+c+'\n')
     ofile.write('           do j'+d+' = 1,dim'+d+'\n')
+    ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
+    if ("acc" in name):
+        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) + \n')
     if (Factor==1.0):
-        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
         ofile.write('     &    unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
     elif (Factor==-1.0):
-        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
         ofile.write('     &    -unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
     else:
-        ofile.write('            sorted(j'+D+'+dim'+D+'*(j'+C+'-1+dim'+C+'*(j'+B+'-1+dim'+B+'*(j'+A+'-1)))) = \n')
         ofile.write('     &    factor*unsorted(j4+dim4*(j3-1+dim3*(j2-1+dim2*(j1-1))))\n')
     ofile.write('           enddo\n')
     ofile.write('          enddo\n')
@@ -373,32 +377,33 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
         reps = 3
     else:
         reps = 15
-    for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
-            source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
-            source_file = open(subdir+'/'+source_name+'.f','w')
-            generate_tester(source_file, transpose_order, reps, Language)
-            source_file.close()
-            for loop_order in generate_permutation_list(Debug):
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
-                source_file = open(subdir+'/'+source_name+'.'+Language,'w')
-                source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
-                for OpenMP in [True,False]:
-                    (omp_name,omp_text) = get_omp_info(OpenMP)
-                    for Factor in [1.0,-1.0,37.0]:
-                        (fac_name,fac_text) = get_fac_info(Factor)
-                        variant = omp_name+'_'+fac_name+'_'+Language
-                        print source_name+'_'+variant
-                        if (Language=='f'):
-                            subroutine_name = source_name+'_'+variant
-                            description = '! '+omp_text+', '+fac_text+'\n'
-                            generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
-                        if (Language=='c'):
-                            cfunction_name = source_name+'_'+variant+underscoring
-                            description = '/* '+omp_text+', '+fac_text+' */\n'
-                            generate_cfunction(source_file, cfunction_name, description, OpenMP, Factor, transpose_order, loop_order)
-
+    for op in ['trans','transacc']:
+        for Language in ['f','c']:
+            for transpose_order in generate_permutation_list(Debug):
+                source_name = 'test_'+op+'_'+perm_to_string(transpose_order)+'_'+Language
+                source_file = open(subdir+'/'+source_name+'.f','w')
+                generate_tester(source_file, transpose_order, reps, Language)
                 source_file.close()
+                for loop_order in generate_permutation_list(Debug):
+                    source_name = op+'_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
+                    source_file = open(subdir+'/'+source_name+'.'+Language,'w')
+                    source_name = op+'_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
+                    for OpenMP in [True,False]:
+                        (omp_name,omp_text) = get_omp_info(OpenMP)
+                        for Factor in [1.0,-1.0,37.0]:
+                            (fac_name,fac_text) = get_fac_info(Factor)
+                            variant = omp_name+'_'+fac_name+'_'+Language
+                            print source_name+'_'+variant
+                            if (Language=='f'):
+                                subroutine_name = source_name+'_'+variant
+                                description = '! '+omp_text+', '+fac_text+'\n'
+                                generate_subroutine(source_file, subroutine_name, description, OpenMP, Factor, transpose_order, loop_order)
+                            if (Language=='c'):
+                                cfunction_name = source_name+'_'+variant+underscoring
+                                description = '/* '+omp_text+', '+fac_text+' */\n'
+                                generate_cfunction(source_file, cfunction_name, description, OpenMP, Factor, transpose_order, loop_order)
+
+                    source_file.close()
 
 
 def generate_makefile(Debug, subdir, Compiler):
@@ -420,8 +425,8 @@ def generate_makefile(Debug, subdir, Compiler):
             makefile.write('FC       = powerpc64-bgq-linux-gfortran \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -fopenmp \n')
-        makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
-        makefile.write('FFLAGS   = -fno-underscoring $(OMPFLAGS) \n')
+        makefile.write('CFLAGS   = $(OMPFLAGS) -std=c99 \n')
+        makefile.write('FFLAGS   = $(OMPFLAGS) -f-underscoring \n')
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
@@ -433,8 +438,8 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('FC       = ifort \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -openmp \n')
-        makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
-        makefile.write('FFLAGS   = -assume nounderscore $(OMPFLAGS) \n')
+        makefile.write('CFLAGS   = $(OMPFLAGS) -std=c99 \n')
+        makefile.write('FFLAGS   = $(OMPFLAGS) -assume underscore \n')
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
@@ -450,8 +455,8 @@ def generate_makefile(Debug, subdir, Compiler):
             makefile.write('FC       = bgxlf_r \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -qsmp=omp \n')
-        makefile.write('CFLAGS   = -qlanglvl=stdc99 $(OMPFLAGS) \n')
-        makefile.write('FFLAGS   = $(OMPFLAGS) \n')
+        makefile.write('CFLAGS   = $(OMPFLAGS) -qlanglvl=stdc99 \n')
+        makefile.write('FFLAGS   = $(OMPFLAGS) -qextname \n')
         if (Debug):
             makefile.write('OFLAGS   = -g -O3 -qstrict \n')
         else:
@@ -463,7 +468,7 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('FC       = crayftn \n')
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -h thread3 \n')
-        makefile.write('CFLAGS   = -h c99 $(OMPFLAGS) \n')
+        makefile.write('CFLAGS   = $(OMPFLAGS) -h c99 \n')
         makefile.write('FFLAGS   = $(OMPFLAGS) \n')
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 \n')
@@ -559,11 +564,11 @@ else:
 
 
 if (Compiler=='GNU' or Compiler=='BGP-GNU' or Compiler=='BGQ-GNU' or Compiler=='Mac'):
-    underscoring=''
+    underscoring='_'
 elif (Compiler=='Intel'):
-    underscoring=''
+    underscoring='_'
 elif (Compiler=='XL' or Compiler=='BG-XL'):
-    underscoring=''
+    underscoring='_'
 elif (Compiler=='Cray'):
     underscoring='_'
 
