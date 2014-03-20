@@ -7,10 +7,12 @@ import os
 
 # BGP
 #fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_compiler = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
-fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
-src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
-lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
+#fortran_compiler = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
+#fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
+fortran_compiler = 'ifort'
+fortran_opt_flags = '-g -c -O2 -openmp -heap-arrays'
+src_dir = './src/'
+lst_dir = './lst/'
 
 lib_name = 'tce_sort_f77_omp.a'
 
@@ -40,7 +42,7 @@ for transpose_order in transpose_list:
         b = loop_order[1]
         c = loop_order[2]
         d = loop_order[3]
-        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp_'
+        subroutine_name = 'trans_'+A+B+C+D+'_loop_'+a+b+c+d+'_omp'
         source_name = subroutine_name+'.F'
         #print source_name
         source_file = open(source_name,'w')
@@ -76,5 +78,5 @@ for transpose_order in transpose_list:
         os.system('ar -r '+lib_name+' '+subroutine_name+'.o')
         os.system('rm '+subroutine_name+'.o')
         os.system('mv '+subroutine_name+'.F '+src_dir)
-        os.system('mv '+subroutine_name+'.lst '+lst_dir)
+        #os.system('mv '+subroutine_name+'.lst '+lst_dir)
 

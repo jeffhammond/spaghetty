@@ -5,39 +5,34 @@ import string
 import sys
 import os
 
-mpi = True
+mpi = False
 if ( mpi ):
     print 'Using MPI'
 else:
     print 'Not using MPI'
 
 
-# BGP
-fortran_compiler = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
-fortran_opt_flags = '-O5 -g -qsmp=omp -qnoipa -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -qextname -qalias=noaryovrlp:nopteovrlp -qreport=smplist:hotlist -qsource -c'
+fortran_compiler = 'ifort'
+fortran_opt_flags = '-g -c -O2 -openmp -heap-arrays'
+fortran_link_flags = '-g -O2 -openmp -heap-arrays'
+c_compiler = 'icc'
+c_opt_flags = '-g -c -O2 -openmp'
 
 if ( mpi ):
-    fortran_linker = '/bgsys/drivers/ppcfloor/comm/bin/mpixlf77_r'
+    fortran_linker = 'mpif90'
 else:
-    fortran_linker = '/opt/ibmcmp/xlf/bg/11.1/bin/bgxlf_r'
+    fortran_linker = fortran_compiler
 
-fortran_link_flags = '-O3 -g -qsmp=omp -lxlsmp -qnoipa -qarch=450d -qtune=450 -qmaxmem=-1 -qextname -qreport=smplist:hotlist -qsource'
-
-c_compiler = '/opt/ibmcmp/vacpp/bg/9.0/bin/bgxlc_r'
-c_opt_flags = '-O5 -g -qarch=450d -qtune=450 -qprefetch -qunroll=yes -qmaxmem=-1 -c'
-
-hpm_lib = '-L/soft/apps/UPC/lib -lhpm'
-
-src_dir = '/gpfs/home/jhammond/spaghetty/python/archive/src/'
-lst_dir = '/gpfs/home/jhammond/spaghetty/python/archive/lst/'
-exe_dir = '/gpfs/home/jhammond/spaghetty/python/archive/exe/'
+src_dir = './src/'
+lst_dir = './lst/'
+exe_dir = './exe/'
 
 lib_name = 'tce_sort_f77_omp.a'
 
 flush_rank='1000'
 
-count = '100'
-rank  = '40'
+count = '20'
+rank  = '32'
 ranks = [rank,rank,rank,rank]
 size  =  int(ranks[0])*int(ranks[1])*int(ranks[2])*int(ranks[3])
 sizechar = str(size)
@@ -56,9 +51,9 @@ indices = ['4','3','2','1']
 transpose_list = perm(indices)
 loop_list = perm(indices)
 
-print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_openmp.F'
-os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata_openmp.F')
-os.system('ar -r '+lib_name+' tce_sort_hirata_openmp.o')
+print fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F'
+os.system(fortran_compiler+' '+fortran_opt_flags+' -c tce_sort_hirata.F')
+os.system('ar -r '+lib_name+' tce_sort_hirata.o')
 
 timer = ''
 
@@ -88,7 +83,7 @@ for transpose_order in transpose_list:
     source_file.write('        REAL*8 before('+ranks[0]+','+ranks[0]+','+ranks[0]+','+ranks[0]+')\n')
     source_file.write('        REAL*8 after_jeff('+sizechar+')\n')
     source_file.write('        REAL*8 after_hirata('+sizechar+')\n')
-    source_file.write('        REAL*8 after_glass('+sizechar+')\n')
+    #source_file.write('        REAL*8 after_glass('+sizechar+')\n')
     source_file.write('        REAL*8 X('+flush_rank+','+flush_rank+'),Y('+flush_rank+','+flush_rank+')\n')
     if ( timer == "ticks" ):
         source_file.write('        INTEGER*8 Tstart,Tfinish\n')
@@ -108,12 +103,12 @@ for transpose_order in transpose_list:
     if ( mpi ):
         source_file.write('        INTEGER ierror\n')
 
-    source_file.write('        LOGICAL glass_correct\n')
-    source_file.write('        EXTERNAL glass_correct\n')
+    #source_file.write('        LOGICAL glass_correct\n')
+    #source_file.write('        EXTERNAL glass_correct\n')
     if ( mpi ):
         source_file.write('        call mpi_init(ierror)\n')
 
-    source_file.write('        call hpm_init()\n')
+    #source_file.write('        call hpm_init()\n')
     source_file.write('        aSize(1) = '+ranks[0]+'\n')
     source_file.write('        aSize(2) = '+ranks[1]+'\n')
     source_file.write('        aSize(3) = '+ranks[2]+'\n')
@@ -157,15 +152,15 @@ for transpose_order in transpose_list:
         source_file.write('        Tstart=0.0d0\n')
         source_file.write('        Tfinish=0.0d0\n')
 
-    source_file.write('        call hpm_start("tce_sort_4_omp #1")\n')
+    #source_file.write('        call hpm_start("tce_sort_4_omp #1")\n')
     source_file.write('        Tstart='+timer_call+'\n')
     source_file.write('        DO 30 i = 1, '+count+'\n')
-    source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('30      CONTINUE\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4_omp #1")\n')
+    #source_file.write('        call hpm_stop("tce_sort_4_omp #1")\n')
     source_file.write('        Thirata=(Tfinish-Tstart)\n')
     # THIS PART FLUSHES THE CACHE
     source_file.write('        do ii=1,'+flush_rank+'\n')
@@ -193,9 +188,9 @@ for transpose_order in transpose_list:
         
     source_file.write('        write(6,*) "==================="\n')
     source_file.write('        write(6,*) "Hirata OpenMP Reference #1 = ",Thirata,"seconds"\n')
-    source_file.write('        IF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
-    source_file.write('          write(6,*) "KGlass Reference = ",Tglass,"seconds"\n')
-    source_file.write('        ENDIF\n')
+    #source_file.write('        IF(glass_correct(perm(1), perm(2), perm(3), perm(4))) THEN\n')
+    #source_file.write('          write(6,*) "KGlass Reference = ",Tglass,"seconds"\n')
+    #source_file.write('        ENDIF\n')
     source_file.write('        write(6,1001) "Algorithm","Jeff","Speedup","Best","Best Speedup"\n')
     for loop_order in loop_list:
         dummy = dummy+1
@@ -248,13 +243,13 @@ for transpose_order in transpose_list:
         source_file.write('            enddo \n')
         source_file.write('          enddo \n')
         # END CACHE FLUSH
-        source_file.write('          call hpm_start("'+subroutine_name+'")\n')
+        #source_file.write('          call hpm_start("'+subroutine_name+'")\n')
         source_file.write('          Tstart='+timer_call+'\n')
         source_file.write('          CALL '+subroutine_name+'(before, after_jeff,\n')
         source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4))\n')
         source_file.write('          Tfinish='+timer_call+'\n')
         source_file.write('          Tjeff=Tjeff+(Tfinish-Tstart)\n')
-        source_file.write('          call hpm_stop("'+subroutine_name+'")\n')
+        #source_file.write('          call hpm_stop("'+subroutine_name+'")\n')
         source_file.write(str(100+dummy)+'     CONTINUE\n')
         source_file.write('        Tspeedup=(1d0*Thirata)/(1d0*Tjeff)\n')
         source_file.write('        if (Tjeff<Tbest) then\n')
@@ -310,13 +305,13 @@ for transpose_order in transpose_list:
     source_file.write('          enddo \n')
     source_file.write('        enddo \n')
     # END CACHE FLUSH
-    source_file.write('        call hpm_start("tce_sort_4_omp #2")\n')
+    #source_file.write('        call hpm_start("tce_sort_4_omp #2")\n')
     source_file.write('        Tstart='+timer_call+'\n')
-    source_file.write('          CALL tce_sort_4_omp(before, after_hirata,\n')
+    source_file.write('          CALL tce_sort_4(before, after_hirata,\n')
     source_file.write('     &                    aSize(1), aSize(2), aSize(3), aSize(4),\n')
     source_file.write('     &                    perm(1), perm(2), perm(3), perm(4))\n')
     source_file.write('        Tfinish='+timer_call+'\n')
-    source_file.write('        call hpm_stop("tce_sort_4_omp #2")\n')
+    #source_file.write('        call hpm_stop("tce_sort_4_omp #2")\n')
     source_file.write('        Thirata2=Thirata2+(Tfinish-Tstart)\n')
     source_file.write('34      CONTINUE\n')
     source_file.write('        write(6,*) "Hirata OpenMP Reference #2 = ",Thirata2,"seconds"\n')
@@ -327,8 +322,8 @@ for transpose_order in transpose_list:
     #source_file.write('        write(6,1030) "The best speedup is:",(1d0*Thirata)/(1d0*Tbest)\n')
     source_file.write('        write(6,*) "Best speedup (#1) is:",(1d0*Thirata)/(1d0*Tbest)\n')
     source_file.write('        write(6,*) "Best speedup (#2) is:",(1d0*Thirata2)/(1d0*Tbest)\n')
-    source_file.write('        call hpm_print()\n')
-    source_file.write('        call hpm_print_flops()\n')
+    #source_file.write('        call hpm_print()\n')
+    #source_file.write('        call hpm_print_flops()\n')
     #source_file.write('        call hpm_print_flops_agg()\n')
     if ( mpi ):
         source_file.write('        call mpi_finalize(ierror)\n')
@@ -341,9 +336,10 @@ for transpose_order in transpose_list:
     source_file.write('      END\n')
     source_file.close()
     print fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x'
-    os.system(fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+hpm_lib+' -o '+exe_dir+driver_name+'.x')
+    #os.system(fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+hpm_lib+' -o '+exe_dir+driver_name+'.x')
+    os.system(fortran_linker+' '+fortran_link_flags+' '+' '+source_name+' '+lib_name+' '+' -o '+exe_dir+driver_name+'.x')
     os.system('mv '+source_name+' '+src_dir)
-    os.system('mv '+lst_name+' '+lst_dir)
+    #os.system('mv '+lst_name+' '+lst_dir)
 
 
 
