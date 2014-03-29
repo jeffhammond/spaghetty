@@ -1,0 +1,5 @@
+Since factor is a trivial quantity (1, -1, 2, 1/2, etc.) this action should be replaced with a conditional to the appropriate bit-shift operation since sign and multiplication/division by 2 are trivial in this context.  It is critical to know whether or not a given platform is big or little endian to get this correct.
+
+'-opt-streaming-stores always' kills performance of my code but not Hirata's.
+
+'-xT' is great for performance of my code. 

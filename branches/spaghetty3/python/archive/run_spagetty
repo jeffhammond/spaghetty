@@ -1,0 +1,5 @@
+#! /bin/tcsh -f
+cqsub -n 1 -t 5 -m smp /gpfs/home/jhammond/spaghetty/python/archive/spaghetty.x
+
+# co = 1 cores per node (cpn)
+# vn = 4 cpn
