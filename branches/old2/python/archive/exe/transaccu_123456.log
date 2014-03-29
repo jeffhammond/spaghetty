@@ -1,0 +1,6 @@
+ TESTING TRANSACCU TYPE 123456
+ Hirata Reference =    2.752172     seconds
+ Algorithm         Jeff           Speedup          Best
+       1 Loop 123456      2.00413     1.37325     2.00413     1.37325
+ The best time is:    2.004126    
+ The speedup is:      1.373253    

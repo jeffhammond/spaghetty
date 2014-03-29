@@ -1,0 +1,3 @@
+This is very useful
+
+grep omp_any_f knight.omp12.log | tr -s ' ' | cut -d ' ' -f 2,5
