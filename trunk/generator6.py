@@ -13,10 +13,16 @@ def perm(l):
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
 
-def generate_permutation_list(Debug):
+def generate_permutation_list(Debug,which):
     indices = ['1','2','3','4','5','6']
     if Debug:
-        permlist        = [indices]
+        if which=='perm':
+            permlist        = perm(indices)
+        elif which=='loop':
+            permlist        = [indices]
+        else:
+            print 'perm and loop are the only options'
+            exit()
     else:
         permlist        = perm(indices)
     return permlist
@@ -289,7 +295,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
             else:
                 omp = 1
             loop = 0
-            for loop_order in generate_permutation_list(Debug):
+            for loop_order in generate_permutation_list(Debug,'loop'):
                 loop = loop+1
                 a = loop_order[0]
                 b = loop_order[1]
@@ -419,7 +425,7 @@ def generate_test_driver(Debug, Compiler, subdir, underscoring, rev, flags):
     cfile.write('    rc = posix_memalign((void**)&reference, 128, size*sizeof(double)); assert(rc==0 && reference!=NULL);\n\n')
     cfile.write('    /*********** begin testing **********/\n\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in generate_permutation_list(Debug,'perm'):
             A = transpose_order[0]
             B = transpose_order[1]
             C = transpose_order[2]
@@ -445,7 +451,7 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
         reps = 1
     else:
         reps = 15
-    for transpose_order in generate_permutation_list(Debug):
+    for transpose_order in generate_permutation_list(Debug,'perm'):
         for Language in ['f','c']:
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             source_file = open(subdir+'/'+source_name+'.F','w')
@@ -455,7 +461,7 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
             source_name = 'trans_'+perm_to_string(transpose_order)+Language
             source_file = open(subdir+'/'+source_name+'.'+Language,'w')
             print 'generating '+source_name
-            for loop_order in generate_permutation_list(Debug):
+            for loop_order in generate_permutation_list(Debug,'loop'):
                 #source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
                 #source_file = open(subdir+'/'+source_name+'.'+Language,'w')
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
@@ -581,13 +587,13 @@ def generate_makefile(Debug, subdir, Compiler, rev):
     makefile.write('\n\n')
     makefile.write('SOURCES = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in generate_permutation_list(Debug,'perm'):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             makefile.write(source_name+'.F \\\n')
             source_name = 'trans_'+perm_to_string(transpose_order)+Language
             makefile.write(source_name+'.'+Language+' \\\n')
-        #for transpose_order in generate_permutation_list(Debug):
-        #    for loop_order in generate_permutation_list(Debug):
+        #for transpose_order in generate_permutation_list(Debug,'perm'):
+        #    for loop_order in generate_permutation_list(Debug,'loop'):
         #        source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
         #        makefile.write(source_name+'.f \\\n')
 
@@ -595,32 +601,32 @@ def generate_makefile(Debug, subdir, Compiler, rev):
     makefile.write('\n\n')
     makefile.write('ROBJECTS = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in generate_permutation_list(Debug,'perm'):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
     makefile.write('OBJECTS = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in generate_permutation_list(Debug,'perm'):
             source_name = 'trans_'+perm_to_string(transpose_order)+Language
             makefile.write(source_name+'.o \\\n')
-            #for loop_order in generate_permutation_list(Debug):
+            #for loop_order in generate_permutation_list(Debug,'loop'):
             #    source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
             #    makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
     makefile.write('ASSEMBLY = \\\n')
     for Language in ['f','c']:
-        for transpose_order in generate_permutation_list(Debug):
+        for transpose_order in generate_permutation_list(Debug,'perm'):
             source_name = 'trans_'+perm_to_string(transpose_order)+Language
             makefile.write(source_name+'.s \\\n')
-            #for loop_order in generate_permutation_list(Debug):
+            #for loop_order in generate_permutation_list(Debug,'loop'):
             #    source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
             #    makefile.write(source_name+'.s \\\n')
 
 
-    for transpose_order in generate_permutation_list(Debug):
+    for transpose_order in generate_permutation_list(Debug,'perm'):
         source_name = 'test_trans_'+perm_to_string(transpose_order)
         makefile.write(source_name+'.s \\\n')
 
