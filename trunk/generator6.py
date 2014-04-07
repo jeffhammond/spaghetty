@@ -569,8 +569,8 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('RFLAGS   = -g -O0 \n')
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
-            makefile.write('RFLAGS   = -O2 \n')
-            makefile.write('OFLAGS   = -O3 \n')
+            makefile.write('RFLAGS   = -O1 \n')
+            makefile.write('OFLAGS   = -O2 \n')
         flags = '-h thread3 -h c99 -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   =  \n\n')
