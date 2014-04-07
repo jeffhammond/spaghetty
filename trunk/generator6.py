@@ -23,8 +23,9 @@ def generate_permutation_list(Debug,which):
             #permlist = perm(indices)
             permlist = nwchem_triples_usage()
         elif which=='loop':
-            permlist = [indices]
-            permlist = nwchem_triples_usage()
+            #permlist = [indices]
+            #permlist = nwchem_triples_usage()
+            permlist = perm(indices)
         else:
             print 'perm and loop are the only options'
             exit()
@@ -544,13 +545,13 @@ def generate_makefile(Debug, subdir, Compiler, rev):
         makefile.write('OMPFLAGS = -openmp \n')
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -assume nounderscore $(OMPFLAGS) \n')
-        if (Debug):
+        if (False): #Debug):
             makefile.write('RFLAGS   = -g -O0 \n')
             makefile.write('OFLAGS   = -g -O0 \n')
         else:
-            makefile.write('RFLAGS   = -O2  \n')
-            makefile.write('OFLAGS   = -O3 -mavx \n')
-        flags = '-openmp -std=c99 -assume nounderscore -O3 -mavx'
+            makefile.write('RFLAGS   = -O2 -mavx \n')
+            makefile.write('OFLAGS   = -O2 -mavx \n')
+        flags = '-openmp -std=c99 -assume nounderscore -O2 -mavx'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) -nofor-main \n')
         makefile.write('SFLAGS   = -fsource-asm -fverbose-asm -fcode-asm \n\n')
     elif (Compiler=='XL' or Compiler=='BG-XL'):
