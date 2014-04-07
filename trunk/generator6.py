@@ -73,7 +73,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('  if (f==1.0 && g==0.0) {\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
-        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,d5,d6) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#pragma omp parallel for collapse(3) firstprivate(d1,d2,d3,d4,d5,d6) shared(sorted,unsorted) schedule(static)\n')
         ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
@@ -86,47 +86,55 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     ofile.write('  } else if (f!=1.0 && g==0.0) { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
-        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#pragma omp parallel for collapse(3) firstprivate(d1,d2,d3,d4,d5,d6,f) shared(sorted,unsorted) schedule(static)\n')
         ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
-    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }}}}\n\n')
+    ofile.write('        for (int j'+e+' = 0; j'+e+'<d'+e+'; j'+d+'++) {\n')
+    ofile.write('         for (int j'+f+' = 0; j'+f+'<d'+f+'; j'+f+'++) {\n')
+    ofile.write('          sorted[j'+F+'+d'+F+'*(j'+E+'+d'+E+'*(j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = f*unsorted[j6+d6*(j5+d5*(j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }}}}}}\n\n')
     ofile.write('  } else if (f==1.0 && g==1.0) { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
-        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#pragma omp parallel for collapse(3) firstprivate(d1,d2,d3,d4,d5,d6,f) shared(sorted,unsorted) schedule(static)\n')
         ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
-    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }}}}\n\n')
+    ofile.write('        for (int j'+e+' = 0; j'+e+'<d'+e+'; j'+d+'++) {\n')
+    ofile.write('         for (int j'+f+' = 0; j'+f+'<d'+f+'; j'+f+'++) {\n')
+    ofile.write('          sorted[j'+F+'+d'+F+'*(j'+E+'+d'+E+'*(j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += unsorted[j6+d6*(j5+d5*(j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }}}}}}\n\n')
     ofile.write('  } else if (f!=1.0 && g==1.0) { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
-        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#pragma omp parallel for collapse(3) firstprivate(d1,d2,d3,d4,d5,d6,f) shared(sorted,unsorted) schedule(static)\n')
         ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
-    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }}}}\n\n')
+    ofile.write('        for (int j'+e+' = 0; j'+e+'<d'+e+'; j'+d+'++) {\n')
+    ofile.write('         for (int j'+f+' = 0; j'+f+'<d'+f+'; j'+f+'++) {\n')
+    ofile.write('          sorted[j'+F+'+d'+F+'*(j'+E+'+d'+E+'*(j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] += f*unsorted[j6+d6*(j5+d5*(j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }}}}}}\n\n')
     ofile.write('  } else { \n\n')
     if OpenMP:
         ofile.write('#ifdef _OPENMP \n')
-        ofile.write('#pragma omp parallel for collapse(2) firstprivate(d1,d2,d3,d4,f,g) shared(sorted,unsorted) schedule(static)\n')
+        ofile.write('#pragma omp parallel for collapse(3) firstprivate(d1,d2,d3,d4,d5,d6,f,g) shared(sorted,unsorted) schedule(static)\n')
         ofile.write('#endif \n')
     ofile.write('    for (int j'+a+' = 0; j'+a+'<d'+a+'; j'+a+'++) {\n')
     ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++) {\n')
     ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++) {\n')
     ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++) {\n')
-    ofile.write('        sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = g*sorted[j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] + f*unsorted[j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
-    ofile.write('    }}}}\n\n')
+    ofile.write('        for (int j'+e+' = 0; j'+e+'<d'+e+'; j'+d+'++) {\n')
+    ofile.write('         for (int j'+f+' = 0; j'+f+'<d'+f+'; j'+f+'++) {\n')
+    ofile.write('          sorted[j'+F+'+d'+F+'*(j'+E+'+d'+E+'*(j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] = g*sorted[j'+F+'+d'+F+'*(j'+E+'+d'+E+'*(j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))] + f*unsorted[j6+d6*(j5+d5*(j4+d4*(j3+d3*(j2+d2*(j1)))];\n')
+    ofile.write('    }}}}}}\n\n')
     ofile.write('  }\n\n')
     ofile.write('  return;\n')
     ofile.write('}\n\n')
@@ -138,18 +146,23 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
+    E = transpose_order[4]
+    F = transpose_order[5]
     a = loop_order[0]
     b = loop_order[1]
     c = loop_order[2]
     d = loop_order[3]
+    e = loop_order[4]
+    f = loop_order[5]
     ofile.write(description)
     ofile.write('      subroutine '+name+'(unsorted,sorted,\n')
-    ofile.write('     &              dim1,dim2,dim3,dim4,factor,acc_factor)\n')
+    ofile.write('     &              dim1,dim2,dim3,dim4,dim5,dim6,\n')
+    ofile.write('     &              factor,acc_factor)\n')
     ofile.write('      implicit none\n')
-    ofile.write('      integer dim1,dim2,dim3,dim4\n')
-    ofile.write('      integer j1,j2,j3,j4\n')
-    ofile.write('      double precision sorted(dim1*dim2*dim3*dim4)\n')
-    ofile.write('      double precision unsorted(dim1*dim2*dim3*dim4)\n')
+    ofile.write('      integer dim1,dim2,dim3,dim4,dim5,dim6\n')
+    ofile.write('      integer j1,j2,j3,j4,j5,j6\n')
+    ofile.write('      double precision sorted(dim1*dim2*dim3*dim4*dim5*dim6)\n')
+    ofile.write('      double precision unsorted(dim1*dim2*dim3*dim4*dim5*dim6)\n')
     ofile.write('      double precision factor\n')
     ofile.write('      double precision acc_factor\n')
     for case in [1,2,3,4,5]:
@@ -164,7 +177,7 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
         elif case==5:
             ofile.write('      else \n')
         if OpenMP:
-            #ofile.write('!$omp parallel do collapse(2)\n')
+            #ofile.write('!$omp parallel do collapse(3)\n')
             ofile.write('!$omp parallel do \n')
             ofile.write('!$omp& private(j1,j2,j3,j4)\n')
             if case==1 or case==3:
@@ -469,7 +482,8 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
     else:
         reps = 15
     for transpose_order in generate_permutation_list(Debug):
-        for Language in ['f','c']:
+        #for Language in ['f','c']:
+        for Language in ['c']:
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             source_file = open(subdir+'/'+source_name+'.F','w')
             generate_tester(source_file, transpose_order, reps, Language)
@@ -598,7 +612,8 @@ def generate_makefile(Debug, subdir, Compiler, rev):
 
     makefile.write('\n\n')
     makefile.write('SOURCES = \\\n')
-    for Language in ['f','c']:
+    #for Language in ['f','c']:
+    for Language in ['c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             makefile.write(source_name+'.F \\\n')
@@ -611,14 +626,16 @@ def generate_makefile(Debug, subdir, Compiler, rev):
 
     makefile.write('\n\n')
     makefile.write('ROBJECTS = \\\n')
-    for Language in ['f','c']:
+    #for Language in ['c']:
+    for Language in ['c']:
         for transpose_order in generate_permutation_list(Debug):
             source_name = 'test_trans_'+perm_to_string(transpose_order)+'_'+Language
             makefile.write(source_name+'.o \\\n')
 
     makefile.write('\n\n')
     makefile.write('OBJECTS = \\\n')
-    for Language in ['f','c']:
+    #for Language in ['f','c']:
+    for Language in ['c']:
         for transpose_order in generate_permutation_list(Debug):
             for loop_order in generate_permutation_list(Debug):
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
@@ -626,7 +643,8 @@ def generate_makefile(Debug, subdir, Compiler, rev):
 
     makefile.write('\n\n')
     makefile.write('ASSEMBLY = \\\n')
-    for Language in ['f','c']:
+    #for Language in ['f','c']:
+    for Language in ['c']:
         for transpose_order in generate_permutation_list(Debug):
             for loop_order in generate_permutation_list(Debug):
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
@@ -655,7 +673,7 @@ def generate_makefile(Debug, subdir, Compiler, rev):
     makefile.write('\t$(FC) $(FFLAGS) $(RFLAGS) -c $< -o $@ \n\n')
     makefile.write('%.o: %.f \n')
     makefile.write('\t$(FC) $(FFLAGS) $(OFLAGS) -c $< -o $@ \n\n')
-    makefile.write('%.o: %.c \n')               
+    makefile.write('%.o: %.c \n')
     makefile.write('\t$(CC) $(CFLAGS) $(OFLAGS) -c $< -o $@ \n\n')
     makefile.write('clean: \n')
     makefile.write('\t$(RM) $(RMFLAGS) test_trans_all.o $(OBJECTS) $(TESTOBJ) $(ASSEMBLY) \n\n')
@@ -701,7 +719,7 @@ else:
 #rev = subprocess.check_output('svn info generator2.py | grep Revision | sed "s/Revision: //g"')
 #print 'rev = ',str(rev)
 #exit()
-rev = 242
+rev = 292
 os.system('mkdir '+subdir)
 os.system('cp tester_cutil.c tester_futil.F old_sort.f '+subdir+'/.')
 generate_all_subroutines(Debug, Compiler, subdir, underscoring)
