@@ -98,7 +98,7 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
         ofile.write('     for (int j'+b+' = 0; j'+b+'<d'+b+'; j'+b+'++)\n')
         ofile.write('      for (int j'+c+' = 0; j'+c+'<d'+c+'; j'+c+'++)\n')
         ofile.write('       for (int j'+d+' = 0; j'+d+'<d'+d+'; j'+d+'++)\n')
-        ofile.write('        for (int j'+e+' = 0; j'+e+'<d'+e+'; j'+d+'++)\n')
+        ofile.write('        for (int j'+e+' = 0; j'+e+'<d'+e+'; j'+e+'++)\n')
         ofile.write('         for (int j'+f+' = 0; j'+f+'<d'+f+'; j'+f+'++)\n')
         if case==1:
             ofile.write('          sorted[j'+F+'+d'+F+'*(j'+E+'+d'+E+'*(j'+D+'+d'+D+'*(j'+C+'+d'+C+'*(j'+B+'+d'+B+'*(j'+A+')))))] = ')
