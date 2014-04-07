@@ -13,16 +13,18 @@ def perm(l):
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
 def nwchem_triples_usage():
-    return [[2,6,1,5,4,3],[2,6,5,4,3,1],[3,2,6,5,4,1],[3,6,2,1,5,4],[3,6,2,5,1,4],[3,6,2,5,4,1],[4,2,1,6,5,3],[4,3,1,6,5,2],[4,3,2,1,6,5],[4,3,2,6,5,1],[4,3,6,2,1,5],[4,3,6,2,5,1],[4,3,6,5,2,1],[4,6,3,2,1,5],[4,6,3,2,5,1],[4,6,3,5,2,1],[5,2,1,6,4,3],[5,3,1,6,4,2],[5,3,2,1,6,4],[5,3,2,6,4,1],[5,4,1,6,3,2],[5,4,2,1,3,6],[5,4,2,1,6,3],[5,4,2,6,3,1],[5,4,3,1,6,2],[5,4,3,2,1,6],[5,4,3,2,6,1],[5,4,3,6,2,1],[6,2,1,5,4,3],[6,2,5,4,3,1],[6,3,1,5,4,2],[6,3,2,1,5,4],[6,3,2,5,1,4],[6,3,2,5,4,1],[6,4,1,5,3,2],[6,4,2,1,5,3],[6,4,2,5,3,1],[6,4,3,1,5,2],[6,4,3,2,1,5],[6,4,3,2,5,1],[6,4,3,5,2,1],[6,5,1,4,3,2],[6,5,2,1,4,3],[6,5,2,4,1,3],[6,5,2,4,3,1],[6,5,3,1,4,2],[6,5,3,2,1,4],[6,5,3,2,4,1],[6,5,3,4,2,1],[6,5,4,1,3,2],[6,5,4,2,1,3],[6,5,4,2,3,1],[6,5,4,3,1,2],[6,5,4,3,2,1]]
+    # 123456 is included just for verification; it is not used in NWChem
+    return [[1,2,3,4,5,6],[2,6,1,5,4,3],[2,6,5,4,3,1],[3,2,6,5,4,1],[3,6,2,1,5,4],[3,6,2,5,1,4],[3,6,2,5,4,1],[4,2,1,6,5,3],[4,3,1,6,5,2],[4,3,2,1,6,5],[4,3,2,6,5,1],[4,3,6,2,1,5],[4,3,6,2,5,1],[4,3,6,5,2,1],[4,6,3,2,1,5],[4,6,3,2,5,1],[4,6,3,5,2,1],[5,2,1,6,4,3],[5,3,1,6,4,2],[5,3,2,1,6,4],[5,3,2,6,4,1],[5,4,1,6,3,2],[5,4,2,1,3,6],[5,4,2,1,6,3],[5,4,2,6,3,1],[5,4,3,1,6,2],[5,4,3,2,1,6],[5,4,3,2,6,1],[5,4,3,6,2,1],[6,2,1,5,4,3],[6,2,5,4,3,1],[6,3,1,5,4,2],[6,3,2,1,5,4],[6,3,2,5,1,4],[6,3,2,5,4,1],[6,4,1,5,3,2],[6,4,2,1,5,3],[6,4,2,5,3,1],[6,4,3,1,5,2],[6,4,3,2,1,5],[6,4,3,2,5,1],[6,4,3,5,2,1],[6,5,1,4,3,2],[6,5,2,1,4,3],[6,5,2,4,1,3],[6,5,2,4,3,1],[6,5,3,1,4,2],[6,5,3,2,1,4],[6,5,3,2,4,1],[6,5,3,4,2,1],[6,5,4,1,3,2],[6,5,4,2,1,3],[6,5,4,2,3,1],[6,5,4,3,1,2],[6,5,4,3,2,1]]
 
 def generate_permutation_list(Debug,which):
     indices = [1,2,3,4,5,6]
     if Debug:
         if which=='perm':
-            permlist = perm(indices)
-            #permlist = nwchem_triples_usage()
+            #permlist = perm(indices)
+            permlist = nwchem_triples_usage()
         elif which=='loop':
             permlist = [indices]
+            permlist = nwchem_triples_usage()
         else:
             print 'perm and loop are the only options'
             exit()
@@ -348,8 +350,12 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('!*************************************************\n')
     ofile.write('! determine the best time and loop order for each of (fac,omp)\n')
     ofile.write('        write(6,2000) '+str(A)+','+str(B)+','+str(C)+','+str(D)+','+str(E)+','+str(F)+'\n')
-    ofile.write('        write(6,1500) \'old_sort_6   \',dt0,(8*dim123456)/dt0\n')
-    ofile.write('        write(6,1500) \'old_sortacc_6\',dt1,(8*dim123456)/dt1\n')
+    ofile.write('        if (dt0.gt.(1.0e-9)) then\n')
+    ofile.write('          write(6,1500) \'old_sort_6   \',dt0,(8*dim123456)/dt0\n')
+    ofile.write('        endif\n')
+    ofile.write('        if (dt1.gt.(1.0e-9)) then\n')
+    ofile.write('          write(6,1500) \'old_sortacc_6\',dt1,(8*dim123456)/dt1\n')
+    ofile.write('        endif\n')
     ofile.write('        do omp = 1, 2\n')
     ofile.write('          do fac = 1, 5\n')
     ofile.write('            ! make sure these are right for the fac cases at hand \n')
@@ -502,12 +508,12 @@ def generate_makefile(Debug, subdir, Compiler, rev):
         makefile.write('OMPFLAGS = -fopenmp \n')
         makefile.write('CFLAGS   = -std=c99 $(OMPFLAGS) \n')
         makefile.write('FFLAGS   = -fno-underscoring $(OMPFLAGS) \n')
-        if (Debug):
+        if (False): #Debug):
             makefile.write('RFLAGS   = -g -O0 -Wall \n')
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
             makefile.write('RFLAGS   = -O1  \n')
-            makefile.write('OFLAGS   = -Os \n')
+            makefile.write('OFLAGS   = -O1 \n')
         flags = '-fopenmp -std=c99 -fno-underscoring -O3'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -fverbose-asm \n\n')
