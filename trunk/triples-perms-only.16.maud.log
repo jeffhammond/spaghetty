@@ -85,3 +85,7 @@ Intel compiler: -openmp -std=c99 -assume nounderscore -O2 -mavx
            old_sort_6           =       0.206566 (          0.650E+09 B/s)
     best   nomp_f(1.0,0.0)      = 324561  0.045446 (  4.545x, 0.295E+10 B/s)
     best   omp_f(1.0,0.0)       = 523614  0.008349 ( 24.741x, 0.161E+11 B/s)
+ transpose: 541632
+           old_sort_6           =       0.257948 (          0.520E+09 B/s)
+    best   nomp_f(1.0,0.0)      = 143562  0.045393 (  5.683x, 0.296E+10 B/s)
+    best   omp_f(1.0,0.0)       = 541263  0.007977 ( 32.336x, 0.168E+11 B/s)
