@@ -40,3 +40,8 @@ time in ``TCE_SORT_4`` than in in ``DGEMM`` for CCSD-QR calculations on my lapto
 
 The code generator has been written at least 3 times, including once in C++, which was
 determined to be a waste of time.
+
+# Details
+
+See ``papers/old/spaghetty_chapter_v1.pdf`` for a detailed writeup circa 2008.  Please
+note that 6 years is a long time and some of the information there may appear ignorant.
