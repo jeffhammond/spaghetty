@@ -202,7 +202,7 @@
  1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1)
       end
 
-      subroutine print_4d_arrays(a,b,c,d,x,y)
+      subroutine print_6d_arrays(a,b,c,d,e,f,x,y)
       implicit none
       integer i,j,k,l,m,n, a,b,c,d,e,f
       double precision x(a,b,c,d,e,f)
@@ -220,7 +220,7 @@
         enddo
        enddo
       enddo
- 1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1,1x,f12,1)
+ 1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1,1x,f12.1)
       end
 
 ! this stuff is actually used by the spaghetty code, not just the tester
