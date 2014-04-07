@@ -25,7 +25,7 @@
 !$omp atomic
           errors = errors + 1
         endif
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -41,7 +41,7 @@
 !$omp& schedule(static)
       do i=1,n
        x(i)=0.0
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -58,7 +58,7 @@
 !$omp& schedule(static)
       do i=1,n
        x(i)=x(i)*val
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -75,7 +75,7 @@
 !$omp& schedule(static)
       do i=1,n
        x(i)=val
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -84,7 +84,7 @@
       implicit none
       integer i,j, a,b
       double precision x(a,b)
-!$omp parallel do collapse(2)
+!$omp parallel do
 !$omp& private(i,j)
 !$omp& firstprivate(a,b)
 !$omp& shared(x)
@@ -92,8 +92,8 @@
       do j=1,b
        do i=1,a
         x(i,j)=i+j*a
-       enddo 
-      enddo 
+       enddo
+      enddo
 !$omp end parallel do
       return
       end
@@ -107,10 +107,10 @@
         do j=1,b
          do i=1,a
           write(6,1) i,j,k,l,x(i,j,k,l)
-         enddo 
-        enddo 
-       enddo 
-      enddo 
+         enddo
+        enddo
+       enddo
+      enddo
       return
  1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1)
       end
@@ -125,10 +125,10 @@
         do j=1,b
          do i=1,a
           write(6,1) i,j,k,l,x(i,j,k,l),y(i,j,k,l)
-         enddo 
-        enddo 
-       enddo 
-      enddo 
+         enddo
+        enddo
+       enddo
+      enddo
       return
  1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1,1x,f12.1)
       end
@@ -137,7 +137,7 @@
       implicit none
       integer i,j,k,l, a,b,c,d
       double precision x(a,b,c,d)
-!$omp parallel do collapse(4)
+!$omp parallel do collapse(2)
 !$omp& private(i,j,k,l)
 !$omp& firstprivate(a,b,c,d)
 !$omp& shared(x)
@@ -147,10 +147,10 @@
         do j=1,b
          do i=1,a
           x(i,j,k,l)=i+j*a+k*a*b+l*a*b*c
-         enddo 
-        enddo 
-       enddo 
-      enddo 
+         enddo
+        enddo
+       enddo
+      enddo
 !$omp end parallel do
       return
       end
@@ -159,7 +159,7 @@
       implicit none
       integer i,j,k,l,m,n, a,b,c,d,e,f
       double precision x(a,b,c,d,e,f)
-!$omp parallel do collapse(6)
+!$omp parallel do collapse(3)
 !$omp& private(i,j,k,l,m,n)
 !$omp& firstprivate(a,b,c,d,e,f)
 !$omp& shared(x)
@@ -171,14 +171,56 @@
           do j=1,b
            do i=1,a
             x(i,j,k,l,m,n)=i+j*a+k*a*b+l*a*b*c+m*a*b*c*d+n*a*b*c*d*e
-           enddo 
-          enddo 
-         enddo 
-        enddo 
-       enddo 
-      enddo 
+           enddo
+          enddo
+         enddo
+        enddo
+       enddo
+      enddo
 !$omp end parallel do
       return
+      end
+
+      subroutine print_6d_array(a,b,c,d,e,f,x)
+      implicit none
+      integer i,j,k,l,m,n, a,b,c,d,e,f
+      double precision x(a,b,c,d,e,f)
+      do n=1,f
+       do m=1,e
+        do l=1,d
+         do k=1,c
+          do j=1,b
+           do i=1,a
+            write(6,1) i,j,k,l,m,n,x(i,j,k,l,m,n)
+           enddo
+          enddo
+         enddo
+        enddo
+       enddo
+      enddo
+      return
+ 1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1)
+      end
+
+      subroutine print_4d_arrays(a,b,c,d,x,y)
+      implicit none
+      integer i,j,k,l,m,n, a,b,c,d,e,f
+      double precision x(a,b,c,d,e,f)
+      double precision y(a,b,c,d,e,f)
+      do n=1,f
+       do m=1,e
+        do l=1,d
+         do k=1,c
+          do j=1,b
+           do i=1,a
+            write(6,1) i,j,k,l,m,n,x(i,j,k,l,m,n),y(i,j,k,l,m,n)
+           enddo
+          enddo
+         enddo
+        enddo
+       enddo
+      enddo
+ 1    format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f12.1,1x,f12,1)
       end
 
 ! this stuff is actually used by the spaghetty code, not just the tester
@@ -190,7 +232,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = x(i)
-      enddo 
+      enddo
       return
       end
 
@@ -201,7 +243,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = f * x(i)
-      enddo 
+      enddo
       return
       end
 
@@ -212,7 +254,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + x(i)
-      enddo 
+      enddo
       return
       end
 
@@ -223,7 +265,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + f*x(i)
-      enddo 
+      enddo
       return
       end
 
@@ -234,7 +276,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = g*y(i) + f*x(i)
-      enddo 
+      enddo
       return
       end
 
@@ -250,7 +292,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = x(i)
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -267,7 +309,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = f * x(i)
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -284,7 +326,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + x(i)
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -301,7 +343,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = y(i) + f*x(i)
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
@@ -318,7 +360,7 @@
 !DEC$ UNROLL
       do i=1,n
         y(i) = g*y(i) + f*x(i)
-      enddo 
+      enddo
 !$omp end parallel do
       return
       end
