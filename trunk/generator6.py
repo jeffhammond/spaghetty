@@ -12,29 +12,32 @@ def perm(l):
         return [l]
     return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
 
+def nwchem_triples_usage():
+    return [[2,6,1,5,4,3],[2,6,5,4,3,1],[3,2,6,5,4,1],[3,6,2,1,5,4],[3,6,2,5,1,4],[3,6,2,5,4,1],[4,2,1,6,5,3],[4,3,1,6,5,2],[4,3,2,1,6,5],[4,3,2,6,5,1],[4,3,6,2,1,5],[4,3,6,2,5,1],[4,3,6,5,2,1],[4,6,3,2,1,5],[4,6,3,2,5,1],[4,6,3,5,2,1],[5,2,1,6,4,3],[5,3,1,6,4,2],[5,3,2,1,6,4],[5,3,2,6,4,1],[5,4,1,6,3,2],[5,4,2,1,3,6],[5,4,2,1,6,3],[5,4,2,6,3,1],[5,4,3,1,6,2],[5,4,3,2,1,6],[5,4,3,2,6,1],[5,4,3,6,2,1],[6,2,1,5,4,3],[6,2,5,4,3,1],[6,3,1,5,4,2],[6,3,2,1,5,4],[6,3,2,5,1,4],[6,3,2,5,4,1],[6,4,1,5,3,2],[6,4,2,1,5,3],[6,4,2,5,3,1],[6,4,3,1,5,2],[6,4,3,2,1,5],[6,4,3,2,5,1],[6,4,3,5,2,1],[6,5,1,4,3,2],[6,5,2,1,4,3],[6,5,2,4,1,3],[6,5,2,4,3,1],[6,5,3,1,4,2],[6,5,3,2,1,4],[6,5,3,2,4,1],[6,5,3,4,2,1],[6,5,4,1,3,2],[6,5,4,2,1,3],[6,5,4,2,3,1],[6,5,4,3,1,2],[6,5,4,3,2,1]]
 
 def generate_permutation_list(Debug,which):
-    indices = ['1','2','3','4','5','6']
+    indices = [1,2,3,4,5,6]
     if Debug:
         if which=='perm':
-            permlist        = perm(indices)
+            permlist = perm(indices)
+            #permlist = nwchem_triples_usage()
         elif which=='loop':
-            permlist        = [indices]
+            permlist = [indices]
         else:
             print 'perm and loop are the only options'
             exit()
     else:
-        permlist        = perm(indices)
+        permlist = perm(indices)
     return permlist
 
 
 def perm_to_string(perm):
-    A = perm[0]
-    B = perm[1]
-    C = perm[2]
-    D = perm[3]
-    E = perm[4]
-    F = perm[5]
+    A = str(perm[0])
+    B = str(perm[1])
+    C = str(perm[2])
+    D = str(perm[3])
+    E = str(perm[4])
+    F = str(perm[5])
     return A+B+C+D+E+F
 
 
@@ -53,18 +56,18 @@ def get_omp_info(OpenMP):
 # collapse(4) is not good.  on BGQ it is terrible, probably due to L1 thrashing.
 
 def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_order):
-    A = transpose_order[0]
-    B = transpose_order[1]
-    C = transpose_order[2]
-    D = transpose_order[3]
-    E = transpose_order[4]
-    F = transpose_order[5]
-    a = loop_order[0]
-    b = loop_order[1]
-    c = loop_order[2]
-    d = loop_order[3]
-    e = loop_order[4]
-    f = loop_order[5]
+    A = str(transpose_order[0])
+    B = str(transpose_order[1])
+    C = str(transpose_order[2])
+    D = str(transpose_order[3])
+    E = str(transpose_order[4])
+    F = str(transpose_order[5])
+    a = str(loop_order[0])
+    b = str(loop_order[1])
+    c = str(loop_order[2])
+    d = str(loop_order[3])
+    e = str(loop_order[4])
+    f = str(loop_order[5])
     ofile.write(description)
     ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const int * const dim5, const int * const dim6, const double * const factor, const double * const acc_factor)\n')
     ofile.write('{\n')
@@ -129,18 +132,18 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
 
 
 def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_order):
-    A = transpose_order[0]
-    B = transpose_order[1]
-    C = transpose_order[2]
-    D = transpose_order[3]
-    E = transpose_order[4]
-    F = transpose_order[5]
-    a = loop_order[0]
-    b = loop_order[1]
-    c = loop_order[2]
-    d = loop_order[3]
-    e = loop_order[4]
-    f = loop_order[5]
+    A = str(transpose_order[0])
+    B = str(transpose_order[1])
+    C = str(transpose_order[2])
+    D = str(transpose_order[3])
+    E = str(transpose_order[4])
+    F = str(transpose_order[5])
+    a = str(loop_order[0])
+    b = str(loop_order[1])
+    c = str(loop_order[2])
+    d = str(loop_order[3])
+    e = str(loop_order[4])
+    f = str(loop_order[5])
     ofile.write(description)
     ofile.write('      subroutine '+name+'(unsorted,sorted,\n')
     ofile.write('     &              d1,d2,d3,d4,d5,d6,\n')
@@ -215,12 +218,12 @@ def generate_subroutine(ofile, name, description, OpenMP, transpose_order, loop_
 
 
 def generate_tester(ofile, transpose_order, reps, Language):
-    A = transpose_order[0]
-    B = transpose_order[1]
-    C = transpose_order[2]
-    D = transpose_order[3]
-    E = transpose_order[4]
-    F = transpose_order[5]
+    A = str(transpose_order[0])
+    B = str(transpose_order[1])
+    C = str(transpose_order[2])
+    D = str(transpose_order[3])
+    E = str(transpose_order[4])
+    F = str(transpose_order[5])
     test_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
     ofile.write('        subroutine test_'+test_name+'(reference, unsorted, sorted,\n')
     ofile.write('     &                dim1, dim2, dim3, dim4, dim5, dim6)\n')
@@ -256,7 +259,7 @@ def generate_tester(ofile, transpose_order, reps, Language):
     ofile.write('         enddo\n')
     ofile.write('        enddo\n')
     ofile.write('        call init_6d_array(dim1,dim2,dim3,dim4,dim5,dim6,unsorted)\n')
-    for (Factor,Accumulate) in [(1.0,0.0),(37.0,0.0),(1.0,1.0),(37.0,1.0),(37.0,37.0)]:
+    for (Factor,Accumulate) in [(1.0,0.0)]: #,(37.0,0.0),(1.0,1.0),(37.0,1.0),(37.0,37.0)]:
         if (Accumulate==0.0):
             if Factor==1.0:
                 fac = 1
@@ -297,12 +300,12 @@ def generate_tester(ofile, transpose_order, reps, Language):
             loop = 0
             for loop_order in generate_permutation_list(Debug,'loop'):
                 loop = loop+1
-                a = loop_order[0]
-                b = loop_order[1]
-                c = loop_order[2]
-                d = loop_order[3]
-                e = loop_order[4]
-                f = loop_order[5]
+                a = str(loop_order[0])
+                b = str(loop_order[1])
+                c = str(loop_order[2])
+                d = str(loop_order[3])
+                e = str(loop_order[4])
+                f = str(loop_order[5])
                 source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)
                 variant = omp_name+'_'+Language
                 subroutine_name = source_name+'_'+variant
