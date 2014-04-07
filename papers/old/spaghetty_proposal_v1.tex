@@ -1,0 +1,61 @@
+\documentclass[letterpaper,12pt]{article}
+
+\title{Automatically tuned libraries for native-dimension tensor transpose and contraction algorithms}
+\author{Jeff Hammond}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+Background:
+
+Quantum chemistry (QC) codes are built with tensor contraction operations.  Unlike matrix-based algorithms, where there are only a few possibilities - dgemm and daxpy, transpose or no transpose - QC methods require contractions of arrays of 2, 4 and 6 dimensions over varying index ranges and for all possible combinations of indices.  The standard method for doing tensor contractions is concisely described as transpose-transpose-dgemm-transpose (TTDT), which means:
+
+1. an array A is reordered - via a copying transpose - to make array
+A' which has indices in the "proper" order (proper will be described
+shortly)
+2. repeat step 1 for B to get B'
+3. C=A'*B' via dgemm
+4. step 1 is repeated for C to get C', which has the tensor
+contraction in the proper order (since it has to go back into global
+memory in a parallel code)
+
+The definition of proper order is the order of indices in which the fastest possible dgemm can be used, so for the contraction of two 4d arrays, we want:
+
+C(a,b,i,j) = sum(c,d) A(a,b,c,d) B(c,d,i,j) (in practice, this varies for the array index convention and other factors, but strided access is critical)
+
+instead of what might come out of the QC equations:
+
+C(a,i,j,b) = sum(c,d) A(a,c,b,d) B(i,d,c,j) (random example)
+
+which results in hideous memory access patterns.
+
+Outline of my approach:
+
+My goal is improve the performance of tensor contractions in two steps: (1) improve the performance of the array transposes so that TTDT is a fast as possible, (2) replace TTDT with optimal native-dimension tensor contractions which minimize memory access (TTDT does 2-3 too many read-writes, independent of how fast they are).  Starting with \#1 allows me to get the biggest performance boost (25-40\% of the wall time is in transpose) for the least effort (\#2 is much harder).  Existing codes all use TTDT so \#1 can be incorporated with minimal effort.  The complexity of \#2, which requires tuning over 6 loops in the most important contractions, in contrast to 4 for transpose, is much greater.  Of course, all the things which work for \#1 are applicable to \# and this is a good place to experiment.
+
+Progress to date:
+
+I wrote a code generator for transposes of 4d and 6d arrays (6d is actually transpose-accumulate but the code structure is identical except that "=" becomes "+=").  Finding the optimal loop ordering and letting the compiler optimize each case independently (indirection required for a generic version kills performance), is worth ~2x speed-up for 4d arrays and ~5x speed-up for 6d arrays.  Hierarchical blocking results in a ~50\% speed-up but my parser can't handle the most general cases of blocking and thus the extent to which memory hierarchies can be exploited has not been fully explored.  Multithreading with OpenMP is slower because the overhead is too large for the duration of the call, but it will be very useful for \#2 since that case has far more work in each loop.  Vectorized instructions are worth ~50\% but I'm leaving that to the compiler for now.  Assembler-level tuning will be the last stage of the parser.
+
+The practical details are that I have Python scripts which write the subroutines as well as the driver, which is instrumented with the appropriate system timers and a correctness checker.  The Python scripts loop over transpose types, loop orders, compiler flag combinations, and to some extent, blocking sizes.  Running the driver produces a list of timings and speed-ups relative to the code currently used in NWChem.  Currently there is no pruning of the search space nor is there any feedback between the timer and the code generator, but this is planned.  I also have a driver which uses MPI to shotgun the timings on an arbitrary number of processors, which is nice for minimizing the wall time of the tuning process, but also necessary for platforms like BlueGene which have a different kernel/processor on the compute nodes.
+
+It is worth noting that the most commonly called transpose is 1234->4321 which has the worst memory access pattern possible.  My code finds the optimal loop orderings to be 2341, 2314, 3214 and 3214, as one might expect, with some variance due to performance differences between load and store.  This is one aspect where automatic is critical because load-store asymmetries are machine specific and probably detectable only by measurement.
+
+While I suspect it is possible to get as much as a 10x speed-up, at that point, transpose is no longer the bottleneck and there are other things worth pursuing.
+
+Future plans:
+
+I'm working on a prototype which combines the parser with testing codes to allow for pruning of the search space as well as automatic selection of machine-specific details like compilers, cache sizes, etc.  It doesn't do anything yet because I'm still working out the bugs in the parser for blocking, which is a critical aspect of the autotuning process.  Once I finish with transposes, moving to tensor contractions is straightforward since the only hard step will be aggressive pruning of the parameter space, which is much larger when 6 loops are used (at the most basic level it's $720^2$ versus $24^2$ in complexity).  I'm also going to add support for alternative hardware, such as accelerator cards, starting with NVIDIA's CUDA, which I'm going to be working on at UIUC next week.
+
+Random details:
+
+One important aspect of this project is that unlike BLAS, which seeks to standard the arguments in a given call, I'm trying to support abstract interfaces which the user can define, so that if people want a library in C++ with data structures coming from an external library, or a basic Fortran library, that they can instrument both in a straightforward way.  This will allow all the QC codes currently in use to incorporate my library without much modification.  Given that these codes are 10-30 years old and have millions of lines of code in them, this is a very important feature to have any impact on the community.  As I said previously, language independence is also a goal.
+
+In case it makes writing about this topic easier, I call the transpose library Spaghetty and currently non-existent tensor contraction library Fettuccine.
+
+\end{document}

@@ -1,0 +1,81 @@
+\documentclass[10pt, conference]{IEEEtran}
+
+\usepackage{amssymb, amsmath}
+\usepackage[dvips]{graphicx}
+\usepackage{epsfig}
+\usepackage{color}
+\usepackage{rotating}
+\usepackage{textcomp}
+\usepackage{ifthen}
+\usepackage{comment}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage{verbatim}
+\usepackage{wrapfig}
+%\usepackage[width=7.25in,height=9.53in]{geometry}
+
+%\let \Mycaption \caption
+%\renewcommand{\caption}[1]{
+%  \vspace{-1.0ex}
+%  \Mycaption{\small #1}
+%  \vspace{-2.0ex}
+%}
+
+\begin{document}
+%
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+
+\title{Spaghetty}
+
+% author names and affiliations
+% use a multiple column layout for up to two different
+% affiliations
+\author{
+    \IEEEauthorblockN{
+      Jeff R. Hammond,\IEEEauthorrefmark{1}
+    }
+    ~\\
+    \IEEEauthorblockA{
+      \IEEEauthorrefmark{1}Argonne National Laboratory. {\em \{jhammond\}@anl.gov} \\
+    }
+}
+
+% make the title area
+\maketitle
+
+\input{text/abstract.tex}
+
+\begin{IEEEkeywords}
+\end{IEEEkeywords}
+
+%\renewcommand{\baselinestretch}{0.95}
+
+\input{text/introduction}
+\input{text/background}
+\input{text/results}
+\input{text/related}
+\input{text/conclusions}
+\input{text/thanks}
+
+%\renewcommand{\baselinestretch}{0.97}
+\bibliographystyle{plain}
+
+\bibliography{bib/transpose}
+
+\tiny
+\vskip2ex
+\noindent
+"This manuscript has been created by UChicago Argonne, LLC, Operator
+of Argonne National Laboratory (”Argonne”). Argonne, a U.S. Department
+of Energy Ofﬁce of Science laboratory, is operated under Contract No.
+DEAC02-06CH11357. The U.S. Government retains for itself, and others
+acting on its behalf, a paid-up, nonexclusive, irrevocable worldwide
+license in said article to reproduce, prepare derivative works,
+distribute copies to the public, and perform publicly and display
+publicly, by or on behalf of the Government."
+
+\end{document}
+
+
