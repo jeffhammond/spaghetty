@@ -14,8 +14,7 @@ def perm(l):
 
 
 def generate_permutation_list(Debug):
-    #indices = ['4','3','2','1']
-    indices = ['1','2','3','4']
+    indices = ['1','2','3','4','5','6']
     if Debug:
         permlist        = [indices]
     else:
@@ -28,7 +27,9 @@ def perm_to_string(perm):
     B = perm[1]
     C = perm[2]
     D = perm[3]
-    return A+B+C+D
+    E = perm[4]
+    F = perm[5]
+    return A+B+C+D+E+F
 
 
 def get_omp_info(OpenMP):
@@ -50,17 +51,23 @@ def generate_cfunction(ofile, name, description, OpenMP, transpose_order, loop_o
     B = transpose_order[1]
     C = transpose_order[2]
     D = transpose_order[3]
+    E = transpose_order[4]
+    F = transpose_order[5]
     a = loop_order[0]
     b = loop_order[1]
     c = loop_order[2]
     d = loop_order[3]
+    e = loop_order[4]
+    f = loop_order[5]
     ofile.write(description)
-    ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const double * const factor, const double * const acc_factor)\n')
+    ofile.write('void '+name+'(const double * restrict unsorted, double * restrict sorted, const int * const dim1, const int * const dim2, const int * const dim3, const int * const dim4, const int * const dim5, const int * const dim6, const double * const factor, const double * const acc_factor)\n')
     ofile.write('{\n')
     ofile.write('  const int d1 = *dim1;\n')
     ofile.write('  const int d2 = *dim2;\n')
     ofile.write('  const int d3 = *dim3;\n')
     ofile.write('  const int d4 = *dim4;\n')
+    ofile.write('  const int d5 = *dim5;\n')
+    ofile.write('  const int d6 = *dim6;\n')
     ofile.write('  const int f  = *factor;\n')
     ofile.write('  const int g  = *acc_factor;\n')
     ofile.write('  if (f==1.0 && g==0.0) {\n')
