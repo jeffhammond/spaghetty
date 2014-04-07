@@ -10,9 +10,11 @@ tensor permutation (transposition) routines as are used heavily in NWChem.
 
 As an example, here is a common permutation in the NWChem CCSD code:
 
+```
 for all i,j,k,l:
   b(i,j,k,l) = a(l,k,j,i)
 end
+```
 
 Obviously, this memory access pattern is inefficient.  The ordering of the loops
 over (i,j,k,l) has a significant effect on the performance and this effect is
@@ -28,7 +30,7 @@ a particular simulation.
 In the case of CCSD, tilesize is usually around 30, but perhaps as much as 100 if one
 is using ARMCI-MPI, which does not crash for huge tiles.
 
-For CCSD(T), tilesize is closer to 20, and 20 is perhaps the most common value.  
+For CCSD(T), tilesize is closer to 20, and 20 is perhaps the most common value.
 For CCSDT, tilesize of less than 20 is necessary.  For CCSDTQ, tilesize is more like 10.
 
 # History
