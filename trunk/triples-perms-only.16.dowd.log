@@ -253,3 +253,11 @@ GNU compiler: -fopenmp -std=c99 -fno-underscoring -O3
            old_sort_6           =       0.282740 (          0.475E+09 B/s)
     best   nomp_c(1.0,0.0)      = 124356  0.051239 (  5.518x, 0.262E+10 B/s)
     best   omp_c(1.0,0.0)       = 124365  0.016002 ( 17.669x, 0.839E+10 B/s)
+ transpose: 431652
+           old_sort_6           =       0.274622 (          0.489E+09 B/s)
+    best   nomp_c(1.0,0.0)      = 134256  0.049465 (  5.552x, 0.271E+10 B/s)
+    best   omp_c(1.0,0.0)       = 314265  0.015293 ( 17.957x, 0.878E+10 B/s)
+ transpose: 432165
+           old_sort_6           =       0.242848 (          0.553E+09 B/s)
+    best   nomp_c(1.0,0.0)      = 231456  0.042834 (  5.669x, 0.313E+10 B/s)
+    best   omp_c(1.0,0.0)       = 432651  0.015049 ( 16.137x, 0.892E+10 B/s)
