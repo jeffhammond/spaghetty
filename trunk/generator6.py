@@ -569,8 +569,8 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('RFLAGS   = -g -O3 -qstrict \n')
             makefile.write('OFLAGS   = -g -O3 -qstrict \n')
         else:
-            makefile.write('RFLAGS   = -g -O3 -qstrict \n')
-            makefile.write('OFLAGS   = -g -O3 -qhot -qsimd=auto \n')
+            makefile.write('RFLAGS   = -O3 -qhot -qnoipa -qsimd=auto \n')
+            makefile.write('OFLAGS   = -O3 -qhot -qnoipa -qsimd=auto \n')
         flags = '-qsmp=omp -qlanglvl=stdc99 -g -O3 -qhot -qsimd=auto'
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   = -qlist -qlistopt -qreport -qsource \n\n')
