@@ -74,7 +74,7 @@
         enddo
        enddo
       enddo
-      else
+      else ! if (l.eq.1) then
       do j2 = 1,b
        id(2) = j2
        do j3 = 1,c
@@ -205,7 +205,7 @@
         enddo
        enddo
       enddo
-      else
+      else ! if (n.eq.1) then
       do j2 = 1,b
        id(2) = j2
        do j3 = 1,c
@@ -441,7 +441,7 @@
         enddo
        enddo
       enddo
-      else
+      else ! if (p.eq.1) then
       do j2 = 1,b
        id(2) = j2
        do j3 = 1,c
