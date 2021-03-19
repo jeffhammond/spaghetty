@@ -413,9 +413,9 @@ def generate_makefile(Debug, subdir, Compiler):
             makefile.write('CC       = gcc \n')
             makefile.write('FC       = gfortran \n')
         elif (Compiler=='Mac'):
-            print 'Using the 4.8 version of GCC...'
-            makefile.write('CC       = gcc-mp-4.8 \n')
-            makefile.write('FC       = gfortran-mp-4.8 \n')
+            print 'Using the 10.0 version of GCC...'
+            makefile.write('CC       = gcc-10 \n')
+            makefile.write('FC       = gfortran-10 \n')
         elif (Compiler=='BGP-GNU'):
             print 'You need to use the GCC 4.3.2 version not the default...'
             makefile.write('CC       = powerpc-bgp-linux-gcc \n')
@@ -426,7 +426,7 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('LD       = $(FC) \n')
         makefile.write('OMPFLAGS = -fopenmp \n')
         makefile.write('CFLAGS   = $(OMPFLAGS) -std=c99 \n')
-        makefile.write('FFLAGS   = $(OMPFLAGS) -f-underscoring \n')
+        makefile.write('FFLAGS   = $(OMPFLAGS) -funderscoring \n')
         if (Debug):
             makefile.write('OFLAGS   = -g -O0 -Wall \n')
         else:
