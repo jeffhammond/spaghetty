@@ -10,7 +10,7 @@ def perm(l):
     sz = len(l)
     if sz <= 1:
         return [l]
-    return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
+    return [p[:i]+[l[0]]+p[i:] for i in range(sz) for p in perm(l[1:])]
 
 
 def generate_permutation_list(Debug):
@@ -723,7 +723,7 @@ def generate_all_subroutines(Debug, NewTester, Compiler, subdir, underscoring, t
             source_file.close()
         for Language in ['f','c']:
             source_name = 'trans_'+perm_to_string(transpose_order)+'_'+Language
-            print 'generating '+source_name
+            print('generating '+source_name)
             source_file = open(subdir+'/'+source_name+'.'+Language,'w')
             for OpenMP in [False,True]:
                 for loop_order in generate_permutation_list(Debug):
@@ -750,11 +750,11 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
             makefile.write('CC       = mpicc -DUSE_MPI \n')
             makefile.write('FC       = gfortran \n')
         if (Compiler=='Mac'):
-            print 'Using the 4.8 version of GCC...'
+            print('Using the 4.8 version of GCC...')
             makefile.write('CC       = gcc-mp-4.8 \n')
             makefile.write('FC       = gfortran-mp-4.8 \n')
         if (Compiler=='BGP-GNU'):
-            print 'To use OpenMP, you need to use the GCC 4.3.2 version not the default...'
+            print('To use OpenMP, you need to use the GCC 4.3.2 version not the default...')
             #makefile.write('CC       = powerpc-bgp-linux-gcc \n')
             makefile.write('CC       = mpicc -DUSE_MPI \n')
             makefile.write('FC       = powerpc-bgp-linux-gfortran \n')
@@ -853,7 +853,7 @@ def generate_makefile(Debug, subdir, Compiler, rev, trans_list):
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   =  \n\n')
     else:
-        print 'you must define Compiler'
+        print('you must define Compiler')
         exit()
 
     makefile.write('\n\n')
@@ -910,10 +910,10 @@ compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','Cray-Intel','XL','BG-XL','Cray',
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
     if Compiler not in compilers:
-        print Compiler+' is not a valid compiler choice'
+        print(Compiler+' is not a valid compiler choice')
         exit()
 else:
-    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, Cray-Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM'
+    print('Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, Cray-Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM')
     exit()
 
 
@@ -928,7 +928,7 @@ if (Compiler in ['GNU','BGP-GNU','BGQ-GNU','Intel','Cray-Intel','XL','BG-XL','Ma
 elif (Compiler in ['Cray']):
     underscoring='_'
 else:
-    print 'no underscoring specified for this compiler choice ('+Compiler+')!'
+    print('no underscoring specified for this compiler choice ('+Compiler+')!')
     exit()
 
 

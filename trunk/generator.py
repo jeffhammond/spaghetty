@@ -9,7 +9,7 @@ def perm(l):
     sz = len(l)
     if sz <= 1:
         return [l]
-    return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
+    return [p[:i]+[l[0]]+p[i:] for i in range(sz) for p in perm(l[1:])]
 
 
 def generate_permutation_list(Debug):
@@ -393,7 +393,7 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
                         for Factor in [1.0,-1.0,37.0]:
                             (fac_name,fac_text) = get_fac_info(Factor)
                             variant = omp_name+'_'+fac_name+'_'+Language
-                            print source_name+'_'+variant
+                            print(source_name+'_'+variant)
                             if (Language=='f'):
                                 subroutine_name = source_name+'_'+variant
                                 description = '! '+omp_text+', '+fac_text+'\n'
@@ -413,11 +413,11 @@ def generate_makefile(Debug, subdir, Compiler):
             makefile.write('CC       = gcc \n')
             makefile.write('FC       = gfortran \n')
         elif (Compiler=='Mac'):
-            print 'Using the 10.0 version of GCC...'
+            print('Using the 10.0 version of GCC...')
             makefile.write('CC       = gcc-10 \n')
             makefile.write('FC       = gfortran-10 \n')
         elif (Compiler=='BGP-GNU'):
-            print 'You need to use the GCC 4.3.2 version not the default...'
+            print('You need to use the GCC 4.3.2 version not the default...')
             makefile.write('CC       = powerpc-bgp-linux-gcc \n')
             makefile.write('FC       = powerpc-bgp-linux-gfortran \n')
         elif (Compiler=='BGQ-GNU'):
@@ -477,7 +477,7 @@ def generate_makefile(Debug, subdir, Compiler):
         makefile.write('LDFLAGS  = $(FFLAGS) $(OFLAGS) \n')
         makefile.write('SFLAGS   =  \n\n')
     else:
-        print 'you must define Compiler'
+        print('you must define Compiler')
         exit()
 
     makefile.write('SOURCES = \\\n')
@@ -550,10 +550,10 @@ compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac']
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
     if Compiler not in compilers:
-        print Compiler+' is not a valid compiler choice'
+        print(Compiler+' is not a valid compiler choice')
         exit()
 else:
-    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac'
+    print('Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac')
     exit()
 
 

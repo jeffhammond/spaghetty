@@ -10,7 +10,7 @@ def perm(l):
     sz = len(l)
     if sz <= 1:
         return [l]
-    return [p[:i]+[l[0]]+p[i:] for i in xrange(sz) for p in perm(l[1:])]
+    return [p[:i]+[l[0]]+p[i:] for i in range(sz) for p in perm(l[1:])]
 
 def nwchem_triples_usage():
     # 123456 is included just for verification; it is not used in NWChem
@@ -27,7 +27,7 @@ def generate_permutation_list(Debug,which):
             #permlist = nwchem_triples_usage()
             permlist = perm(indices)
         else:
-            print 'perm and loop are the only options'
+            print('perm and loop are the only options')
             exit()
     else:
         permlist = perm(indices)
@@ -470,7 +470,7 @@ def generate_all_subroutines(Debug, Compiler, subdir, underscoring):
             # 720 files is enough parallelism for make...
             source_name = 'trans_'+perm_to_string(transpose_order)+Language
             source_file = open(subdir+'/'+source_name+'.'+Language,'w')
-            print 'generating '+source_name
+            print('generating '+source_name)
             for loop_order in generate_permutation_list(Debug,'loop'):
                 #source_name = 'trans_'+perm_to_string(transpose_order)+'_loop_'+perm_to_string(loop_order)+'_'+Language
                 #source_file = open(subdir+'/'+source_name+'.'+Language,'w')
@@ -499,7 +499,7 @@ def generate_makefile(Debug, subdir, Compiler, rev):
             makefile.write('CC       = gcc \n')
             makefile.write('FC       = gfortran \n')
         if (Compiler=='BGP-GNU'):
-            print 'You need to use the GCC 4.3.2 version not the default...'
+            print('You need to use the GCC 4.3.2 version not the default...')
             makefile.write('CC       = powerpc-bgp-linux-gcc \n')
             makefile.write('FC       = powerpc-bgp-linux-gfortran \n')
         if (Compiler=='BGQ-GNU'):
@@ -591,7 +591,7 @@ def generate_makefile(Debug, subdir, Compiler, rev):
         makefile.write('LDFLAGS  = $(FFLAGS) $(RFLAGS) \n')
         makefile.write('SFLAGS   =  \n\n')
     else:
-        print 'you must define Compiler'
+        print('you must define Compiler')
         exit()
 
     makefile.write('\n\n')
@@ -675,10 +675,10 @@ compilers = ['GNU','BGP-GNU','BGQ-GNU','Intel','XL','BG-XL','Cray','Mac','LLVM',
 if len(sys.argv)>1:
     Compiler = str(sys.argv[1])
     if Compiler not in compilers:
-        print Compiler+' is not a valid compiler choice'
+        print(Compiler+' is not a valid compiler choice')
         exit()
 else:
-    print 'Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM'
+    print('Please choose a compiler from GNU, BGP-GNU, BGQ-GNU, Intel, XL, BG-XL, Cray, Mac, LLVM, BGQ-LLVM')
     exit()
 
 
